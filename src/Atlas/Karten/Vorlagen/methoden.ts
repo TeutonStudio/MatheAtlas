@@ -144,9 +144,11 @@ export {
     _anschlüsse,
  }
 
+export const vordefiniert_namensraum = "Knoten Bibliothek"
+
 
 function Karte(
-  variante:string,
+  pfad:string,
   name:string,
   nodes:Node[],
   edges:Edge[],
@@ -154,13 +156,13 @@ function Karte(
   abhaengigkeiten:string[],
   wirdVerwendetIn:string[],
 ): KartenDefinition {
-  const vollerName = variante+"-"+name+"-knoten";
-  const pafdname = variante.toUpperCase()+"/"+vollerName
+  function _name(id = false) { return (id ? "bib-" : "")+name+(id ? "-k" : " K")+"noten" }
+  const pafdname = pfad+"/"
   
   return {
-    id: "bib-"+vollerName,
-    name: variante.toUpperCase()+" "+name.toUpperCase()+" Knoten",
-    pfad: "Knoten Bibliothek/"+pafdname,
+    id: _name(true),
+    name: _name(),
+    pfad: vordefiniert_namensraum+"/"+pafdname,
     nodes: nodes,
     edges: edges,
     schnittstellen: schnittstellen,
@@ -199,7 +201,7 @@ export function LogikKarte_einzelarg(
     return {
         id: "bib-"+vollerName,
         name: "Logik "+name.toUpperCase()+" Knoten",
-        pfad: "Knoten Bibliothek/"+vollerName,
+        pfad: "Knoten Bibliothek/Logik/"+vollerName,
         nodes: [
             _schnittstelle("s1","E1", _pos(0, 2),input, Fluß.Eingang, DatenTypen.Logik),
             _logik("l1",_pos(0,-1),{
@@ -243,7 +245,7 @@ export function LogikKarte_doppelarg(
     return {
         id: "bib-"+vollerName,
         name: "Logik "+name.toUpperCase()+" Knoten",
-        pfad: "Knoten Bibliothek/"+vollerName,
+        pfad: "Knoten Bibliothek/Logik/"+vollerName,
         nodes: [
             _schnittstelle("s1","E1", _pos(-1, 1),input1, Fluß.Eingang, DatenTypen.Logik),
             _schnittstelle("s2","E2", _pos(1, 1), input2, Fluß.Eingang, DatenTypen.Logik),

@@ -1,10 +1,14 @@
 // ./src/Atlas/Karten/Karte.tsx
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant, Panel, type Node, type Edge } from "@xyflow/react";
+import { ReactFlow, Controls, MiniMap, Background, useReactFlow, BackgroundVariant, Panel, type Node, type Edge, XYPosition } from "@xyflow/react";
 import { KnotenVarianten, type KarteArgumente, type Kontext } from "@/Atlas/Karten.types";
 import Pfad from "@/Atlas/Karten/Pfad";
 import KnotenAtlas from "@/Ordnung/KnotenAtlas";
-import KontextMenü from "@/Atlas/Karten/KontextMenüs";
+import { Shell } from "@/Atlas/KontextMenü/methoden.tsx";
+
+import PaneItems from "../KontextMenü/PaneKontext";
+import NodeItems from "../KontextMenü/NodeKontext";
+import EdgeItems from "../KontextMenü/EdgeKontext";
 
 function menuPos(e: MouseEvent | React.MouseEvent, pad = 8) {
   const x = Math.min(e.clientX + 2, window.innerWidth - pad);
@@ -15,6 +19,7 @@ function menuPos(e: MouseEvent | React.MouseEvent, pad = 8) {
 export default function Karte(argumente: KarteArgumente) {
   const { nodes: originalNodes, edges, onNodesChange, onEdgesChange, onConnect, hintergrundFarbe, controlsLeft, scope } = argumente;
   const [menu, setMenu] = useState<Kontext>();
+  const { screenToFlowPosition } = useReactFlow();
   const ref = useRef<HTMLDivElement | null>(null);
 
   const onPaneClick = useCallback(() => setMenu(undefined), []);
@@ -77,8 +82,27 @@ export default function Karte(argumente: KarteArgumente) {
         <Background color={hintergrundFarbe} variant={BackgroundVariant.Dots} />
         <Controls position="bottom-left" style={{ ...(controlsLeft ? { left: controlsLeft } : {}), right: "auto" }} />
         <MiniMap />
-        {menu && <KontextMenü ctx={menu} />}
+        {menu && <KontextMenü ctx={{...menu,screenToFlowPosition}} />}
       </ReactFlow>
     </div>
   );
+}
+
+
+function KontextMenü( { ctx }: { ctx: Kontext & { screenToFlowPosition: (p:XYPosition) => XYPosition} } ) {
+  const style: React.CSSProperties = {
+    position: "fixed",
+    left: ctx.pos.x,
+    top: ctx.pos.y,
+    zIndex: 50,
+  }; 
+
+  switch (ctx.variante) {
+    case "Pane":
+      return <Shell style={style}><PaneItems onClose={ctx.onClick} scope={ctx.scope} position={ctx.pos} screenToFlowPosition={ctx.screenToFlowPosition} /></Shell>;
+    case "Node":
+      return <Shell style={style}><NodeItems id={ctx.id} onClose={ctx.onClick} /></Shell>;
+    case "Edge":
+      return <Shell style={style}><EdgeItems id={ctx.id} onClose={ctx.onClick} /></Shell>;
+  }
 }

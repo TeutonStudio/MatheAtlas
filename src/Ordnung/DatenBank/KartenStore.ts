@@ -20,6 +20,8 @@ import { KNOTEN, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karte
 import knotenBibliothek, { vorlageLeer } from "@/Atlas/Karten/KartenVorlage.ts";
 import { type User } from "@/Ordnung/programm.types.ts";
 import { hashPassword, generateUserId } from "@/Ordnung/Benutzer/utils";
+import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
+import { KartenKnotenDaten } from "@/Atlas/Knoten.types";
 
 
 // Hilfsfunktion: finde Bibliothekskarte per slug ODER per id
@@ -697,50 +699,114 @@ export const useKartenStore = create<KartenState>()(
       },
 
       // --- Karten-Knoten Logik ---
+      // --- Karten-Knoten Logik ---
       addKartenKnoten: (kartenIdToAdd, position) => {
-        const { aktiveKarteId, db, geöffnet, hatZirkulaereAbhaengigkeit } = get();
-        if (!aktiveKarteId) return;
+        // kompakte Trace-ID pro Aufruf
+        const trace = `addKartenKnoten:${kartenIdToAdd}:${Date.now().toString(36)}`;
+        console.groupCollapsed(`[${trace}] ▶ start`);
 
-        if (hatZirkulaereAbhaengigkeit(aktiveKarteId, kartenIdToAdd)) {
-          toast.error("Zirkuläre Abhängigkeit entdeckt! Die Karte kann nicht hinzugefügt werden.");
-          return;
+        try {
+          const { aktiveKarteId, db, geöffnet, hatZirkulaereAbhaengigkeit } = get();
+
+          console.log("aktiveKarteId:", aktiveKarteId);
+          console.log("arg kartenIdToAdd:", kartenIdToAdd);
+          console.log("arg position (expected FLOW coords):", position);
+
+          if (!aktiveKarteId) {
+            console.warn("Abbruch: keine aktive Karte (aktiveKarteId=null).");
+            return;
+          }
+
+          // Sanity-Check Position
+          const p = position ?? { x: NaN, y: NaN } as XYPosition;
+          const posOk =
+            Number.isFinite(p.x) &&
+            Number.isFinite(p.y) &&
+            Math.abs(p.x) < 1e7 &&
+            Math.abs(p.y) < 1e7;
+          if (!posOk) {
+            console.warn("Warnung: ungültige Position, setze Fallback {x:0,y:0}. Eingabe war:", p);
+            position = { x: 0, y: 0 };
+          }
+
+          // Zirkularitäts-Check
+          const circ = hatZirkulaereAbhaengigkeit(aktiveKarteId, kartenIdToAdd);
+          console.log("zirkuläre Abhängigkeit?", circ);
+          if (circ) {
+            toast.error("Zirkuläre Abhängigkeit entdeckt! Die Karte kann nicht hinzugefügt werden.");
+            return;
+          }
+
+          const aktiveKarte = geöffnet[aktiveKarteId];
+          if (!aktiveKarte) {
+            console.warn("Abbruch: aktive Karte nicht in 'geöffnet' gefunden.");
+            return;
+          }
+
+          const karteToAdd = db[kartenIdToAdd];
+          console.log("karteToAdd vorhanden?", Boolean(karteToAdd));
+          if (!karteToAdd) {
+            console.warn("Abbruch: Zielkarte nicht in DB:", kartenIdToAdd, "DB keys:", Object.keys(db));
+            return;
+          }
+
+          console.log("nodes (vorher):", aktiveKarte.nodes?.length ?? 0);
+
+          const data = { karteId: kartenIdToAdd, title: karteToAdd.name, badge: "Karte" } as KartenKnotenDaten
+          const neuerKnoten: Node = {
+            id: `kartenknoten-${nanoid()}`,
+            type: KNOTEN.KartenKnoten,
+            position, data,
+          };
+
+          const updatedNodes = [...(aktiveKarte.nodes ?? []), neuerKnoten];
+          console.log("neu erzeugter Node:", neuerKnoten);
+          console.log("nodes (nachher, lokal):", updatedNodes.length);
+
+          // Dependency-Graph pflegen
+          const newDb = { ...db };
+          newDb[aktiveKarteId] = {
+            ...(newDb[aktiveKarteId]),
+            abhaengigkeiten: [
+              ...new Set([...(newDb[aktiveKarteId].abhaengigkeiten ?? []), kartenIdToAdd]),
+            ],
+          };
+          newDb[kartenIdToAdd] = {
+            ...(newDb[kartenIdToAdd]),
+            wirdVerwendetIn: [
+              ...new Set([...(newDb[kartenIdToAdd].wirdVerwendetIn ?? []), aktiveKarteId]),
+            ],
+          };
+
+          // Zustand setzen
+          set({
+            geöffnet: {
+              ...geöffnet,
+              [aktiveKarteId]: { ...aktiveKarte, nodes: updatedNodes, dirty: true },
+            },
+            db: newDb,
+          });
+
+          // Direkt nach set() erneut lesen (Zustand ist bei Zustand sync)
+          const after = get().geöffnet[aktiveKarteId];
+          console.log("nodes (nach set):", after?.nodes?.length ?? 0);
+          console.log("dirty (nach set):", after?.dirty);
+
+          if (!after || (after.nodes?.length ?? 0) !== updatedNodes.length) {
+            console.warn(
+              "Ungewöhnlich: Zustand nach set() spiegelt die Node-Änderung nicht wider. " +
+              "Prüfe Persist/Selector und ob die UI korrekt aus 'geöffnet[aktiveKarteId]' liest."
+            );
+          } else {
+            console.log("✔ Node im Store aktualisiert. UI sollte re-rendern.");
+          }
+        } catch (err) {
+          console.error(`[${trace}] Fehler in addKartenKnoten:`, err);
+        } finally {
+          console.groupEnd();
         }
-
-        const aktiveKarte = geöffnet[aktiveKarteId];
-        const karteToAdd = db[kartenIdToAdd];
-        if (!aktiveKarte || !karteToAdd) return;
-
-        const neuerKnoten: Node = {
-          id: `kartenknoten-${nanoid()}`,
-          type: KNOTEN.KartenKnoten,
-          position,
-          data: { kartenId: kartenIdToAdd, label: karteToAdd.name },
-        };
-
-        const updatedNodes = [...aktiveKarte.nodes, neuerKnoten];
-
-        const newDb = { ...db };
-        newDb[aktiveKarteId] = {
-          ...(newDb[aktiveKarteId]),
-          abhaengigkeiten: [
-            ...new Set([...(newDb[aktiveKarteId].abhaengigkeiten ?? []), kartenIdToAdd]),
-          ],
-        };
-        newDb[kartenIdToAdd] = {
-          ...(newDb[kartenIdToAdd]),
-          wirdVerwendetIn: [
-            ...new Set([...(newDb[kartenIdToAdd].wirdVerwendetIn ?? []), aktiveKarteId]),
-          ],
-        };
-
-        set({
-          geöffnet: {
-            ...geöffnet,
-            [aktiveKarteId]: { ...aktiveKarte, nodes: updatedNodes, dirty: true },
-          },
-          db: newDb,
-        });
       },
+
 
       // --- Import/Export ---
       importFromJSON: (json) => {

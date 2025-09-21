@@ -35,7 +35,7 @@ export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   );
 }
 
-
+/*
 export function TestLaTeXKnoten({ id }: { id: string }) {
   const anschlüsse: AnschlussNachSeite = {
     [Position.Left]: [
@@ -53,3 +53,4 @@ export function TestLaTeXKnoten({ id }: { id: string }) {
 
   return <LaTeXKnoten {...argumente} />;
 }
+*/

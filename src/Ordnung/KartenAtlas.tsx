@@ -14,6 +14,8 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
 } from "@radix-ui/react-icons";
+import { vordefiniert_namensraum } from "@/Atlas/Karten/Vorlagen/methoden";
+import { KartenDefinition } from "@/Atlas/Karten.types";
 
 export default function KartenAtlas(): React.ReactElement {
   const db = useKartenStore(s => s.db);
@@ -155,20 +157,80 @@ function KartenBibliothek({
   );
 }
 
+
+// Typsicher und nervenresistent
+
+type BibliothekItem = {
+  id: string;
+  label: string;
+  pfad: string[];           // z.B. ["Algebra", "Gleichungen", "Linear"]
+  onClick: () => void;
+};
+
+// Knoten im Baum: hat eigene Items und benannte Untergruppen
+export type KnotenGruppe = {
+  _items: BibliothekItem[];
+  _gruppen: Record<string, KnotenGruppe>;
+};
+
+/**
+ * Baut aus einer flachen Liste einen verschachtelten Record nach `pfad`.
+ * - ignoriert leere/whitespace Segmente
+ * - unterstützt leere Pfade (Items landen auf Root-Ebene)
+ * - keine Mutationen der Eingabe
+ */
+export function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
+  const root: KnotenGruppe = { _items: [], _gruppen: {} };
+
+  for (const it of items) {
+    const segmente = Array.isArray(it.pfad) ? it.pfad : [];
+    // normalize: trimmen + leere Segmente raus
+    const norm = segmente.map(s => s?.trim()).filter(Boolean) as string[];
+
+    let node = root;
+    if (norm.length === 0) {
+      node._items.push(it);
+      continue;
+    }
+
+    for (const seg of norm) {
+      node._gruppen[seg] ??= { _items: [], _gruppen: {} };
+      node = node._gruppen[seg];
+    }
+    node._items.push(it);
+  }
+
+  return root;
+}
+
+
+
 function KnotenBibliothek() {
   const oeffneKarte = useKartenStore(s => s.oeffneBibliotheksKarte);
   const items = Object.values(knotenBibliothek).map(karte => ({
     id: karte.id,
     label: karte.name,
+    pfad: karte.pfad.split("/"),
     onClick: () => oeffneKarte(karte.id,karte.name), //karte.name),
   }));
+  const hierarchie_tiefe = Math.max(...items.map(k => k.pfad.length))
+  let baum: Record<number, string[]> = {}
+  for (let i = 1; i < hierarchie_tiefe; i++) {
+    for (const item of items) {
+      baum[i] = item.pfad.slice(1,i)
+    }
+  };
+
 
   return (
     <BibliothekEinheit
       label="Knoten Bibliotheken"
       action="Bibliothek hinzufügen"
     >
+    
       <GroupList items={items} />
     </BibliothekEinheit>
   );
 }
+
+

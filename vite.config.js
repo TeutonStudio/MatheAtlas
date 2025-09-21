@@ -13,4 +13,10 @@ export default defineConfig({
       lightningcss: "lightningcss-wasm",
     },
   },
+  server: {
+    port: 2357
+  },
+  preview: {
+    port: 7532
+  }
 });

@@ -1,5 +1,6 @@
 // ./src/Ordnung/Struktur.tsx
 
+import { shallow } from "zustand/shallow";
 import React, { useCallback } from "react";
 import { ReactFlowProvider, type Connection } from "@xyflow/react";
 
@@ -62,23 +63,45 @@ function InneresLayout({ firstStyle, secondStyle }: LayoutArgumente) {
   const store = useKartenStore();
   const activeCard = store.aktiveKarteId ? store.geöffnet[store.aktiveKarteId] : null;
 
-  const onConnect = useCallback((params: Connection) => {
-    store.onConnect(params);
-  }, [store]);
+  const {
+    aktiveKarteId,
+    offene,
+    onNodesChange,
+    onEdgesChange,
+    onConnectStore,
+  } = useKartenStore(
+    s => {
+      const id = s.aktiveKarteId;
+      return {
+        aktiveKarteId: id,
+        offene: id ? s.geöffnet[id] : undefined,
+        onNodesChange: s.onNodesChange,
+        onEdgesChange: s.onEdgesChange,
+        onConnectStore: s.onConnect,
+      };
+    },
+    shallow
+  );
+
+  const onConnect = useCallback(
+    (params: Connection) => { onConnectStore(params); },
+    [onConnectStore]
+  );
 
   return (
     <div style={firstStyle ?? rootStyle}>
       <div style={secondStyle ?? centerStyle}>
         <ReactFlowProvider>
-        {activeCard ? (
+        {activeCard && offene ? (
           <Karte
-            nodes={activeCard.nodes}
-            edges={activeCard.edges}
-            onNodesChange={store.onNodesChange}
-            onEdgesChange={store.onEdgesChange}
-            onConnect={onConnect}
-            controlsLeft={controlsLeft}
-            scope={activeCard.scope}
+              key={aktiveKarteId}
+              nodes={offene.nodes}
+              edges={offene.edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              controlsLeft={controlsLeft}
+              scope={offene.scope}
           />
            ) : (
             <div>Keine Karte ausgewählt</div>
