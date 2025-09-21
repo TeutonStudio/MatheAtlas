@@ -1,17 +1,18 @@
 // ./src/Ordnung/Struktur.tsx
 
-import { shallow } from "zustand/shallow";
+//import { shallow } from "zustand/shallow";
 import React, { useCallback } from "react";
-import { ReactFlowProvider, type Connection } from "@xyflow/react";
+import { ReactFlowProvider, type Connection, type Edge } from "@xyflow/react";
 
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 import { type StrukturArgumente, type LayoutArgumente } from "@/Ordnung/programm.types.ts";
 import KartenAtlas from "@/Ordnung/KartenAtlas.tsx";
 import Karte from "@/Atlas/Karten/Karte.tsx";
-import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
+import { useKartenStore, KartenState } from "@/Ordnung/DatenBank/KartenStore.ts";
 import { DialogManager } from "@/Ordnung/DialogManager.tsx";
 
+import { useShallow } from "zustand/react/shallow";
 // Eval-Store: unser Pull-/Cache-/Version-Context
 import { EvalStoreProvider } from "@/Daten/kern/store.tsx";
 
@@ -63,29 +64,38 @@ function InneresLayout({ firstStyle, secondStyle }: LayoutArgumente) {
   const store = useKartenStore();
   const activeCard = store.aktiveKarteId ? store.geöffnet[store.aktiveKarteId] : null;
 
-  const {
-    aktiveKarteId,
-    offene,
-    onNodesChange,
-    onEdgesChange,
-    onConnectStore,
-  } = useKartenStore(
-    s => {
-      const id = s.aktiveKarteId;
-      return {
-        aktiveKarteId: id,
-        offene: id ? s.geöffnet[id] : undefined,
-        onNodesChange: s.onNodesChange,
-        onEdgesChange: s.onEdgesChange,
-        onConnectStore: s.onConnect,
-      };
-    },
-    shallow
-  );
+
+const select = useShallow((s: KartenState) => {
+  const id = s.aktiveKarteId;
+  return {
+    aktiveKarteId: id,
+    offene: id ? s.geöffnet[id] : undefined,
+    onNodesChange: s.onNodesChange,
+    onEdgesChange: s.onEdgesChange,
+    onConnectStore: s.onConnect,
+    onReconnectStore: s.onReconnect,
+  };
+});
+
+const {
+  aktiveKarteId,
+  offene,
+  onNodesChange,
+  onEdgesChange,
+  onConnectStore,
+  onReconnectStore,
+} = useKartenStore(select);
+
+
 
   const onConnect = useCallback(
     (params: Connection) => { onConnectStore(params); },
     [onConnectStore]
+  );
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, conn: Connection) => { onReconnectStore(oldEdge, conn); },
+    [onReconnectStore]
   );
 
   return (
@@ -100,6 +110,7 @@ function InneresLayout({ firstStyle, secondStyle }: LayoutArgumente) {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onReconnect={onReconnect} 
               controlsLeft={controlsLeft}
               scope={offene.scope}
           />

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Position } from "@xyflow/react";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten";
-import { Anschluss, MathRenderer } from "@/Atlas/Knoten/methoden";
+import KnotenDebug, { Anschluss, MathRenderer } from "@/Atlas/Knoten/methoden";
 import {
   type LogikTabelleDaten,
   type LogikTabelleArgumente,
@@ -35,7 +35,7 @@ const erzeugePermutationen = (n: number): boolean[][] => {
 };
 
 export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
-  const { id, data, draggable, deletable } = argumente;
+  const { id, data, selected, draggable, deletable } = argumente;
   const isReadOnly = draggable === false && deletable === false;
   const anschlüsse = data.anschlüsse;
 
@@ -76,17 +76,20 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
     neueErgebnisse[index] = neuerWert;
     updateNodeData(id, prev => ({ ...prev, ergebnisse: neueErgebnisse }));
   };
-
+  
   const style = { minWidth: 280 } as React.CSSProperties;
   const basis = { title: data.title ?? "Konjunktion", badge: data.badge ?? `Logik`, anschlüsse };
   const basisArgument = {
-    id,
-    style,
+    id, selected, style,
     data: basis,
     isConnectable: argumente.isConnectable,
     type: "logik-tabelle",
   } as BasisKnotenArgumente;
-
+  
+  if (KnotenDebug) {
+    console.log("selektiert LogikTabelleKnoten",selected,id)
+    // Debug
+  }
   return (
     <BasisKnoten {...basisArgument}>
       {n === 0 ? (

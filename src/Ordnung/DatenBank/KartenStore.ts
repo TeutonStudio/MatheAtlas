@@ -6,6 +6,7 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  reconnectEdge,
   type Connection,
   type Edge,
   type OnEdgesChange,
@@ -56,6 +57,11 @@ type OffeneKarte = {
   scope: "private" | "public" | "defined";
 };
 
+type SelectionSnapshot = {
+  nodeIds: string[];
+  edgeIds: string[];
+};
+
 type Verlauf = { id: string; name: string };
 
 type DialogAnfrageSpeichern = {
@@ -84,7 +90,7 @@ const cloneEdges = (es: Edge[]) => structuredClone(es);
 
 
 // ---------- Store-Signatur ----------
-type KartenState = {
+export type KartenState = {
   db: Record<string, KartenDefinition>;
   verlauf: Verlauf[];
   geöffnet: Record<string, OffeneKarte>;
@@ -129,10 +135,12 @@ type KartenState = {
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: (connection: Connection) => void;
+  onReconnect: (oldEdge: Edge, connection: Connection) => void;
 
   updateNodeData: (nodeId: string, updater: (prevData: any) => any) => void;
 
   // Karten-Knoten Logik
+  addKnoten: (knoten: KNOTEN, position: XYPosition, data: any) => void;
   addKartenKnoten: (kartenIdToAdd: string, position: XYPosition) => void;
 
   // Import/Export
@@ -142,6 +150,16 @@ type KartenState = {
   // Schnittstellen mutieren
   addSchnittstelle: (karteId: string, schnittstelle: Schnittstelle) => void;
   removeSchnittstelle: (karteId: string, schnittstelleId: string) => void;
+
+  selection: SelectionSnapshot;     
+  setSelectionSnapshot: (s: SelectionSnapshot) => void; 
+  clearSelectionSnapshot: () => void; 
+  deleteSelected: () => void;        // Löschen
+  duplicateSelected: () => void;     // Duplizieren
+  groupSelected: () => void;         // “Gruppieren” (vorerst Platzhalter)
+  copySelectionToNewCard: () => void; // Zu neuer Karte kopieren
+  moveSelectionToNewCard: () => void; // Zu neuer Karte verschieben
+
 };
 
 
@@ -385,7 +403,12 @@ export const useKartenStore = create<KartenState>()(
 
         const neueGeöffnete: Record<string, OffeneKarte> = { ...geöffnet };
         if (!neueGeöffnete[id]) {
-          const nodes = cloneNodes(karte.nodes ?? []);
+          const nodes = cloneNodes(karte.nodes ?? []).map(n => ({
+            ...n,
+            deletable: karte.scope === "private",
+            draggable: karte.scope !== "defined",
+            selectable: karte.scope !== "defined",
+          }));
           console.log("[KartenStore.oeffneKarte] Geklonte Knoten für private Karte:", nodes);
           neueGeöffnete[id] = {
             nodes: nodes,
@@ -423,8 +446,9 @@ export const useKartenStore = create<KartenState>()(
 
         const nodes = structuredClone(bibliotheksKarte.nodes ?? []).map(n => ({
           ...n,
-          draggable: false,
-          selectable: true,
+          deletable: bibliotheksKarte.scope === "private",
+          draggable: bibliotheksKarte.scope !== "defined",
+          selectable: bibliotheksKarte.scope !== "defined",
         })); console.log("dupliziert: ",nodes)
         //console.log("[KartenStore.oeffneBibliotheksKarte] Geklonte Knoten für Bibliothekskarte:", nodes);
         const edges = structuredClone(bibliotheksKarte.edges ?? []);
@@ -692,13 +716,92 @@ export const useKartenStore = create<KartenState>()(
         const { aktiveKarteId, geöffnet } = get();
         if (!aktiveKarteId) return;
         const offene = geöffnet[aktiveKarteId];
-        if (!offene /*|| offene.readonly*/) return; // block
-        const edgeId = `e-${nanoid()}`;
-        const edges = addEdge({ ...connection, id: edgeId }, offene.edges);
-        set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges, dirty: true } } });
+        if (!offene) return;
+
+        const nextEdges = addEdgeWithSingleTarget(connection, offene.edges);
+        set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
       },
 
-      // --- Karten-Knoten Logik ---
+      onReconnect: (oldEdge, connection) => {
+        const { aktiveKarteId, geöffnet } = get();
+        if (!aktiveKarteId) return;
+        const offene = geöffnet[aktiveKarteId];
+        if (!offene) return;
+
+        const nextEdges = reconnectWithSingleTarget(oldEdge, connection, offene.edges);
+        set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
+      },
+
+
+
+
+      // --- Knoten Logik ---
+      addKnoten: (knoten: KNOTEN, position: XYPosition, data: any) => {
+        const { aktiveKarteId, geöffnet } = get();
+        if (!aktiveKarteId) {
+          console.warn("[addKnoten] Abbruch: keine aktive Karte.");
+          toast.error("Keine aktive Karte geöffnet.");
+          return;
+        }
+
+        const offene = geöffnet[aktiveKarteId];
+        if (offene.scope === "defined") return; // keine Änderungen erlaubt
+        if (!offene /*|| offene.readonly*/) {
+          console.warn("[addKnoten] Abbruch: aktive Karte nicht geöffnet oder schreibgeschützt.");
+          return;
+        }
+
+        // Position validieren und ggf. fallbacken
+        const p = position ?? ({ x: 0, y: 0 } as XYPosition);
+        const posOk =
+          Number.isFinite(p.x) &&
+          Number.isFinite(p.y) &&
+          Math.abs(p.x) < 1e7 &&
+          Math.abs(p.y) < 1e7;
+        const safePos = posOk ? p : ({ x: 0, y: 0 } as XYPosition);
+        if (!posOk) {
+          console.warn("[addKnoten] Ungültige Position, nutze {0,0}. Eingabe:", position);
+        }
+
+        // Anschlüsse-Defaults aus Bibliothek (falls vorhanden) einmischen,
+        // ohne vom Aufrufer bereits gesetzte Felder zu überschreiben.
+        // const defaultAnschluesse = _anschlüsse?.[knoten];
+        const mergedData = {
+        //  ...(defaultAnschluesse ? { anschlüsse: defaultAnschluesse } : {}),
+          ...(data ?? {}),
+        };
+
+        const neuerKnoten: Node = {
+          id: `${knoten}-${nanoid()}`,
+          type: knoten,               // vordefinierter Knotentyp
+          position: safePos,
+          data: mergedData,
+          draggable: true,
+          selectable: true,
+        };
+
+        const updatedNodes = [...(offene.nodes ?? []), neuerKnoten];
+
+        set({
+          geöffnet: {
+            ...geöffnet,
+            [aktiveKarteId]: { ...offene, nodes: updatedNodes, dirty: true },
+          },
+        });
+
+        // kleines Trace-Log für die Nachwelt
+        const after = get().geöffnet[aktiveKarteId];
+        console.log(
+          "[addKnoten] hinzugefügt:",
+          neuerKnoten.id,
+          "Typ:",
+          knoten,
+          "Nodes gesamt:",
+          after?.nodes?.length ?? 0
+        );
+      },
+
+
       // --- Karten-Knoten Logik ---
       addKartenKnoten: (kartenIdToAdd, position) => {
         // kompakte Trace-ID pro Aufruf
@@ -848,7 +951,93 @@ export const useKartenStore = create<KartenState>()(
         };
         set({ db: { ...db, [karteId]: neu } });
       },
+
+      selection: { nodeIds: [], edgeIds: [] },
+
+      setSelectionSnapshot: (s) => set({ selection: { nodeIds: [...s.nodeIds], edgeIds: [...s.edgeIds] } }),
+      clearSelectionSnapshot: () => set({ selection: { nodeIds: [], edgeIds: [] } }),
+
+
+      deleteSelected: () => {
+        const { aktiveKarteId, geöffnet, selection } = get();
+        if (!aktiveKarteId) return;
+        const offene = geöffnet[aktiveKarteId];
+        if (!offene || offene.scope === "defined") return;
+
+        const nodes = offene.nodes.filter(n => !selection.nodeIds.includes(n.id));
+        const edges = offene.edges.filter(e => !selection.edgeIds.includes(e.id));
+        set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, nodes, edges, dirty: true } } });
+        get().clearSelectionSnapshot();
+      },
+
+      duplicateSelected: () => {
+        const { aktiveKarteId, geöffnet, selection } = get();
+        if (!aktiveKarteId) return;
+        const offene = geöffnet[aktiveKarteId];
+        if (!offene || offene.scope === "defined") return;
+
+        const map = new Map(offene.nodes.map(n => [n.id, n] as const));
+        const selected = selection.nodeIds.map(id => map.get(id)).filter(Boolean) as typeof offene.nodes;
+
+        const clones = selected.map(orig => ({
+          ...structuredClone(orig),
+          id: `${orig.id}-copy-${nanoid(4)}`,
+          position: { x: orig.position.x + 24, y: orig.position.y + 24 },
+          selected: false,
+        }));
+
+        const nodes = [...offene.nodes, ...clones];
+        set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, nodes, dirty: true } } });
+        // Auswahl der Duplikate optional setzen? Wir lassen ReactFlow regeln.
+      },
+
+      groupSelected: () => {
+        // Platzhalter: kein GroupNode, aber Hook für spätere Meta-Operationen.
+        toast.info("Gruppieren ist vorbereitet, aber noch ohne Group-Node-Modell.");
+      },
+
+      copySelectionToNewCard: () => {
+        const { selection } = get();
+        if (selection.nodeIds.length === 0) return toast.info("Nichts ausgewählt zum Kopieren.");
+        toast.info("Kopieren in neue Karte: TODO-Implementierung.");
+      },
+
+      moveSelectionToNewCard: () => {
+        const { selection } = get();
+        if (selection.nodeIds.length === 0) return toast.info("Nichts ausgewählt zum Verschieben.");
+        toast.info("Verschieben in neue Karte: TODO-Implementierung.");
+      },
+
     }),
     { name: "karten-db" }
   )
 );
+
+// Entfernt alle Edges, die auf dasselbe Ziel-Handle zeigen, und fügt die neue Verbindung hinzu.
+function addEdgeWithSingleTarget(conn: Connection, edges: Edge[]): Edge[] {
+  if (!conn.target || !conn.targetHandle) return edges;
+
+  // Optional: nur für Fluß.Eingang erzwingen
+  // const parsed = erhalteAnschluss(conn.targetHandle);
+  // const fluss = parsed[ID_TEILE_INDICES.FLUSS];
+  // if (fluss !== "Eingang") return addEdge({ ...conn, id: `e-${nanoid()}` }, edges);
+
+  const cleaned = edges.filter(
+    e => !(e.target === conn.target && e.targetHandle === conn.targetHandle)
+  );
+  return addEdge({ ...conn, id: `e-${nanoid()}` }, cleaned);
+}
+
+// Reconnect-Version: aktualisiert die bestehende Edge und räumt Konflikte am neuen Ziel auf
+function reconnectWithSingleTarget(oldEdge: Edge, conn: Connection, edges: Edge[]): Edge[] {
+  if (!conn.target || !conn.targetHandle) return edges;
+
+  // erst alte Edge versetzen
+  const updated = reconnectEdge(oldEdge, conn, edges);
+
+  // dann alle anderen Edges killen, die dasselbe target/handle blockieren
+  return updated.filter(
+    e => e.id === oldEdge.id || !(e.target === conn.target && e.targetHandle === conn.targetHandle)
+  );
+}
+

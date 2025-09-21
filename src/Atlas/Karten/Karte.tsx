@@ -5,6 +5,8 @@ import { KnotenVarianten, type KarteArgumente, type Kontext } from "@/Atlas/Kart
 import Pfad from "@/Atlas/Karten/Pfad";
 import KnotenAtlas from "@/Ordnung/KnotenAtlas";
 import { Shell } from "@/Atlas/KontextMenü/methoden.tsx";
+import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
+
 
 import PaneItems from "../KontextMenü/PaneKontext";
 import NodeItems from "../KontextMenü/NodeKontext";
@@ -17,10 +19,13 @@ function menuPos(e: MouseEvent | React.MouseEvent, pad = 8) {
 }
 
 export default function Karte(argumente: KarteArgumente) {
-  const { nodes: originalNodes, edges, onNodesChange, onEdgesChange, onConnect, hintergrundFarbe, controlsLeft, scope } = argumente;
+  const { nodes: originalNodes, edges, onNodesChange, onEdgesChange, onConnect, onReconnect, hintergrundFarbe, controlsLeft, scope } = argumente;
   const [menu, setMenu] = useState<Kontext>();
   const { screenToFlowPosition } = useReactFlow();
   const ref = useRef<HTMLDivElement | null>(null);
+  const selectionEnabled = scope !== "defined";
+  const setSelectionSnapshot = useKartenStore(s => s.setSelectionSnapshot);
+  const clearSelectionSnapshot = useKartenStore(s => s.clearSelectionSnapshot);
 
   const onPaneClick = useCallback(() => setMenu(undefined), []);
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
@@ -35,6 +40,14 @@ export default function Karte(argumente: KarteArgumente) {
     event.preventDefault();
     setMenu({ variante: "Pane", pos: menuPos(event), scope, onClick: onPaneClick });
   }, [onPaneClick, scope]);
+  const onSelectionChange = useCallback((params: { nodes: Node[]; edges: Edge[] }) => {
+    if (!selectionEnabled) return;
+    setSelectionSnapshot({
+      nodeIds: (params.nodes ?? []).map(n => n.id),
+      edgeIds: (params.edges ?? []).map(e => e.id),
+    });
+  }, [selectionEnabled, setSelectionSnapshot]);
+
 
   const nodes = useMemo(() => {
     return originalNodes.map(node => {
@@ -42,6 +55,7 @@ export default function Karte(argumente: KarteArgumente) {
         ...node,
         deletable: scope === "private" ? true : false,
         draggable: scope === "defined" ? false : true,
+        selectable: scope !== "defined",
       };
     });
   }, [originalNodes, scope]);
@@ -55,6 +69,7 @@ export default function Karte(argumente: KarteArgumente) {
       break;
     }
   }
+
   
   console.log("Karte: ",nodes,edges)
 
@@ -67,10 +82,16 @@ export default function Karte(argumente: KarteArgumente) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={onReconnect}
         onPaneClick={onPaneClick}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         onPaneContextMenu={onPaneContextMenu}
+        onSelectionChange={onSelectionChange}
+        elementsSelectable={selectionEnabled}
+        selectionOnDrag={selectionEnabled}
+        multiSelectionKeyCode="Control"
+        panOnDrag={!selectionEnabled ? true : undefined}
         fitView
       >
         <Panel position="top-center">

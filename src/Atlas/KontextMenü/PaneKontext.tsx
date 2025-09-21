@@ -4,12 +4,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { type XYPosition, type EdgeChange, Position, useReactFlow } from "@xyflow/react";
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { type Lebensraum } from "@/Atlas/Karten.types.ts";
+import { KartenDefinition, KNOTEN, type Lebensraum } from "@/Atlas/Karten.types.ts";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
-import InstanzierbareKnotenDialogContent from '@/Atlas/Karten/InstanzierbareKnotenDialog';
 import ListenDialog from "@/Ordnung/Dialoge/ListenDialog";
 import { ListenAktion } from "@/Ordnung/Dialoge.types";
+import { LogikTabelleDaten } from "../Knoten.types";
 
 
 
@@ -39,14 +39,14 @@ export default function PaneItems( argument: {
 
   return (
     <div className="min-w-44">
-      <Dialog
+{/*      <Dialog
         open={open}
         onOpenChange={(next) => {
           setOpen(next);
           if (!next) onClose?.();
         }}
-      ><NeuerKnoten open={open} setOpen={setOpen} scope={scope} position={position} screenToFlowPosition={screenToFlowPosition} /></Dialog>
-
+      ></Dialog> */}
+      <NeuerKnoten open={open} setOpen={setOpen} scope={scope} position={position} screenToFlowPosition={screenToFlowPosition} />
       <Item onSelect={onClose}>Einfügen</Item>
       <Item onSelect={onClose}>Exportieren</Item>
       <Item onSelect={logKartenDefinition}>Karten-Definition loggen</Item>
@@ -62,7 +62,7 @@ function NeuerKnoten({open, setOpen, scope, position, screenToFlowPosition}:{
   position: XYPosition;
   screenToFlowPosition: (p:XYPosition) => XYPosition,
 }) {
-  const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKartenKnoten, onNodesChange } = useKartenStore();
+  const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKnoten, addKartenKnoten, onNodesChange } = useKartenStore();
   
   const instanziierbareKarten = Object.values(db).filter(
     (karte) =>
@@ -70,39 +70,42 @@ function NeuerKnoten({open, setOpen, scope, position, screenToFlowPosition}:{
       aktiveKarteId &&
       karte.id !== aktiveKarteId &&
       !hatZirkulaereAbhaengigkeit(aktiveKarteId, karte.id)
-  );
-  const aktion = instanziierbareKarten.map( karte => {
-    return {
-      name: karte.name,
-      onSelect: (e: Event) => {
-        // TODO KartenKnoten erzeugen auf aktueller Karte
-      } 
-    } as ListenAktion
-  }
-  )
+  ); instanziierbareKarten.push({
+    id: "LT",
+    name: "LogikTabelle",
+  } as KartenDefinition)
+
   function onClick(e:React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     setOpen(true);
+    console.log("neuer Knoten wird ausgewählt")
   };
   function onClose() {
     setOpen(false);
   };
   function handlePick(id: string) {
-    // position sind die client/screen coords aus dem Kontextmenü
     const flowPos = screenToFlowPosition(position);
-    addKartenKnoten(id, flowPos);
-    setOpen(false);
+    if (id==="LT") {
+      console.log("Knoten hinzufügen")
+      const data = {ergebnisse: [false,false,false,false]} as LogikTabelleDaten
+      addKnoten(KNOTEN.LogikTabelle,flowPos,data)
+    } else {
+      console.log("Karte hinzufügen")
+      addKartenKnoten(id, flowPos);
+      setOpen(false);
+    }
   };
 
   if (scope !== "defined") {
     return (
-      <>
+      <>{/*
         <DialogTrigger asChild>
           <Item onClick={onClick} >
             Neuer Knoten
           </Item>
-        </DialogTrigger>
+        </DialogTrigger> */}
+        <Item onClick={onClick}>Neuer Knoten</Item>
 
         {open && (
           <ListenDialog 

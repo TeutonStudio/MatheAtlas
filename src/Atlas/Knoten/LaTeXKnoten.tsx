@@ -14,7 +14,7 @@ import {
   Fluß, DatenTypen, Variante,
   type AnschlussNachSeite,
 } from "@/Atlas/Anschlüsse.types.ts";
-import { Anschluss, MathRenderer } from "@/Atlas/Knoten/methoden.tsx";
+import KnotenDebug, { Anschluss, MathRenderer } from "@/Atlas/Knoten/methoden.tsx";
 
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
 
@@ -28,6 +28,10 @@ export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   // BasisKnoten kümmert sich um Titel/Badge/Anschlüsse.
   const argument = {...argumente}; argument.data = basis//{ id, anschlüsse, style, selected, data: basis, zIndex: 4, dragging, draggable, selectable, deletable, type };
   
+  if (KnotenDebug) {
+    console.log("selektiert LaTeXKnoten",argumente.selected,argumente.id)
+    // Debug
+  }
   return (
     <BasisKnoten {...argument}>
       <MathRenderer latex={argumente.data.latex} />

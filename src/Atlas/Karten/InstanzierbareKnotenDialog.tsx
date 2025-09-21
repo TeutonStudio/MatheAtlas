@@ -17,7 +17,7 @@ const vordefinierteKnoten = [
   { id: 'schnittstelle', name: 'Schnittstellen Knoten' },
 ];
 
-export default function InstanzierbareKnotenDialogContent({
+function InstanzierbareKnotenDialogContent({
   position,
   onClose,
 }: {

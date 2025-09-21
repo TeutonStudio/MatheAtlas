@@ -13,6 +13,18 @@ import { SchnittstellenListe } from "./SchnittstellenListe.tsx";
 
 export default function KnotenAtlas() {
   const { aktiveKarteId, findKarte, geöffnet } = useKartenStore();
+  const selection = useKartenStore(s => s.selection);
+  const deleteSelected = useKartenStore(s => s.deleteSelected);
+  const duplicateSelected = useKartenStore(s => s.duplicateSelected);
+  const groupSelected = useKartenStore(s => s.groupSelected);
+  const copySelectionToNewCard = useKartenStore(s => s.copySelectionToNewCard);
+  const moveSelectionToNewCard = useKartenStore(s => s.moveSelectionToNewCard);
+
+  const selectedCount = (selection?.nodeIds?.length ?? 0) + (selection?.edgeIds?.length ?? 0);
+  const modus: 'none' | 'single' | 'multi' =
+    selectedCount === 0 ? 'none' : selectedCount === 1 ? 'single' : 'multi';
+
+
 
   const aktiveKarte = aktiveKarteId ? findKarte(aktiveKarteId) : null;
   const offeneKarte = aktiveKarteId ? geöffnet[aktiveKarteId] : undefined;

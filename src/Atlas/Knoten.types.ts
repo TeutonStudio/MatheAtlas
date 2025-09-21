@@ -50,6 +50,7 @@ export type KartenKnotenDaten = BasisKnotenDaten & {
 // Argumente für gerenderte Knoten
 type KnotenArgumente = NodeProps & {
   children?: React.ReactNode;
+  selected?: boolean;
   style?: React.CSSProperties;
 };
 

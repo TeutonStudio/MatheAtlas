@@ -13,7 +13,7 @@ import {
   type AnschlussNachSeite,
   Fluß, DatenTypen, Variante,
 } from "@/Atlas/Anschlüsse.types.ts";
-import { type KnotenArgumente, Anschluss } from "@/Atlas/Knoten/methoden.tsx";
+import KnotenDebug, { type KnotenArgumente, Anschluss } from "@/Atlas/Knoten/methoden.tsx";
 
 import Knoten from "@/Atlas/Knoten/Knoten.tsx";
 
@@ -26,6 +26,10 @@ export default function BasisKnoten(argumente: BasisKnotenArgumente) {
   const basis = { title: data.title, badge: data.badge, anschlüsse } as BasisKnotenDaten;
   const argument = {id, basis, style: style ?? styleErsatz, selected, children} as KnotenArgumente;
 
+  if (KnotenDebug) {
+    console.log("selektiert BasisKnoten",selected,id)
+    // Debug
+  }
   return (
     <Knoten {...argument} />
   );

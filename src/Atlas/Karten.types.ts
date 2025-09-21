@@ -1,6 +1,6 @@
 
 // ./src/Karten/Karte.types.ts
-import { type NodeTypes, type Node, type Edge, type OnNodesChange, type OnEdgesChange, type OnConnect } from "@xyflow/react"
+import { type NodeTypes, type Node, type Edge, type OnNodesChange, type OnEdgesChange, type OnConnect, type OnReconnect } from "@xyflow/react"
 
 import { DatenTypen, Fluß } from "@/Atlas/Anschlüsse.types.ts";
 
@@ -26,6 +26,7 @@ export type KarteArgumente = {
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
+  onReconnect: OnReconnect;
   hintergrundFarbe?: string;
   // Prop für die dynamische X-position der Controls, abhängig vom Sidebar-Status
   controlsLeft?: string;

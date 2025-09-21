@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils"; // falls nicht vorhanden, entfernen
 import { KartenDefinition } from "@/Atlas/Karten.types";
 import { BestaetigungsDialog } from "@/Ordnung/Dialoge/BestätigungsDialog";
-import { ListenAktion, ListenDialogArgumente } from "../Dialoge.types";
+import { type ListenAktion, type ListenDialogArgumente } from "../Dialoge.types";
 
 
 /* -------------------- Komponente -------------------- */
@@ -122,7 +122,7 @@ export function ListenDialog(props: ListenDialogArgumente) {
         <div className="mt-2 rounded-xl border bg-secondary ring-1 ring-inset ring-border shadow-inner">
           <ScrollArea className="h-72">
             {props.mode === "pick" ? (
-              <PickListe items={items} onPick={props.onPick} />
+              <PickListe items={items} onPick={(id:string) => {props.onPick(id); console.log(id,"wurde ausgewählt")}} />
             ) : (
               <ManageListe
                 items={items}
@@ -205,8 +205,12 @@ function PickListe(props: { items: KartenDefinition[]; onPick: (id: string) => v
     <div className="py-2">
       {props.items.map(karte => (
         <button
+          type="button"
           key={karte.id}
-          onClick={() => props.onPick(karte.id)}
+          onClick={(e) => {
+            console.log("Knoten ausgewählt")
+            props.onPick(karte.id)
+          }}
           className="group flex w-full items-center justify-between px-4 py-2 hover:bg-accent rounded-md text-left"
         >
           <span>{karte.name}</span>

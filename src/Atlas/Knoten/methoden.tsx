@@ -10,6 +10,9 @@ import {
 } from "@/Atlas/Anschlüsse.types.ts";
 import { BlockMath, InlineMath } from "react-katex";
 
+const KnotenDebug = false
+export default KnotenDebug
+
 /**
  * Hilfsfunktion zum Erstellen einer sauberen Anschluss-Definition.
  * @param id - Der interne Name des Anschlusses.
@@ -43,8 +46,9 @@ export function Anschluss(
 export type KnotenArgumente = {
     id: string, 
     basis: BasisKnotenDaten,
-    style: React.CSSProperties, 
-    children: React.ReactNode
+    style?: React.CSSProperties, 
+    selected?: boolean;
+    children?: React.ReactNode
 }
 
 

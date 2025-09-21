@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
-import { ListenDialog, type ListenAktion } from "@/Ordnung/Dialoge/ListenDialog";
+import { ListenDialog } from "@/Ordnung/Dialoge/ListenDialog";
+import { type ListenAktion, type ListenDialogArgumente } from "../Dialoge.types";
 
 export function PrivateKartenDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { db, umbenennenKarte, deleteKarte, currentUser } = useKartenStore(state => ({
