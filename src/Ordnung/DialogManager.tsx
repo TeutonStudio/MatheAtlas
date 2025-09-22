@@ -1,9 +1,9 @@
 import React from 'react';
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
-import { SpeicherDialog } from "@/Ordnung/KontextMenü/SpeicherDialog.tsx";
+import { SpeicherDialog } from "@/Ordnung/Dialoge/SpeicherDialog";
 //import { UmbenennenDialog } from "@/Ordnung/KontextMenü/UmbenennenDialog.tsx";
 
-export function DialogManager() {
+function DialogManager() {
   const anfragen = useKartenStore(s => s.dialogAnfragen);
   const aktuelleAnfrage = anfragen.length > 0 ? anfragen[0] : null;
 

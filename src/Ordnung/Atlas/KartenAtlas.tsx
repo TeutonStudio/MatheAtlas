@@ -1,3 +1,5 @@
+/// ./src/Ordnung/Atlas/KartenAtlas.tsx
+
 import React from "react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
@@ -6,7 +8,7 @@ import {
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 import BenutzerFußleiste from "@/Ordnung/Benutzer/Benutzer.tsx";
 import { type Bibliothek } from "@/Ordnung/programm.types.ts";
-import { knotenBibliothek } from "@/Atlas/Karten/KartenVorlage.ts";
+import { knotenBibliothek } from "@/Atlas/Karten/Vorlagen/KartenVorlage";
 
 // RADIX Icons statt Lucide
 import {
@@ -14,8 +16,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
 } from "@radix-ui/react-icons";
-import { vordefiniert_namensraum } from "@/Atlas/Karten/Vorlagen/methoden";
-import { KartenDefinition } from "@/Atlas/Karten.types";
+
 
 export default function KartenAtlas(): React.ReactElement {
   const db = useKartenStore(s => s.db);
@@ -31,7 +32,6 @@ export default function KartenAtlas(): React.ReactElement {
       onClick: () => oeffneKarte(karte.id, karte.name),
     }));
 
-  // Platzhalter für öffentliche Karten, aktuell leer
   const oeffentlicheKarten = Object.values(db)
     .filter(karte => karte.scope === "public")
     .map(karte => ({ 
@@ -207,30 +207,95 @@ export function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
 
 function KnotenBibliothek() {
   const oeffneKarte = useKartenStore(s => s.oeffneBibliotheksKarte);
-  const items = Object.values(knotenBibliothek).map(karte => ({
-    id: karte.id,
-    label: karte.name,
-    pfad: karte.pfad.split("/"),
-    onClick: () => oeffneKarte(karte.id,karte.name), //karte.name),
-  }));
-  const hierarchie_tiefe = Math.max(...items.map(k => k.pfad.length))
-  let baum: Record<number, string[]> = {}
-  for (let i = 1; i < hierarchie_tiefe; i++) {
-    for (const item of items) {
-      baum[i] = item.pfad.slice(1,i)
-    }
-  };
 
+  // 1) Items aus der Bibliothek in strukturierte BibliothekItems umwandeln
+  const items: BibliothekItem[] = Object.values(knotenBibliothek)
+    .filter(karte => karte.scope === "defined")
+    .map(karte => {
+      // pfad z.B. "Knoten Bibliothek/Logik/logik-und-knoten"
+      const segs = (karte.pfad ?? "").split("/").map(s => s.trim()).filter(Boolean);
+      // erstes Segment ignorieren
+      const segsOhneErstes = segs.slice(1);
+      // letztes Segment ist der Name der Karte
+      const label = segsOhneErstes.at(-1) ?? karte.name ?? "Unbenannt";
+      // die mittleren Segmente bilden den Gruppenpfad
+      const gruppenPfad = segsOhneErstes.slice(0, -1);
+
+      return {
+        id: karte.id,
+        label,
+        pfad: gruppenPfad,
+        onClick: () => oeffneKarte(karte.id, label),
+      } as BibliothekItem;
+    });
+
+  // 2) Baum konstruieren
+  const baum = baueKnotenBaum(items);
 
   return (
     <BibliothekEinheit
-      label="Knoten Bibliotheken"
+      label="Knoten Bibliothek"
       action="Bibliothek hinzufügen"
     >
-    
-      <GroupList items={items} />
+      <KnotenBaumGruppe gruppe={baum} ebene={0} />
     </BibliothekEinheit>
   );
 }
 
+
+function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; ebene: number; titel?: string }) {
+  // Gruppe-Header nur rendern, wenn es einen Titel gibt (Root hat keinen)
+  const [offen, setOffen] = React.useState(true);
+
+  const hatUntergruppen = Object.keys(gruppe._gruppen).length > 0;
+
+  return (
+    <div className="space-y-1">
+      {titel ? (
+        <div className="flex items-center px-2">
+          <button
+            type="button"
+            className="flex items-center gap-1 text-sm font-medium px-2 py-1 rounded hover:bg-accent"
+            style={{ paddingLeft: Math.max(0, (ebene - 1)) * 12 }}
+            onClick={() => setOffen(v => !v)}
+          >
+            {offen ? <ChevronDownIcon width={16} height={16} /> : <ChevronLeftIcon width={16} height={16} />}
+            <span>{titel}</span>
+          </button>
+        </div>
+      ) : null}
+
+      {(titel ? offen : true) && (
+        <div className="space-y-1">
+          {/* Items dieser Ebene */}
+          {gruppe._items.length > 0 && (
+            <ul className="px-2 space-y-1">
+              {gruppe._items.map(it => (
+                <li key={it.id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 rounded-md hover:bg-accent"
+                    style={{ paddingLeft: ebene * 16 }}
+                    onClick={it.onClick}
+                  >
+                    {it.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Untergruppen rekursiv */}
+          {hatUntergruppen && (
+            <div className="space-y-1">
+              {Object.entries(gruppe._gruppen).map(([name, sub]) => (
+                <KnotenBaumGruppe key={name} gruppe={sub} ebene={ebene + 1} titel={name} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 

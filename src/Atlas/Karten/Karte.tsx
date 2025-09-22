@@ -1,9 +1,10 @@
-// ./src/Atlas/Karten/Karte.tsx
+/// ./src/Atlas/Karten/Karte.tsx
+
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { ReactFlow, Controls, MiniMap, Background, useReactFlow, BackgroundVariant, Panel, type Node, type Edge, XYPosition } from "@xyflow/react";
 import { KnotenVarianten, type KarteArgumente, type Kontext } from "@/Atlas/Karten.types";
 import Pfad from "@/Atlas/Karten/Pfad";
-import KnotenAtlas from "@/Ordnung/KnotenAtlas";
+import KnotenAtlas from "@/Ordnung/Atlas/KnotenAtlas";
 import { Shell } from "@/Atlas/KontextMenü/methoden.tsx";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 
@@ -19,7 +20,7 @@ function menuPos(e: MouseEvent | React.MouseEvent, pad = 8) {
 }
 
 export default function Karte(argumente: KarteArgumente) {
-  const { nodes: originalNodes, edges, onNodesChange, onEdgesChange, onConnect, onReconnect, hintergrundFarbe, controlsLeft, scope } = argumente;
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onReconnect, hintergrundFarbe, controlsLeft, scope } = argumente;
   const [menu, setMenu] = useState<Kontext>();
   const { screenToFlowPosition } = useReactFlow();
   const ref = useRef<HTMLDivElement | null>(null);
@@ -48,25 +49,15 @@ export default function Karte(argumente: KarteArgumente) {
     });
   }, [selectionEnabled, setSelectionSnapshot]);
 
-
-  const nodes = useMemo(() => {
-    return originalNodes.map(node => {
-      return {
-        ...node,
-        deletable: scope === "private" ? true : false,
-        draggable: scope === "defined" ? false : true,
-        selectable: scope !== "defined",
-      };
-    });
-  }, [originalNodes, scope]);
-
-  for (const n of nodes ?? []) {
-    const x = Number((n as any)?.position?.x);
-    const y = Number((n as any)?.position?.y);
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      console.warn("Bad node position", n.id, n.position);
-      n.position = { x: 0, y: 0 };
-      break;
+  if (false) {
+    for (const n of nodes ?? []) {
+      const x = Number((n as any)?.position?.x);
+      const y = Number((n as any)?.position?.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        console.warn("Bad node position", n.id, n.position);
+        n.position = { x: 0, y: 0 };
+        break;
+      }
     }
   }
 

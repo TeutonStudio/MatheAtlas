@@ -5,7 +5,7 @@ import { Position } from "@xyflow/react";
 
 import { Badge } from "@/components/ui/badge";
 
-import KnotenDebug, { type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
+import KnotenDebug, { KnotenAbzeichen, type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
 import { erhalteAnschlussNachSeite } from "@/Atlas/Anschlüsse/methoden.ts";
 import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
@@ -72,7 +72,29 @@ export default function Knoten(argumente: KnotenArgumente): React.JSX.Element {
         userSelect: "none",
       }}>
       <span>{title}</span>
-      {badge ? <Badge variant="outline">{badge}</Badge> : null}
+      {/*badge ? (
+        <button
+          type="button"
+          onClick={onBadgeClick}
+          title="Karte öffnen"
+          aria-label="Karte öffnen"
+          style={{
+            cursor: onBadgeClick ? "pointer" : "default",
+            border: "none",
+            background: "transparent",
+            padding: 0,
+          }}
+        >
+          <Badge
+            variant="outline"
+            className="transition-opacity hover:opacity-80"
+          >
+            {badge}
+          </Badge>
+        </button>
+      ) : null*/}
+      {/*badge ? <Badge variant="outline">{badge}</Badge> : null*/}
+      <KnotenAbzeichen badge={badge} />
     </div>
   ) : null;
   

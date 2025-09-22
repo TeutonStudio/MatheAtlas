@@ -1,4 +1,4 @@
-// ./src/Atlas/Knoten.types.ts
+/// ./src/Atlas/Knoten.types.ts
 
 import type React from "react";
 import { type NodeProps } from "@xyflow/react";
@@ -50,8 +50,9 @@ export type KartenKnotenDaten = BasisKnotenDaten & {
 // Argumente für gerenderte Knoten
 type KnotenArgumente = NodeProps & {
   children?: React.ReactNode;
-  selected?: boolean;
+  selected?: boolean; // redundant, breitgestellt durch NodeProps
   style?: React.CSSProperties;
+  // onBadgeClick?: () => void;
 };
 
 export type BasisKnotenArgumente = KnotenArgumente & {

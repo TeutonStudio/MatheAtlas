@@ -18,157 +18,18 @@ import { nanoid } from "nanoid";
 import { toast } from "sonner";
 
 import { KNOTEN, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
-import knotenBibliothek, { vorlageLeer } from "@/Atlas/Karten/KartenVorlage.ts";
+import knotenBibliothek, { vorlageLeer } from "@/Atlas/Karten/Vorlagen/KartenVorlage";
 import { type User } from "@/Ordnung/programm.types.ts";
 import { hashPassword, generateUserId } from "@/Ordnung/Benutzer/utils";
 import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
 import { KartenKnotenDaten } from "@/Atlas/Knoten.types";
+import {
+  cloneNodes, cloneEdges, indexById, findBibliotheksKarte, reconnectWithSingleTarget, addEdgeWithSingleTarget,
+  collectDirtyIds, closeAllExceptIds, forceOpen, promptMultiSaveOrDiscard,
+  decorateNodesForScope
+} from "@/Ordnung/DatenBank/methoden.ts"
+import { KartenState, OffeneKarte, DialogAnfrageUmbenennen } from "../datenbank.types";
 
-
-// Hilfsfunktion: finde Bibliothekskarte per slug ODER per id
-function findBibliotheksKarte(id: string): KartenDefinition | undefined {
-  console.log("öffne Karte "+id)
-  function CheckNodes(_byKey: KartenDefinition): KartenDefinition {
-    const label = "Mit dem ungeöffnetem Inhalt: "
-    console.log(label,_byKey.nodes)
-    return _byKey
-  }
-  let byKey = knotenBibliothek[id] as KartenDefinition | undefined;
-  const namensliste = Object.values(knotenBibliothek).map( k => k.name) 
-  
-  if (byKey) { 
-    return CheckNodes(byKey)
-  } else { byKey = Object.values(knotenBibliothek).find(k => k.id === id) ?? undefined };
-  if (byKey) { 
-    return CheckNodes(byKey)
-  } else { 
-    console.log(id+" existiert nicht in "+namensliste)
-    return undefined
-  };
-}
-
-
-// ---------- Types ----------
-type OffeneKarte = {
-  nodes: Node[];
-  edges: Edge[];
-  dirty: boolean;
-  //readonly?: boolean; // neu
-  scope: "private" | "public" | "defined";
-};
-
-type SelectionSnapshot = {
-  nodeIds: string[];
-  edgeIds: string[];
-};
-
-type Verlauf = { id: string; name: string };
-
-type DialogAnfrageSpeichern = {
-  type: 'speichern';
-  cardId: string;
-  cardName: string;
-  onSave: () => void;
-  onDiscard: () => void;
-  onCancel: () => void;
-};
-
-type DialogAnfrageUmbenennen = {
-  type: 'umbenennen';
-  cardId: string;
-  cardName: string;
-  onClose: () => void;
-};
-
-type DialogAnfrage = DialogAnfrageSpeichern | DialogAnfrageUmbenennen;
-
-
-// ---------- Utils ----------
-const cloneNodes = (ns: Node[]) => structuredClone(ns).map(n => ({ ...n, draggable: true }));
-const cloneEdges = (es: Edge[]) => structuredClone(es);
-
-
-
-// ---------- Store-Signatur ----------
-export type KartenState = {
-  db: Record<string, KartenDefinition>;
-  verlauf: Verlauf[];
-  geöffnet: Record<string, OffeneKarte>;
-  aktiveKarteId: string | null;
-  dialogAnfragen: DialogAnfrage[];
-  users: User[];
-  currentUser: User | null;
-  
-  // User Management
-  registerUser: (name: string, password: string) => Promise<boolean>;
-  login: (name: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateUser: (userId: string, data: Partial<User>) => void;
-  deleteUser: (userId: string) => void;
-  assignOrphanedCardsToUser: (userId: string, cardIds: string[]) => void;
-  deleteOrphanedCards: (cardIds: string[]) => void;
-  checkForOrphanedCards: () => boolean;
-
-  // Public
-  publishCard: (kartenId: string) => void;
-  unpublishCard: (kartenId: string) => void;
-  
-  // Queries
-  findKarte: (id: string) => KartenDefinition | undefined;
-  hatZirkulaereAbhaengigkeit: (startKartenId: string, zielKartenId: string) => boolean;
-
-  // Lifecycle
-  oeffneKarte: (id: string, name?: string) => void;
-  oeffneBibliotheksKarte: (id: string, name?: string) => void;
-  erstelleNeueKarte: () => void;
-  oeffneUmbenennenDialog: (kartenId: string) => void;
-  umbenennenKarte: (kartenId: string, neuerName: string) => void;
-  geheZurückZu: (id: string) => void;
-  processNextDialog: () => void;
-  close: (id?: string) => void;
-  save: (id?: string) => void;
-  saveAndClose: (id?: string) => void;
-  saveAndReload: (id?: string) => void;
-  deleteKarte: (kartenId: string) => void;
-
-  // ReactFlow Hooks
-  onNodesChange: OnNodesChange;
-  onEdgesChange: OnEdgesChange;
-  onConnect: (connection: Connection) => void;
-  onReconnect: (oldEdge: Edge, connection: Connection) => void;
-
-  updateNodeData: (nodeId: string, updater: (prevData: any) => any) => void;
-
-  // Karten-Knoten Logik
-  addKnoten: (knoten: KNOTEN, position: XYPosition, data: any) => void;
-  addKartenKnoten: (kartenIdToAdd: string, position: XYPosition) => void;
-
-  // Import/Export
-  importFromJSON: (json: string) => void;
-  exportToJSON: () => string;
-
-  // Schnittstellen mutieren
-  addSchnittstelle: (karteId: string, schnittstelle: Schnittstelle) => void;
-  removeSchnittstelle: (karteId: string, schnittstelleId: string) => void;
-
-  selection: SelectionSnapshot;     
-  setSelectionSnapshot: (s: SelectionSnapshot) => void; 
-  clearSelectionSnapshot: () => void; 
-  deleteSelected: () => void;        // Löschen
-  duplicateSelected: () => void;     // Duplizieren
-  groupSelected: () => void;         // “Gruppieren” (vorerst Platzhalter)
-  copySelectionToNewCard: () => void; // Zu neuer Karte kopieren
-  moveSelectionToNewCard: () => void; // Zu neuer Karte verschieben
-
-};
-
-
-// ---------- Store ----------
-function indexById(rec: Record<string, KartenDefinition>) {
-  const out: Record<string, KartenDefinition> = {};
-  for (const k of Object.values(rec)) out[k.id] = k;
-  return out;
-}
 
 export const useKartenStore = create<KartenState>()(
   persist(
@@ -442,15 +303,10 @@ export const useKartenStore = create<KartenState>()(
         // console.log(`[KartenStore.oeffneBibliotheksKarte] Öffne Bibliothekskarte: ${bibliotheksKarte.name} (ID: ${bibliotheksKarte.id})`);
 
         const openId = bibliotheksKarte.id;
-        console.log("geöffnet: ",bibliotheksKarte.nodes, bibliotheksKarte.edges)
+        //console.log("geöffnet: ",bibliotheksKarte.nodes, bibliotheksKarte.edges)
 
-        const nodes = structuredClone(bibliotheksKarte.nodes ?? []).map(n => ({
-          ...n,
-          deletable: bibliotheksKarte.scope === "private",
-          draggable: bibliotheksKarte.scope !== "defined",
-          selectable: bibliotheksKarte.scope !== "defined",
-        })); console.log("dupliziert: ",nodes)
         //console.log("[KartenStore.oeffneBibliotheksKarte] Geklonte Knoten für Bibliothekskarte:", nodes);
+        const nodes = decorateNodesForScope(structuredClone(bibliotheksKarte.nodes ?? []),bibliotheksKarte.scope)
         const edges = structuredClone(bibliotheksKarte.edges ?? []);
 
         const neueGeöffnete: Record<string, OffeneKarte> = { ...geöffnet };
@@ -580,22 +436,27 @@ export const useKartenStore = create<KartenState>()(
         toast.success(`Karte zu "${neuerName}" umbenannt.`);
       },
 
-      geheZurückZu: (id) => {
-        const { verlauf, db, geöffnet } = get();
-        if (!db[id] && !geöffnet[id]) return; // auch ephemer erlauben
+      geheZurückZu: (id: string) => {
+        const { verlauf, geöffnet, db } = get();
         const idx = verlauf.findIndex(v => v.id === id);
         if (idx === -1) return;
-        const neuerVerlauf = verlauf.slice(0, idx + 1);
-      
-        // Wenn in db existiert: normale Öffnung, sonst read-only erneuern
-        if (db[id]) {
-          set({ verlauf: neuerVerlauf });
-          get().oeffneKarte(id);
-          return;
+
+        const keepIds = verlauf.slice(0, idx + 1).map(v => v.id);
+        const dropIds = verlauf.slice(idx + 1).map(v => v.id);
+        const dirty = collectDirtyIds(db, geöffnet);
+        const dirtyToClose = dirty.filter(d => dropIds.includes(d));
+
+        const proceed = () => {
+          closeAllExceptIds(get,set,keepIds);
+          // aktive Karte setzen auf id
+          forceOpen(get,set,id);
+        };
+
+        if (dirtyToClose.length > 0) {
+          promptMultiSaveOrDiscard(get,set,dirtyToClose, proceed);
+        } else {
+          proceed();
         }
-      
-        // Ephemere Bibliothekskarte erneut aktivieren
-        set({ verlauf: neuerVerlauf, aktiveKarteId: id });
       },
 
       processNextDialog: () => {
@@ -957,6 +818,45 @@ export const useKartenStore = create<KartenState>()(
       setSelectionSnapshot: (s) => set({ selection: { nodeIds: [...s.nodeIds], edgeIds: [...s.edgeIds] } }),
       clearSelectionSnapshot: () => set({ selection: { nodeIds: [], edgeIds: [] } }),
 
+      openFromAtlas: (targetId: string, name?: string) => {
+        const { db, geöffnet } = get();
+        if (!db[targetId] && !geöffnet[targetId]) return;
+
+        const dirty = collectDirtyIds(db, geöffnet);
+        const willClose = Object.keys(geöffnet).filter(id => id !== targetId && geöffnet[id]);
+        const dirtyToClose = dirty.filter(id => willClose.includes(id));
+
+        const proceed = () => {
+          // wirklich alles schließen außer target
+          closeAllExceptIds(get,set,[targetId]);
+          // target öffnen und Pfad auf nur target setzen
+          forceOpen(get,set,targetId, name);
+          set({ verlauf: [{ id: targetId, name: name ?? db[targetId]?.name ?? "Unbenannt" }] });
+        };
+
+        if (dirtyToClose.length > 0) {
+          promptMultiSaveOrDiscard(get,set,dirtyToClose, proceed);
+        } else {
+          proceed();
+        }
+      },
+
+      // NEU: Öffnen via Kartenknoten-Badge (hängt an, Pfad erweitert)
+      openFromKartenKnoten: (parentId: string, childId: string) => {
+        const { db, geöffnet, verlauf } = get();
+        if (!db[childId] && !geöffnet[childId]) return;
+
+        // nichts schließen, nur anhängen/aktivieren
+        forceOpen(get,set,childId);
+
+        // Pfad erweitern, aber Duplikate vermeiden
+        const idx = verlauf.findIndex(v => v.id === childId);
+        const name = db[childId]?.name ?? verlauf[idx]?.name ?? "Unbenannt";
+        const neuerVerlauf = idx === -1 ? [...verlauf, { id: childId, name }] : verlauf.slice(0, idx + 1);
+
+        set({ verlauf: neuerVerlauf, aktiveKarteId: childId });
+      },
+
 
       deleteSelected: () => {
         const { aktiveKarteId, geöffnet, selection } = get();
@@ -1012,32 +912,4 @@ export const useKartenStore = create<KartenState>()(
     { name: "karten-db" }
   )
 );
-
-// Entfernt alle Edges, die auf dasselbe Ziel-Handle zeigen, und fügt die neue Verbindung hinzu.
-function addEdgeWithSingleTarget(conn: Connection, edges: Edge[]): Edge[] {
-  if (!conn.target || !conn.targetHandle) return edges;
-
-  // Optional: nur für Fluß.Eingang erzwingen
-  // const parsed = erhalteAnschluss(conn.targetHandle);
-  // const fluss = parsed[ID_TEILE_INDICES.FLUSS];
-  // if (fluss !== "Eingang") return addEdge({ ...conn, id: `e-${nanoid()}` }, edges);
-
-  const cleaned = edges.filter(
-    e => !(e.target === conn.target && e.targetHandle === conn.targetHandle)
-  );
-  return addEdge({ ...conn, id: `e-${nanoid()}` }, cleaned);
-}
-
-// Reconnect-Version: aktualisiert die bestehende Edge und räumt Konflikte am neuen Ziel auf
-function reconnectWithSingleTarget(oldEdge: Edge, conn: Connection, edges: Edge[]): Edge[] {
-  if (!conn.target || !conn.targetHandle) return edges;
-
-  // erst alte Edge versetzen
-  const updated = reconnectEdge(oldEdge, conn, edges);
-
-  // dann alle anderen Edges killen, die dasselbe target/handle blockieren
-  return updated.filter(
-    e => e.id === oldEdge.id || !(e.target === conn.target && e.targetHandle === conn.targetHandle)
-  );
-}
 

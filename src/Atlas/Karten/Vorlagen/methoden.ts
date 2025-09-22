@@ -76,6 +76,19 @@ function _stelle(
 }
 
 
+function _karte(
+    id:string,
+    position:[number,number], 
+    karteID: string,
+) {
+  return {
+    id, type: KNOTEN.KartenKnoten, 
+    position: { x: position[0], y: position[1] }, 
+    data: { karteID },
+  }
+}
+
+
 type KantenOpts = {
   sourceIndex?: number; // nur bei Variante.Multi relevant
   targetIndex?: number; // nur bei Variante.Multi relevant
@@ -231,6 +244,57 @@ export function LogikKarte_einzelarg(
     } as KartenDefinition
 }
 
+
+
+export function MengenKarte_doppelarg(
+    name:string,
+    operation:string,
+    tabelle:[boolean,boolean,boolean,boolean],
+    ausgabe: (wert1: string, wert2: string) => string,
+ ): KartenDefinition {
+    const vollerName = "logik-"+name+"-knoten";
+    const input1 = "Eingabe A"
+    const input2 = "Eingabe B"
+
+    return {
+        id: "bib-"+vollerName,
+        name: "Mengen "+name.toUpperCase()+" Knoten",
+        pfad: "Knoten Bibliothek/Mengen/"+vollerName,
+        nodes: [
+            _schnittstelle("s1","E1", _pos(-1, 1),input1, Fluß.Eingang, DatenTypen.Menge),
+            _schnittstelle("s2","E2", _pos(1, 1), input2, Fluß.Eingang, DatenTypen.Menge),
+            _karte("k",_pos(0,-2),"bib-logik-und-knoten"),
+            /*_logik("l1",_pos(0,-2),{
+              [Position.Bottom]: [
+                Anschluss("El", DatenTypen.Menge, Fluß.Eingang, Variante.Einzel),
+                Anschluss("Er", DatenTypen.Menge, Fluß.Eingang, Variante.Einzel),
+              ],
+              [Position.Top]: [
+                Anschluss("Ao", DatenTypen.Menge, Fluß.Ausgang, Variante.Einzel),
+              ],
+            }, operation,"Logik",tabelle),*/
+            _schnittstelle("s3","A", _pos(0, -3), "Ausgabe", Fluß.Ausgang, DatenTypen.Menge, ausgabe(input1,input2)),
+        ],
+        edges: [
+            _kante("s1", "l1",DatenTypen.Menge,Variante.Einzel,"E1","El"),
+            _kante("s2", "l1",DatenTypen.Menge,Variante.Einzel,"E2","Er"),
+            _kante("l1", "s3",DatenTypen.Menge,Variante.Einzel,"Ao","A" ),
+        ],
+        schnittstellen: [
+          _stelle("s1",input1,Fluß.Eingang,DatenTypen.Menge),
+          _stelle("s2",input2,Fluß.Eingang,DatenTypen.Menge),
+          _stelle("s3","Ausgabe",  Fluß.Ausgang,DatenTypen.Menge),
+        ],
+        abhaengigkeiten: [
+          "bib-logik-und-knoten"
+        ],
+        wirdVerwendetIn: [],
+        scope: "defined",
+        userId: "system",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    } as KartenDefinition
+}
 
 export function LogikKarte_doppelarg(
     name:string,

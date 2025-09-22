@@ -15,7 +15,7 @@ import { Schnittstelle } from "../Karten.types";
 
 export default function KartenKnoten(argumente: KartenKnotenArgumente) {
   const { id, selected, data } = argumente
-  const { findKarte } = useKartenStore();
+  const { findKarte, aktiveKarteId, openFromKartenKnoten } = useKartenStore();
   const karte = findKarte(data.karteId);
 
   if (!karte) { return <div>Karte nicht gefunden</div> }
@@ -39,6 +39,10 @@ export default function KartenKnoten(argumente: KartenKnotenArgumente) {
     [Position.Left]: erhalte_anschluss_liste(gefiltert(Fluß.Eingang)),
     [Position.Right]: erhalte_anschluss_liste(gefiltert(Fluß.Ausgang)),
   } as AnschlussNachSeite;
+  const onBadgeClick = () => {
+      if (!aktiveKarteId) return;
+      openFromKartenKnoten(aktiveKarteId, data.karteId);
+    }
   
   const argument = {
     id, selected, data: { title: karte.name, badge: data.badge, anschlüsse, latex: "\\LaTeX" } as LaTeXKnotenDaten,

@@ -78,7 +78,7 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
   };
   
   const style = { minWidth: 280 } as React.CSSProperties;
-  const basis = { title: data.title ?? "Konjunktion", badge: data.badge ?? `Logik`, anschlüsse };
+  const basis = { title: data.title ?? "Logik Tabelle", badge: data.badge ?? `Logik`, anschlüsse };
   const basisArgument = {
     id, selected, style,
     data: basis,

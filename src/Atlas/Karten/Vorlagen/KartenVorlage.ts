@@ -1,13 +1,13 @@
 
-// ./src/Atlas/Karten/KartenVorlage.ts
+// ./src/Atlas/Karten/Vorlagem/KartenVorlage.ts
 
 import { Position } from "@xyflow/react";
 
-import { DatenTypen, Fluß, Variante } from "../Anschlüsse.types.ts";
+import { DatenTypen, Fluß, Variante } from "../../Anschlüsse.types.ts";
 import { type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
 
-import { _pos, _basis, _latex, _logik, _stelle, _schnittstelle, _kante, _anschlüsse, LogikKarte_einzelarg, LogikKarte_doppelarg } from "./Vorlagen/methoden.ts"
+import { _pos, _basis, _latex, _logik, _stelle, _schnittstelle, _kante, _anschlüsse, LogikKarte_einzelarg, LogikKarte_doppelarg, MengenKarte_doppelarg } from "./methoden.ts"
 import { disjunktion, konjunktion, negation, subjunktion } from "@/Daten/Formeln/logik.ts";
 import { _variable } from "@/Daten/Formeln/LaTeX.ts";
 //import { erhalteId } from "@/Atlas/Anschlüsse/methoden.ts";
@@ -60,7 +60,11 @@ export const knotenBibliothek: Record<string, KartenDefinition> = {
   "logik-und": LogikKarte_doppelarg("und","Konjunktion",[true,false,false,false],(a,b) => doppelargument(a,b,konjunktion,true)),
   "logik-oder": LogikKarte_doppelarg("oder","Disjunktion",[true,true,true,false],(a,b) => doppelargument(a,b,disjunktion,true)),
   "logik-dann": LogikKarte_doppelarg("dann","Implikation",[true,false,true,true],(a,b) => doppelargument(a,b,subjunktion,false)),
+
+  "mengen-vereinigung": MengenKarte_doppelarg("vereinigung","Vereinigung",[true,false,true,false],(a,b) => doppelargument(a,b,konjunktion,true)),
 }; export default knotenBibliothek
+
+
 
 function einzelargument(
   argument:string,

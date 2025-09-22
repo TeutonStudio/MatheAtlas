@@ -7,14 +7,15 @@ import { ReactFlowProvider, type Connection, type Edge } from "@xyflow/react";
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 import { type StrukturArgumente, type LayoutArgumente } from "@/Ordnung/programm.types.ts";
-import KartenAtlas from "@/Ordnung/KartenAtlas.tsx";
+import KartenAtlas from "@/Ordnung/Atlas/KartenAtlas";
 import Karte from "@/Atlas/Karten/Karte.tsx";
-import { useKartenStore, KartenState } from "@/Ordnung/DatenBank/KartenStore.ts";
-import { DialogManager } from "@/Ordnung/DialogManager.tsx";
+import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
+//import { DialogManager } from "@/Ordnung/DialogManager.tsx";
 
 import { useShallow } from "zustand/react/shallow";
 // Eval-Store: unser Pull-/Cache-/Version-Context
 import { EvalStoreProvider } from "@/Daten/kern/store.tsx";
+import { KartenState } from "./datenbank.types";
 
 const rootStyle   = { display: "flex", width: "100vw", height: "100vh", overflow: "hidden" } as const;
 const centerStyle = { position: "relative", flex: 1, height: "100%" } as const;
@@ -46,7 +47,7 @@ export default function ProgrammStruktur({ firstStyle, secondStyle }: StrukturAr
       {/* EvalStoreProvider ÜBER ReactFlowProvider, damit Sidebar/Atlas ebenfalls bump() können */}
       <EvalStoreProvider>
         <InneresLayout firstStyle={firstStyle} secondStyle={secondStyle} />
-        <DialogManager />
+        {/*<DialogManager />*/}
       </EvalStoreProvider>
     </SidebarProvider>
   );

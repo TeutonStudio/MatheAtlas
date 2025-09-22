@@ -16,9 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { useKartenStore } from "./DatenBank/KartenStore";
+import { useKartenStore } from "../DatenBank/KartenStore";
 import { KNOTEN, type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import { Fluß, DatenTypen } from "@/Atlas/Anschlüsse.types.ts";
+import { OffeneKarte } from "../datenbank.types";
 
 export function SchnittstelleDialog({
   aktiveKarteId,
@@ -26,7 +27,7 @@ export function SchnittstelleDialog({
   children,
 }: {
   aktiveKarteId: string | null;
-  offeneKarte: ReactFlowJsonObject | undefined;
+  offeneKarte: OffeneKarte | undefined;
   children: React.ReactNode;
 }) {
   const { onNodesChange, addSchnittstelle } = useKartenStore();
@@ -57,7 +58,7 @@ export function SchnittstelleDialog({
       id: `schnittstelle-${neueSchnittstelle.id}`,
       type: KNOTEN.Schnittstelle,
       position: { x: xPos, y: nextYOffset },
-      data: { label: name, fluss, dtype },
+      data: { title: name, fluss, dtype },
       deletable: false,
     };
 

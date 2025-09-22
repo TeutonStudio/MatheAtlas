@@ -5,7 +5,7 @@
 
 //import { KarteVorlage } from "@/Ordnung/programm.types.ts";
 import { DatenTypen, Fluß, Variante, isKnownDatenTyp, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
-import { type SchnittstellenDaten, type SchnittstellenArgumente, type BasisKnotenDaten, LaTeXKnotenArgumente } from "@/Atlas/Knoten.types.ts";
+import { type SchnittstellenDaten, type SchnittstellenArgumente, type BasisKnotenDaten, LaTeXKnotenArgumente, LaTeXKnotenDaten } from "@/Atlas/Knoten.types.ts";
 import { Anschluss, type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
 
 import Knoten from "@/Atlas/Knoten/Knoten.tsx";
@@ -19,13 +19,15 @@ function _if(bed:boolean,falls: Aussage,nicht:Aussage): any | string | boolean {
 };
 
 export default function SchnittstellenKnoten(argumente: SchnittstellenArgumente) {
-  const { id, data, /*style*/ } = argumente;
+  //const { id, selected, /*style*/ } = argumente;
+  const fluss = argumente.data.fluss
+  const dtype = argumente.data.dtype
   
   function istEingang(falls?: Aussage,nicht?: Aussage): boolean | string | any { 
-    return _if(data.fluss === Fluß.Eingang,falls,nicht) 
+    return _if(fluss === Fluß.Eingang,falls,nicht) 
   };
   function istVertikal(falls?: Aussage,nicht?: Aussage): boolean | string | any { 
-    return _if(data.dtype === DatenTypen.Logik,falls,nicht) 
+    return _if(dtype === DatenTypen.Logik,falls,nicht) 
   };
   function invertFluß(_fluss:Fluß): Fluß {
     return _fluss === Fluß.Eingang ? Fluß.Ausgang : Fluß.Eingang
@@ -38,15 +40,14 @@ export default function SchnittstellenKnoten(argumente: SchnittstellenArgumente)
   
   const badge = istEingang("Eingabe","Ausgabe")
   const anschlüsse = {
-    [seite]: [Anschluss(data.handleID,data.dtype,invertFluß(data.fluss),Variante.Einzel)], 
+    [seite]: [Anschluss(argumente.data.handleID,argumente.data.dtype,invertFluß(fluss),Variante.Einzel)], 
   } as AnschlussNachSeite;
-  const basis = { title: data.label, badge, anschlüsse } as BasisKnotenDaten;
-  console.log("Formel: ",data.latex)
-  // const argument = { id, basis, style: {} } as KnotenArgumente;
+  const data = { ...argumente.data, badge, anschlüsse, latex: argumente.data.latex ?? "\\LaTeX" } as LaTeXKnotenDaten;
+//  console.log("Formel: ",data.latex)
+  
   const argument = {
-    id, data: {title: data.label, badge, anschlüsse, latex: data.latex ?? "\\!"}, style: {}
+    ...argumente, data
   } as LaTeXKnotenArgumente
 
   return <LaTeXKnoten {...argument} />
-  //return (<Knoten {...argument} />)
 }
