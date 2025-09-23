@@ -4,6 +4,7 @@ import { type Position } from "@xyflow/react";
 
 // Core Enums for Handle classification
 export enum DatenTypen {
+  Unbekannt = "unbestimmt",
   Logik = "bool",
   Menge = "set",
   Zahl = "number",

@@ -4,7 +4,6 @@
 import React from "react";
 import { type Node, type Edge } from "@xyflow/react";
 
-// import { type KarteVorlage } from "@/Atlas/Karten.types.ts";
 
 export type Bibliothek = {
   label: string;

@@ -1,52 +1,55 @@
-
-// ./src/Atlas/Karten/Vorlagen/methoden.ts
+/// ./src/Atlas/Karten/Vorlagen/methoden.ts
 
 import { Position, type Node, type Edge } from "@xyflow/react";
 
-//import { KnotenArgumente,BasisKnotenArgumente,LaTeXKnotenArgumente } from "@/Atlas/Knoten.types.ts";
 import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
-import { KartenDefinition, KNOTEN, Schnittstelle } from "@/Atlas/Karten.types.ts";
+import { KartenDefinition, KNOTEN } from "@/Atlas/Karten.types.ts";
+import { type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
 import { erhalteId } from "@/Atlas/Anschlüsse/methoden";
-import SchnittstellenKnoten from "@/Atlas/Knoten/SchnittstellenKnoten";
-//import { AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
 
 function _knoten(
-    id:string,
-    type:KNOTEN,
-    position:[number,number],
-    data:any, 
-    anschlüsse?: AnschlussNachSeite
+  id:string,
+  type:KNOTEN,
+  position:[number,number],
+  data:any, 
+  anschlüsse?: AnschlussNachSeite
 ) { 
     return { id, type, position: { x: position[0], y: position[1] }, data: {...data, anschlüsse} }
 }
 
 function _basis(
-    id: string, 
-    position:[number,number], 
-    anschlüsse: AnschlussNachSeite, 
-    title: string, 
-    badge: string,
+  id: string, 
+  position:[number,number], 
+  anschlüsse: AnschlussNachSeite, 
+  title: string, 
+  badge: string,
 ) { return _knoten("BasisKnotenID:" + id, KNOTEN.Basis, position, { title, badge }, anschlüsse) }
 
 function _latex(
-    id: string, 
-    position:[number,number], 
-    anschlüsse: AnschlussNachSeite, 
-    title: string, 
-    badge: string,
-    LaTeX: string,
+  id: string, 
+  position:[number,number], 
+  anschlüsse: AnschlussNachSeite, 
+  title: string, 
+  badge: string,
+  LaTeX: string,
 ) { return _knoten(id, KNOTEN.LaTeX, position, { title, badge, latex: LaTeX }, anschlüsse) }
 
 function _logik(
-    id:string,
-    position:[number,number], 
-    anschlüsse: AnschlussNachSeite, 
-    title: string, 
-    badge: string,
-    ergebnisse:boolean[],
+  id:string,
+  position:[number,number], 
+  anschlüsse: AnschlussNachSeite, 
+  title: string, 
+  badge: string,
+  ergebnisse:boolean[],
 ) { return _knoten(id, KNOTEN.LogikTabelle, position, { title, badge, ergebnisse }, anschlüsse) }
+
+function _element(
+  id:string,
+  position:[number,number],
+  def: boolean = false, 
+) { return _knoten(id, KNOTEN.Element, position, {objekt: "", menge: "", def}, undefined)}
 
 function _schnittstelle(
     id:string, handleID:string,
@@ -249,35 +252,38 @@ export function LogikKarte_einzelarg(
 export function MengenKarte_doppelarg(
     name:string,
     operation:string,
-    tabelle:[boolean,boolean,boolean,boolean],
+    karte: string,
     ausgabe: (wert1: string, wert2: string) => string,
  ): KartenDefinition {
     const vollerName = "logik-"+name+"-knoten";
     const input1 = "Eingabe A"
     const input2 = "Eingabe B"
+    
 
     return {
         id: "bib-"+vollerName,
         name: "Mengen "+name.toUpperCase()+" Knoten",
         pfad: "Knoten Bibliothek/Mengen/"+vollerName,
         nodes: [
-            _schnittstelle("s1","E1", _pos(-1, 1),input1, Fluß.Eingang, DatenTypen.Menge),
-            _schnittstelle("s2","E2", _pos(1, 1), input2, Fluß.Eingang, DatenTypen.Menge),
-            _karte("k",_pos(0,-2),"bib-logik-und-knoten"),
+            _schnittstelle("s1","E1", _pos(-1, -1),input1, Fluß.Eingang, DatenTypen.Menge),
+            _schnittstelle("s2","E2", _pos(-1, 1), input2, Fluß.Eingang, DatenTypen.Menge),
+            _element("e1",_pos(0,-1), false), _element("e2",_pos(0,1), false),
+            _element("e3",_pos(1,-2), true),
+            _karte("k",_pos(0,-2),karte),
             /*_logik("l1",_pos(0,-2),{
               [Position.Bottom]: [
                 Anschluss("El", DatenTypen.Menge, Fluß.Eingang, Variante.Einzel),
                 Anschluss("Er", DatenTypen.Menge, Fluß.Eingang, Variante.Einzel),
               ],
-              [Position.Top]: [
+              [Position.Top]: [s
                 Anschluss("Ao", DatenTypen.Menge, Fluß.Ausgang, Variante.Einzel),
               ],
             }, operation,"Logik",tabelle),*/
-            _schnittstelle("s3","A", _pos(0, -3), "Ausgabe", Fluß.Ausgang, DatenTypen.Menge, ausgabe(input1,input2)),
+            _schnittstelle("s3","A", _pos(0, 3), "Ausgabe", Fluß.Ausgang, DatenTypen.Menge, ausgabe(input1,input2)),
         ],
         edges: [
-            _kante("s1", "l1",DatenTypen.Menge,Variante.Einzel,"E1","El"),
-            _kante("s2", "l1",DatenTypen.Menge,Variante.Einzel,"E2","Er"),
+            _kante("s1", "e1",DatenTypen.Menge,Variante.Einzel,"E1","menge"),
+            _kante("s2", "e2",DatenTypen.Menge,Variante.Einzel,"E2","menge"),
             _kante("l1", "s3",DatenTypen.Menge,Variante.Einzel,"Ao","A" ),
         ],
         schnittstellen: [
@@ -286,7 +292,7 @@ export function MengenKarte_doppelarg(
           _stelle("s3","Ausgabe",  Fluß.Ausgang,DatenTypen.Menge),
         ],
         abhaengigkeiten: [
-          "bib-logik-und-knoten"
+          karte,
         ],
         wirdVerwendetIn: [],
         scope: "defined",
@@ -322,7 +328,7 @@ export function LogikKarte_doppelarg(
                 Anschluss("Ao", DatenTypen.Logik, Fluß.Ausgang, Variante.Einzel),
               ],
             }, operation,"Logik",tabelle),
-            _schnittstelle("s3","A", _pos(0, -3), "Ausgabe", Fluß.Ausgang, DatenTypen.Logik, ausgabe(input1,input2)),
+            _schnittstelle("s3","A", _pos(0, -4), "Ausgabe", Fluß.Ausgang, DatenTypen.Logik, ausgabe(input1,input2)),
         ],
         edges: [
             _kante("s1", "l1",DatenTypen.Logik,Variante.Einzel,"E1","El"),

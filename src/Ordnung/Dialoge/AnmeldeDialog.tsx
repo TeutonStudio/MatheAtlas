@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useKartenStore } from '@/Ordnung/DatenBank/KartenStore';
 import { Loader2, ChevronLeft, ChevronDown } from 'lucide-react';
-import type { AnmeldeDialogArgumente } from '../Dialoge.types';
+import type { AnmeldeDialogArgumente } from '../dialoge.types';
 import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons';
 import { OrphanedCardsDialog } from '@/Ordnung/Benutzer/OrphanedCardsDialog';
 import {

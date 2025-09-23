@@ -9,7 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useKartenStore } from "./DatenBank/KartenStore";
+import { useKartenStore } from "../DatenBank/KartenStore";
 import { KNOTEN } from "@/Atlas/Karten.types";
 import { Fluß } from "@/Atlas/Anschlüsse.types";
 import { SchnittstellenDaten } from "@/Atlas/Knoten.types";

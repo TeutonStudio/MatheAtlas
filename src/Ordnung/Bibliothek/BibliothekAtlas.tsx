@@ -1,10 +1,16 @@
-/// ./src/Ordnung/Atlas/KartenAtlas.tsx
+/// ./src/Ordnung/Bibliothek/BibliothekAtlas.tsx
 
 import React from "react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
   SidebarGroupAction, SidebarGroupContent, SidebarHeader,
 } from "@/components/ui/sidebar";
+
+import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
+import BenutzerFußleiste from "@/Ordnung/Benutzer/Benutzer.tsx";
+import { type Bibliothek } from "@/Ordnung/programm.types.ts";
+import { knotenBibliothek } from "@/Atlas/Karten/Vorlagen/KartenVorlage";
+
 // RADIX Icons statt Lucide
 import {
   PlusIcon,
@@ -12,25 +18,45 @@ import {
   ChevronLeftIcon,
 } from "@radix-ui/react-icons";
 
-import { type Bibliothek } from "@/Ordnung/programm.types.ts";
 
-import KontextAtlas from "@/Ordnung/Atlas/KnotenKontext/methoden.tsx";
+export default function BibliothekAtlas(): React.ReactElement {
+  const db = useKartenStore(s => s.db);
+  const currentUser = useKartenStore(s => s.currentUser);
+  const oeffneKarte = useKartenStore(s => s.oeffneKarte);
+  const erstelleNeueKarte = useKartenStore(s => s.erstelleNeueKarte);
 
-import { OffeneKarte, SelectionSnapshot } from "../datenbank.types.ts";
-import { KartenDefinition } from "@/Atlas/Karten.types.ts";
+  const privateKarten = Object.values(db)
+    .filter(karte => karte.scope === "private" && karte.userId === currentUser?.id)
+    .map(karte => ({
+      id: karte.id,
+      label: karte.name,
+      onClick: () => oeffneKarte(karte.id, karte.name),
+    }));
 
-export default function KartenAtlas({karte}:{karte: {definition:KartenDefinition, offene: OffeneKarte}}) {
-  
+  const oeffentlicheKarten = Object.values(db)
+    .filter(karte => karte.scope === "public")
+    .map(karte => ({ 
+      id: karte.id, 
+      label: karte.name, 
+      onClick: () => oeffneKarte(karte.id, karte.name) 
+    }));
+
 
   return (
-    <KontextAtlas
-      überschrift={karte.definition.name}
-      beschreibung="TODO"
-    ><div className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 items-center gap-2">
-            
-        </div>
-    </div></KontextAtlas>
+    <Sidebar className="atlas-sidebar" style={{ width: 280 }}>
+      <SidebarHeader />
+      <SidebarContent>
+        <KartenBibliothek
+          privateItems={privateKarten}
+          publicItems={oeffentlicheKarten}
+          onAdd={() => erstelleNeueKarte()}
+        />
+        <KnotenBibliothek />
+      </SidebarContent>
+      <SidebarFooter>
+        <BenutzerFußleiste />
+      </SidebarFooter>
+    </Sidebar>
   );
 }
 
@@ -143,7 +169,7 @@ type BibliothekItem = {
 };
 
 // Knoten im Baum: hat eigene Items und benannte Untergruppen
-type KnotenGruppe = {
+export type KnotenGruppe = {
   _items: BibliothekItem[];
   _gruppen: Record<string, KnotenGruppe>;
 };
@@ -154,7 +180,7 @@ type KnotenGruppe = {
  * - unterstützt leere Pfade (Items landen auf Root-Ebene)
  * - keine Mutationen der Eingabe
  */
-function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
+export function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
   const root: KnotenGruppe = { _items: [], _gruppen: {} };
 
   for (const it of items) {
@@ -179,7 +205,7 @@ function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
 }
 
 
-/*
+
 function KnotenBibliothek() {
   const oeffneKarte = useKartenStore(s => s.oeffneBibliotheksKarte);
 
@@ -215,7 +241,7 @@ function KnotenBibliothek() {
       <KnotenBaumGruppe gruppe={baum} ebene={0} />
     </BibliothekEinheit>
   );
-}*/
+}
 
 
 function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; ebene: number; titel?: string }) {

@@ -1,16 +1,12 @@
 // ./src/Atlas/Knoten/SchnittstellenKnoten.tsx
 
-// import { KnotenProps } from "@xyflow/react";
-// import { useKartenStore } from "@/Daten/kern/store";
-
-//import { KarteVorlage } from "@/Ordnung/programm.types.ts";
-import { DatenTypen, Fluß, Variante, isKnownDatenTyp, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
-import { type SchnittstellenDaten, type SchnittstellenArgumente, type BasisKnotenDaten, LaTeXKnotenArgumente, LaTeXKnotenDaten } from "@/Atlas/Knoten.types.ts";
-import { Anschluss, type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
-
-import Knoten from "@/Atlas/Knoten/Knoten.tsx";
 import { Position } from "@xyflow/react";
-import LaTeXKnoten from "./LaTeXKnoten";
+
+import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
+import { LaTeXKnotenArgumente, LaTeXKnotenDaten, type SchnittstellenArgumente } from "@/Atlas/Knoten.types.ts";
+import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
+
+import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten";
 
 type Aussage = undefined | string | Position
 
@@ -39,15 +35,13 @@ export default function SchnittstellenKnoten(argumente: SchnittstellenArgumente)
   );
   
   const badge = istEingang("Eingabe","Ausgabe")
+  let anschlussName = argumente.data.handleID ?? argumente.data.title;
+  if (anschlussName === "") { anschlussName = argumente.data.title ?? "Hafen" }
   const anschlüsse = {
-    [seite]: [Anschluss(argumente.data.handleID,argumente.data.dtype,invertFluß(fluss),Variante.Einzel)], 
+    [seite]: [Anschluss(anschlussName,argumente.data.dtype,invertFluß(fluss),Variante.Einzel)], 
   } as AnschlussNachSeite;
   const data = { ...argumente.data, badge, anschlüsse, latex: argumente.data.latex ?? "\\LaTeX" } as LaTeXKnotenDaten;
-//  console.log("Formel: ",data.latex)
   
-  const argument = {
-    ...argumente, data
-  } as LaTeXKnotenArgumente
-
+  const argument = {...argumente, data } as LaTeXKnotenArgumente
   return <LaTeXKnoten {...argument} />
 }

@@ -1,27 +1,27 @@
 /// ./src/Atlas/Knoten/KartenKnoten.tsx
 
-import { Position, type NodeProps } from "@xyflow/react";
+import { Position } from "@xyflow/react";
 
-import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 
 import KnotenDebug, { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
-import { AnschlussDefinition, AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
-import { BasisKnotenArgumente, KartenKnotenArgumente, LaTeXKnotenArgumente, LaTeXKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { type AnschlussDefinition, type AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
+import { type KartenKnotenArgumente, type LaTeXKnotenArgumente, type LaTeXKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { type Schnittstelle } from "../Karten.types";
 
 
-import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
 import LaTeXKnoten from "./LaTeXKnoten";
-import { Schnittstelle } from "../Karten.types";
+//import {  } from "@/Atlas/Knoten.types";
 
 export default function KartenKnoten(argumente: KartenKnotenArgumente) {
   const { id, selected, data } = argumente
-  const { findKarte, aktiveKarteId, openFromKartenKnoten } = useKartenStore();
-  const karte = findKarte(data.karteId);
+  //const { findKarte, aktiveKarteId, openFromKartenKnoten } = useKartenStore();
+  //const karte = findKarte(data.karteId);
+  const karte = data.karte.definition
 
   if (!karte) { return <div>Karte nicht gefunden</div> }
 
   function gefiltert(_fluss: Fluß, logik: boolean = false) {
-    return (karte!.schnittstellen ?? []).filter((s: Schnittstelle) => {
+    return (karte.schnittstellen ?? []).filter((s: Schnittstelle) => {
       const validerFluss = s.fluss === _fluss;
       const validerDTyp = logik? s.datentyp === DatenTypen.Logik : s.datentyp !== DatenTypen.Logik;
       return validerFluss && validerDTyp;
@@ -39,10 +39,10 @@ export default function KartenKnoten(argumente: KartenKnotenArgumente) {
     [Position.Left]: erhalte_anschluss_liste(gefiltert(Fluß.Eingang)),
     [Position.Right]: erhalte_anschluss_liste(gefiltert(Fluß.Ausgang)),
   } as AnschlussNachSeite;
-  const onBadgeClick = () => {
-      if (!aktiveKarteId) return;
-      openFromKartenKnoten(aktiveKarteId, data.karteId);
-    }
+  /*const onBadgeClick = () => {
+      //if (!aktiveKarteId) return;
+      openFromKartenKnoten(data.aktiveKarteId, karte.id);
+    }*/
   
   const argument = {
     id, selected, data: { title: karte.name, badge: data.badge, anschlüsse, latex: "\\LaTeX" } as LaTeXKnotenDaten,

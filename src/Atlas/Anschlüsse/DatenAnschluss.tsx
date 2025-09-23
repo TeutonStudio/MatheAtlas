@@ -11,7 +11,7 @@ import {
 
 import { type DatenAnschlussArgumente } from "@/Atlas/Anschlüsse.types.ts";
 import { istValideVerbindung } from "@/Atlas/Anschlüsse/methoden.ts";
-import { typenFarben, erhalteSVG } from "@/Daten/UI/typen.tsx";
+import erhalteTypenFarben, { erhalteSVG } from "@/Daten/UI/typen.tsx";
 import { useTheme } from "next-themes";
 
 const SVG_GROESSE = 26;
@@ -26,8 +26,8 @@ export default function DatenAnschluss(argumente: DatenAnschlussArgumente) {
   const { getNodes, getEdges } = useReactFlow();
   const { theme } = useTheme();
 
-  const theme_str = theme === "dark" ? "dark" : "light"
-  const farbe = typenFarben[datenTyp][theme_str]; // TODO 
+//  const theme_str = theme === "dark" ? "dark" : "light"
+  const farbe = erhalteTypenFarben(datenTyp,theme) // = typenFarben[datenTyp][theme_str]; // TODO 
 
   const istGueltigeVerbindung = React.useCallback(
     (c: Connection | Edge) => istValideVerbindung(c, getNodes(), getEdges()),

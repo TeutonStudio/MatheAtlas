@@ -7,6 +7,6 @@ import '@/index.css'
 import ProgrammStruktur from "@/Ordnung/Struktur.tsx";
  
 export default function App() {
-  console.log("App component rendered");
+  //console.log("App component rendered");
   return (<ProgrammStruktur />);
 }

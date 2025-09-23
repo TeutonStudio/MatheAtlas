@@ -9,10 +9,10 @@ import App from '@/App.tsx'
 // import { CAS } from "@/Daten/core/cas";
 // CAS.ensureLoaded().catch(() => {});
 
-console.log("Before createRoot");
+//console.log("Before createRoot");
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
-console.log("After createRoot");
+//console.log("After createRoot");

@@ -2,12 +2,9 @@
 
 import { useMemo } from "react";
 import { Position, useNodeId, useStore } from "@xyflow/react";
-import {
-  Variante,
-  type AnschlussLeisteArgumente,
-  Fluß,
-} from "@/Atlas/Anschlüsse.types.ts";
+import { Variante, Fluß, type AnschlussLeisteArgumente } from "@/Atlas/Anschlüsse.types.ts";
 import { erhalteId } from "@/Atlas/Anschlüsse/methoden.ts";
+
 import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
 import MultiAnschlussLeiste from "@/Atlas/Anschlüsse/MultiAnschlussLeiste.tsx";
 

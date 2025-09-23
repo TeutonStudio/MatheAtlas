@@ -5,7 +5,8 @@ import { Position } from "@xyflow/react";
 
 import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
-import { typenFarben } from "@/Daten/UI/typen.tsx";
+import erhalteTypenFarben from "@/Daten/UI/typen.tsx";
+import { useTheme } from "next-themes";
 
 /**
  * Die Props wurden überarbeitet, um die Komponente "dumm" zu machen.
@@ -22,17 +23,11 @@ export type MultiAnschlussLeisteProps = {
   heightPct?: number;
 };
 
-export default function MultiAnschlussLeiste({
-  position,
-  definition,
-  handleIds,
-  topPct,
-  leftPct,
-  widthPct,
-  heightPct,
-}: MultiAnschlussLeisteProps) {
-  const { dtype } = definition;
-  const farbe = typenFarben[dtype];
+export default function MultiAnschlussLeiste(argumente: MultiAnschlussLeisteProps) {
+  const { position, definition, handleIds, topPct, leftPct, widthPct, heightPct } = argumente;
+  //const { dtype } = definition;
+  const { theme } = useTheme();
+  const farbe = erhalteTypenFarben(definition.dtype,theme)
   const istHorizontal = position === Position.Top || position === Position.Bottom;
 
   // Der Stil für den Hauptcontainer ("Pill").

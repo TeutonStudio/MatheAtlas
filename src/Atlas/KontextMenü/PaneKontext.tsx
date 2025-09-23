@@ -8,27 +8,32 @@ import { KartenDefinition, KNOTEN, type Lebensraum } from "@/Atlas/Karten.types.
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
 import ListenDialog from "@/Ordnung/Dialoge/ListenDialog";
-import { ListenAktion } from "@/Ordnung/Dialoge.types";
-import { LogikTabelleDaten } from "../Knoten.types";
+import { ListenAktion } from "@/Ordnung/dialoge.types";
+import { ElementKnotenDaten, LogikTabelleDaten } from "../Knoten.types";
 
 
 
 export default function PaneItems( argument: { 
+  id: string,
   onClose?: () => void, 
-  scope: Lebensraum, 
+  // karte: KartenSammlung, 
   position: XYPosition,
-  screenToFlowPosition: (p:XYPosition) => XYPosition,
 } ) {
-  const { onClose, scope, position, screenToFlowPosition } = argument
+  const { id, onClose, position } = argument
+  
   const [open, setOpen] = useState(false);
-  const aktiveKarteId = useKartenStore(s => s.aktiveKarteId);
+  //const aktiveKarteId = useKartenStore(s => s.aktiveKarteId);
   const findKarte = useKartenStore(s => s.findKarte);
   const geöffnet = useKartenStore(s => s.geöffnet);
+  const dirty = geöffnet[id].dirty
+  const karte = findKarte(id);
+  //if (id!==aktiveKarteId) { console.log("ID Fehler: ",id,aktiveKarteId)}
+  if (!karte) { return }
 
   const logKartenDefinition = () => {
-    if (aktiveKarteId) {
-      const kartenDefinition = findKarte(aktiveKarteId);
-      const geöffneteKarte = geöffnet[aktiveKarteId];
+    if (id) {
+      const kartenDefinition = findKarte(id);
+      const geöffneteKarte = geöffnet[id];
       console.log("--- Aktive Karte Definition ---");
       console.log("DB Definition:", kartenDefinition);
       console.log("Geöffnete Karte (Live-Zustand):", geöffneteKarte);
@@ -37,33 +42,62 @@ export default function PaneItems( argument: {
     }
   };
 
-  return (
-    <div className="min-w-44">
-{/*      <Dialog
-        open={open}
-        onOpenChange={(next) => {
-          setOpen(next);
-          if (!next) onClose?.();
-        }}
-      ></Dialog> */}
-      <NeuerKnoten open={open} setOpen={setOpen} scope={scope} position={position} screenToFlowPosition={screenToFlowPosition} />
-      <Item onSelect={onClose}>Einfügen</Item>
-      <Item onSelect={onClose}>Exportieren</Item>
-      <Item onSelect={logKartenDefinition}>Karten-Definition loggen</Item>
-    </div>
-  );
+  switch (karte.scope) {
+    case "defined": {
+      return (
+        <div className="min-w-44">
+          <Item onSelect={onClose} > Karte schließen </Item>
+        </div>
+      )
+    }
+    case "public": {
+      console.log("Öffentliche Karte")
+      return (<></>)
+    }
+    case "private": {
+      return (
+        <div className="min-w-44">
+          <NeuerKnoten open={open} setOpen={setOpen} onClose={onClose} scope={karte.scope} position={position} />
+          <Speichern dirty={dirty} onSpeichern={() => {
+            console.log("Speichert: ",karte.name)
+            onClose?.()
+          }} />
+          <Item onSelect={onClose}>Einfügen TODO</Item>
+          <Item onSelect={onClose}>Exportieren TODO</Item>
+          <Item onSelect={logKartenDefinition}>Karten-Definition loggen</Item>
+        </div>
+      );
+    }
+    defualt: {
+      console.log("Dummheit muss weh tun?!")
+    }
+  }
 }
 
 
-function NeuerKnoten({open, setOpen, scope, position, screenToFlowPosition}:{
+function Speichern({dirty,onSpeichern}:{
+  dirty: boolean,
+  onSpeichern: () => void, 
+}) {
+  if (dirty) {
+    return (
+      <Item onSelect={onSpeichern}>
+        Speichern
+      </Item>
+    )
+  }
+}
+
+function NeuerKnoten({open, setOpen, scope, position, onClose}:{
   open: boolean; 
   setOpen: (open: boolean) => void;
   scope: Lebensraum; 
   position: XYPosition;
-  screenToFlowPosition: (p:XYPosition) => XYPosition,
+  onClose?: () => void;
+  
 }) {
   const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKnoten, addKartenKnoten, onNodesChange } = useKartenStore();
-  
+  const { screenToFlowPosition } = useReactFlow();
   const instanziierbareKarten = Object.values(db).filter(
     (karte) =>
       karte.id &&
@@ -73,7 +107,10 @@ function NeuerKnoten({open, setOpen, scope, position, screenToFlowPosition}:{
   ); instanziierbareKarten.push({
     id: "LT",
     name: "LogikTabelle",
-  } as KartenDefinition)
+  } as KartenDefinition); instanziierbareKarten.push({
+    id: "E",
+    name: "ElementKnoten"
+  } as KartenDefinition);
 
   function onClick(e:React.MouseEvent) {
     e.preventDefault();
@@ -81,37 +118,34 @@ function NeuerKnoten({open, setOpen, scope, position, screenToFlowPosition}:{
     setOpen(true);
     console.log("neuer Knoten wird ausgewählt")
   };
-  function onClose() {
-    setOpen(false);
-  };
   function handlePick(id: string) {
     const flowPos = screenToFlowPosition(position);
     if (id==="LT") {
-      console.log("Knoten hinzufügen")
+      console.log("LogikKnoten hinzufügen")
       const data = {ergebnisse: [false,false,false,false]} as LogikTabelleDaten
       addKnoten(KNOTEN.LogikTabelle,flowPos,data)
+    } else if (id==="E") {
+      console.log("Elementnoten hinzufügen")
+      const data = { menge: "\\emptyset", objekt: "\\mathcal{X}"} as ElementKnotenDaten
+      addKnoten(KNOTEN.Element,flowPos,data)
     } else {
       console.log("Karte hinzufügen")
       addKartenKnoten(id, flowPos);
       setOpen(false);
+      onClose?.()
     }
   };
 
   if (scope !== "defined") {
     return (
-      <>{/*
-        <DialogTrigger asChild>
-          <Item onClick={onClick} >
-            Neuer Knoten
-          </Item>
-        </DialogTrigger> */}
+      <>
         <Item onClick={onClick}>Neuer Knoten</Item>
 
         {open && (
           <ListenDialog 
             open={open}
             title="Instanzierbare Knoten"
-            onClose={onClose}
+            onClose={() => setOpen(false)}
             items={instanziierbareKarten}
             mode="pick"
             onPick={handlePick}

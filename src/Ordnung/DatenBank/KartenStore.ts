@@ -17,16 +17,17 @@ import {
 import { nanoid } from "nanoid";
 import { toast } from "sonner";
 
-import { KNOTEN, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
+import { KNOTEN, type KartenDefinition } from "@/Atlas/Karten.types.ts";
+import { KartenKnotenDaten } from "@/Atlas/Knoten.types";
 import knotenBibliothek, { vorlageLeer } from "@/Atlas/Karten/Vorlagen/KartenVorlage";
 import { type User } from "@/Ordnung/programm.types.ts";
 import { hashPassword, generateUserId } from "@/Ordnung/Benutzer/utils";
 import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
-import { KartenKnotenDaten } from "@/Atlas/Knoten.types";
 import {
   cloneNodes, cloneEdges, indexById, findBibliotheksKarte, reconnectWithSingleTarget, addEdgeWithSingleTarget,
   collectDirtyIds, closeAllExceptIds, forceOpen, promptMultiSaveOrDiscard,
-  decorateNodesForScope
+  decorateNodesForScope,
+  setVerlaufDirty
 } from "@/Ordnung/DatenBank/methoden.ts"
 import { KartenState, OffeneKarte, DialogAnfrageUmbenennen } from "../datenbank.types";
 
@@ -285,7 +286,7 @@ export const useKartenStore = create<KartenState>()(
           neuerVerlauf = neuerVerlauf.slice(0, idx + 1);
         } else {
           const kartenname = name ?? karte.name
-          neuerVerlauf.push({ id, name: kartenname });
+          neuerVerlauf.push({ id, name: kartenname, dirty: false });
         }
 
         set({ aktiveKarteId: id, geöffnet: neueGeöffnete, verlauf: neuerVerlauf });
@@ -326,7 +327,7 @@ export const useKartenStore = create<KartenState>()(
           neuerVerlauf = neuerVerlauf.slice(0, idx + 1);
         } else {
           const kartenname = name ?? bibliotheksKarte.name;
-          neuerVerlauf.push({ id: openId, name: kartenname });
+          neuerVerlauf.push({ id: openId, name: kartenname, dirty: false });
         }
 
         set({
@@ -500,6 +501,7 @@ export const useKartenStore = create<KartenState>()(
           edges: cloneEdges(offene.edges),
           updatedAt: Date.now(),
         };
+        setVerlaufDirty(get, set, targetId, false)
         set({
           db: { ...db, [targetId]: updated },
           geöffnet: { ...geöffnet, [targetId]: { ...offene, dirty: false } },
@@ -560,7 +562,9 @@ export const useKartenStore = create<KartenState>()(
         if (!aktiveKarteId) return;
         const offene = geöffnet[aktiveKarteId];
         if (!offene /*|| offene.readonly*/) return; // block
+
         const nodes = applyNodeChanges(changes, offene.nodes);
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, nodes, dirty: true } } });
       },
       
@@ -569,7 +573,9 @@ export const useKartenStore = create<KartenState>()(
         if (!aktiveKarteId) return;
         const offene = geöffnet[aktiveKarteId];
         if (!offene /*|| offene.readonly*/) return; // block
+
         const edges = applyEdgeChanges(changes, offene.edges);
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges, dirty: true } } });
       },
       
@@ -580,6 +586,7 @@ export const useKartenStore = create<KartenState>()(
         if (!offene) return;
 
         const nextEdges = addEdgeWithSingleTarget(connection, offene.edges);
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
       },
 
@@ -590,6 +597,7 @@ export const useKartenStore = create<KartenState>()(
         if (!offene) return;
 
         const nextEdges = reconnectWithSingleTarget(oldEdge, connection, offene.edges);
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
       },
 
@@ -643,6 +651,7 @@ export const useKartenStore = create<KartenState>()(
 
         const updatedNodes = [...(offene.nodes ?? []), neuerKnoten];
 
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({
           geöffnet: {
             ...geöffnet,
@@ -716,7 +725,7 @@ export const useKartenStore = create<KartenState>()(
 
           console.log("nodes (vorher):", aktiveKarte.nodes?.length ?? 0);
 
-          const data = { karteId: kartenIdToAdd, title: karteToAdd.name, badge: "Karte" } as KartenKnotenDaten
+          const data = { aktiveKarteId, karte: {definition: karteToAdd}, title: karteToAdd.name, badge: "Karte" } as KartenKnotenDaten
           const neuerKnoten: Node = {
             id: `kartenknoten-${nanoid()}`,
             type: KNOTEN.KartenKnoten,
@@ -743,6 +752,7 @@ export const useKartenStore = create<KartenState>()(
           };
 
           // Zustand setzen
+          setVerlaufDirty(get, set, aktiveKarteId, true)
           set({
             geöffnet: {
               ...geöffnet,
@@ -798,6 +808,7 @@ export const useKartenStore = create<KartenState>()(
           schnittstellen: [...(alt.schnittstellen ?? []), schnittstelle],
           updatedAt: Date.now(),
         };
+        setVerlaufDirty(get, set, karteId, true)
         set({ db: { ...db, [karteId]: neu } });
       },
 
@@ -810,6 +821,7 @@ export const useKartenStore = create<KartenState>()(
           schnittstellen: (alt.schnittstellen ?? []).filter(s => s.id !== schnittstelleId),
           updatedAt: Date.now(),
         };
+        setVerlaufDirty(get, set, karteId, true)
         set({ db: { ...db, [karteId]: neu } });
       },
 
@@ -831,7 +843,7 @@ export const useKartenStore = create<KartenState>()(
           closeAllExceptIds(get,set,[targetId]);
           // target öffnen und Pfad auf nur target setzen
           forceOpen(get,set,targetId, name);
-          set({ verlauf: [{ id: targetId, name: name ?? db[targetId]?.name ?? "Unbenannt" }] });
+          set({ verlauf: [{ id: targetId, name: name ?? db[targetId]?.name ?? "Unbenannt", dirty: false }] });
         };
 
         if (dirtyToClose.length > 0) {
@@ -852,8 +864,9 @@ export const useKartenStore = create<KartenState>()(
         // Pfad erweitern, aber Duplikate vermeiden
         const idx = verlauf.findIndex(v => v.id === childId);
         const name = db[childId]?.name ?? verlauf[idx]?.name ?? "Unbenannt";
-        const neuerVerlauf = idx === -1 ? [...verlauf, { id: childId, name }] : verlauf.slice(0, idx + 1);
+        const neuerVerlauf = idx === -1 ? [...verlauf, { id: childId, name, dirty: false }] : verlauf.slice(0, idx + 1);
 
+        setVerlaufDirty(get, set, childId, true)
         set({ verlauf: neuerVerlauf, aktiveKarteId: childId });
       },
 
@@ -866,6 +879,8 @@ export const useKartenStore = create<KartenState>()(
 
         const nodes = offene.nodes.filter(n => !selection.nodeIds.includes(n.id));
         const edges = offene.edges.filter(e => !selection.edgeIds.includes(e.id));
+        
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, nodes, edges, dirty: true } } });
         get().clearSelectionSnapshot();
       },
@@ -887,6 +902,7 @@ export const useKartenStore = create<KartenState>()(
         }));
 
         const nodes = [...offene.nodes, ...clones];
+        setVerlaufDirty(get, set, aktiveKarteId, true)
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, nodes, dirty: true } } });
         // Auswahl der Duplikate optional setzen? Wir lassen ReactFlow regeln.
       },

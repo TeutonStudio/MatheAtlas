@@ -2,22 +2,16 @@
 
 import * as React from "react";
 import { Position } from "@xyflow/react";
+
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten";
-import KnotenDebug, { Anschluss, MathRenderer } from "@/Atlas/Knoten/methoden";
-import {
-  type LogikTabelleDaten,
-  type LogikTabelleArgumente,
-  BasisKnotenArgumente
-} from "@/Atlas/Knoten.types";
-import {
-  type AnschlussNachSeite,
-  Fluß,
-  DatenTypen,
-  Variante
-} from "@/Atlas/Anschlüsse.types";
+import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden";
+import { BasisKnotenArgumente, type LogikTabelleArgumente } from "@/Atlas/Knoten.types";
+import { Fluß, DatenTypen } from "@/Atlas/Anschlüsse.types";
 import { Switch } from "@/components/ui/switch";
 import { lüge, wahr } from "@/Daten/Formeln/logik";
+
+export const maxFälle = 9;
 
 /** Alle möglichen Permutationen für n Eingänge */
 const erzeugePermutationen = (n: number): boolean[][] => {
@@ -44,7 +38,7 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
     const alle = alleSeiten.flatMap(pos => anschlüsse?.[pos] ?? []);
     const valideEingänge = alle
       .filter(a => a.fluss === Fluß.Eingang && a.dtype === DatenTypen.Logik)
-      .slice(0, 4);
+      .slice(0, maxFälle);
     return {
       eingänge: valideEingänge,
       permutationen: erzeugePermutationen(valideEingänge.length),
@@ -78,10 +72,11 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
   };
   
   const style = { minWidth: 280 } as React.CSSProperties;
-  const basis = { title: data.title ?? "Logik Tabelle", badge: data.badge ?? `Logik`, anschlüsse };
+  const title = data.title ?? "Logik Tabelle";
+  const badge = data.badge ?? `Logik`;
   const basisArgument = {
     id, selected, style,
-    data: basis,
+    data: { title, badge, anschlüsse},
     isConnectable: argumente.isConnectable,
     type: "logik-tabelle",
   } as BasisKnotenArgumente;
@@ -102,7 +97,7 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
                 {eingänge.map((eingang) => (
                   <th key={eingang.id} scope="col" className="px-3 py-2 text-center">{" "}</th>
                 ))}
-                <th scope="col" className="px-3 py-2 text-center border-l dark:border-gray-600">Ergebnis</th>
+                <th scope="col" className="px-3 py-2 text-center border-l dark:border-gray-600">Ergebniss</th>
               </tr>
             </thead>
             <tbody>
@@ -132,38 +127,4 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
       )}
     </BasisKnoten>
   );
-}
-
-/** Dev-Helper für den Canvas */
-export function TestLogikTabelleKnoten({ id }: { id: string }) {
-  const anschlüsse: AnschlussNachSeite = {
-    [Position.Bottom]: [
-      Anschluss("A", DatenTypen.Logik, Fluß.Eingang, Variante.Einzel),
-      Anschluss("B", DatenTypen.Logik, Fluß.Eingang, Variante.Einzel),
-    ],
-    [Position.Top]: [
-      Anschluss("Out", DatenTypen.Logik, Fluß.Ausgang, Variante.Einzel),
-    ],
-  };
-
-  const data: LogikTabelleDaten = {
-    title: "Logik",
-    badge: "UND",
-    ergebnisse: [false, false, false, true],
-    anschlüsse,
-  };
-
-  const argument = {
-    id,
-    data,
-    selected: false,
-    dragging: false,
-    zIndex: 0,
-    isConnectable: true,
-    type: "logik-tabelle",
-    draggable: true,
-    deletable: true,
-  } as LogikTabelleArgumente;
-
-  return <LogikTabelleKnoten {...argument} />;
 }

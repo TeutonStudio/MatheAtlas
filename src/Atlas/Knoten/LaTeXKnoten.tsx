@@ -1,11 +1,7 @@
 /// ./src/Atlas/Knoten/LaTeXKnoten.tsx
 
 
-import {
-  type LaTeXKnotenDaten,
-  type LaTeXKnotenArgumente,
-  type BasisKnotenDaten,
-} from "@/Atlas/Knoten.types.ts";
+import { type LaTeXKnotenArgumente, type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
 import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden.tsx";
 
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";

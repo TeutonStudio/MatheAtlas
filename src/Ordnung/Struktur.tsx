@@ -1,21 +1,19 @@
 // ./src/Ordnung/Struktur.tsx
 
 //import { shallow } from "zustand/shallow";
-import React, { useCallback } from "react";
+import React, { CSSProperties, useCallback } from "react";
 import { ReactFlowProvider, type Connection, type Edge } from "@xyflow/react";
 
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 import { type StrukturArgumente, type LayoutArgumente } from "@/Ordnung/programm.types.ts";
-import KartenAtlas from "@/Ordnung/Atlas/KartenAtlas";
+
 import Karte from "@/Atlas/Karten/Karte.tsx";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
-//import { DialogManager } from "@/Ordnung/DialogManager.tsx";
 
-import { useShallow } from "zustand/react/shallow";
-// Eval-Store: unser Pull-/Cache-/Version-Context
 import { EvalStoreProvider } from "@/Daten/kern/store.tsx";
-import { KartenState } from "./datenbank.types";
+import BibliothekAtlas from "./Bibliothek/BibliothekAtlas";
+
 
 const rootStyle   = { display: "flex", width: "100vw", height: "100vh", overflow: "hidden" } as const;
 const centerStyle = { position: "relative", flex: 1, height: "100%" } as const;
@@ -30,7 +28,7 @@ function slideTx(state: string) { return isOpen(state) ? "0px" : `calc(-1 * ${SI
 
 export default function ProgrammStruktur({ firstStyle, secondStyle }: StrukturArgumente) {
   // initiale Vorlage optional in DB laden (einmalig)
-  console.log("ProgrammStruktur rendered");
+  // console.log("ProgrammStruktur rendered");
   const hasInit = React.useRef(false);
   const db = useKartenStore(s => s.db);
   const oeffneKarte = useKartenStore(s => s.oeffneKarte);
@@ -54,7 +52,7 @@ export default function ProgrammStruktur({ firstStyle, secondStyle }: StrukturAr
 }
 
 function InneresLayout({ firstStyle, secondStyle }: LayoutArgumente) {
-  console.log("InneresLayout rendered");
+  // console.log("InneresLayout rendered");
   const { state } = useSidebar();
   const open = isOpen(state);
   const tx = slideTx(state);
@@ -65,59 +63,11 @@ function InneresLayout({ firstStyle, secondStyle }: LayoutArgumente) {
   const store = useKartenStore();
   const activeCard = store.aktiveKarteId ? store.geöffnet[store.aktiveKarteId] : null;
 
-
-const select = useShallow((s: KartenState) => {
-  const id = s.aktiveKarteId;
-  return {
-    aktiveKarteId: id,
-    offene: id ? s.geöffnet[id] : undefined,
-    onNodesChange: s.onNodesChange,
-    onEdgesChange: s.onEdgesChange,
-    onConnectStore: s.onConnect,
-    onReconnectStore: s.onReconnect,
-  };
-});
-
-const {
-  aktiveKarteId,
-  offene,
-  onNodesChange,
-  onEdgesChange,
-  onConnectStore,
-  onReconnectStore,
-} = useKartenStore(select);
-
-
-
-  const onConnect = useCallback(
-    (params: Connection) => { onConnectStore(params); },
-    [onConnectStore]
-  );
-
-  const onReconnect = useCallback(
-    (oldEdge: Edge, conn: Connection) => { onReconnectStore(oldEdge, conn); },
-    [onReconnectStore]
-  );
-
   return (
     <div style={firstStyle ?? rootStyle}>
       <div style={secondStyle ?? centerStyle}>
         <ReactFlowProvider>
-        {activeCard && offene ? (
-          <Karte
-              key={aktiveKarteId}
-              nodes={offene.nodes}
-              edges={offene.edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onReconnect={onReconnect} 
-              controlsLeft={controlsLeft}
-              scope={offene.scope}
-          />
-           ) : (
-            <div>Keine Karte ausgewählt</div>
-          )}
+          <Karte controlsLeft={controlsLeft} />
         </ReactFlowProvider>
 
         <div
@@ -131,35 +81,39 @@ const {
             transform: `translateX(${tx})`,
             pointerEvents: open ? "auto" : "none",
           }}
-        >
-          <KartenAtlas />
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            top: 12, left: 0,
-            zIndex: 50,
-            width: SIDEBAR_W,
-            height: 0,
-            transition: "transform 200ms ease",
-            transform: `translateX(${tx})`,
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: `calc(100% + var(--sidebar-divider, 1px) + var(--sidebar-gap, 12px))`,
-              transform: open ? `translateX(${TRIGGER_NUDGE})` : "none",
-            }}
-          >
-            <div style={{ pointerEvents: "auto" }}>
-              <SidebarTrigger />
-            </div>
-          </div>
-        </div>
+        ><BibliothekAtlas /></div>
+        <Auslößer tx={tx} open={open} />  
       </div>
     </div>
   );
+}
+
+function Auslößer({tx,open}:{
+  tx: string,
+  open: boolean,
+}) {
+  const outerStyle = {
+    position: "absolute",
+    top: 12, left: 0,
+    zIndex: 50,
+    width: SIDEBAR_W,
+    height: 0,
+    transition: "transform 200ms ease",
+    transform: `translateX(${tx})`,
+    pointerEvents: "none",
+  }
+  const innerStyle = {
+    position: "absolute",
+    left: `calc(100% + var(--sidebar-divider, 1px) + var(--sidebar-gap, 12px))`,
+    transform: open ? `translateX(${TRIGGER_NUDGE})` : "none",
+  }
+  return (
+    <div style={outerStyle as CSSProperties} >
+      <div style={innerStyle as CSSProperties} >
+        <div style={{ pointerEvents: "auto" }}>
+          <SidebarTrigger />
+        </div>
+      </div>
+    </div>
+  )
 }

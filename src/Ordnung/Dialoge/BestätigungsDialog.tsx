@@ -11,7 +11,7 @@ import {
     AlertDialogTitle,
   } from "@/components/ui/alert-dialog";
   import { Button } from "@/components/ui/button";
-import { BestätigungsDialogArgumente } from "../Dialoge.types";
+import { BestätigungsDialogArgumente } from "../dialoge.types";
   
   export function BestaetigungsDialog(argumente: BestätigungsDialogArgumente) {
     const { open, onOpenChange, onConfirm, title, description,

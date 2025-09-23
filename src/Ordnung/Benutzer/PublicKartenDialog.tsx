@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UploadIcon, DownloadIcon } from "@radix-ui/react-icons";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { ListenDialog } from "@/Ordnung/Dialoge/ListenDialog";
-import { type ListenAktion, type ListenDialogArgumente } from "../Dialoge.types";
+import { type ListenAktion, type ListenDialogArgumente } from "../dialoge.types";
 import { PublishCardDialog } from "./PublishCardDialog";
 
 export function PublicKartenDialog({ open, onClose }: { open: boolean; onClose: () => void }) {

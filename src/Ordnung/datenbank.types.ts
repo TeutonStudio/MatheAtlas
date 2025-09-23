@@ -10,9 +10,9 @@ import {
   type XYPosition,
 } from "@xyflow/react";
 
-import { KNOTEN, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
+import { KNOTEN, Lebensraum, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import { type User } from "@/Ordnung/programm.types.ts";
-import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
+//import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
 
 // ---------- Types ----------
 export type OffeneKarte = {
@@ -20,7 +20,7 @@ export type OffeneKarte = {
   edges: Edge[];
   dirty: boolean;
   //readonly?: boolean; // neu
-  scope: "private" | "public" | "defined";
+  scope: Lebensraum;
 };
 
 export type SelectionSnapshot = {
@@ -28,7 +28,7 @@ export type SelectionSnapshot = {
   edgeIds: string[];
 };
 
-export type Verlauf = { id: string; name: string };
+export type Verlauf = { id: string; name: string; dirty: boolean };
 
 export type DialogAnfrageSpeichern = {
   type: 'speichern';

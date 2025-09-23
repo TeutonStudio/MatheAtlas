@@ -1,7 +1,7 @@
 // ./src/Atlas/Anschlüsse/methoden.ts
 
 import { Position, getOutgoers, type Connection, type Node, type Edge } from "@xyflow/react";
-import { AnschlussNachSeite, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
+import { AnschlussNachSeite, DatenTypen, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
 const SEPARATOR = "__";
 
@@ -60,25 +60,30 @@ export function istValideVerbindung(
     knoten: Node[], kanten: Edge[],
   ): boolean {
     // 1. Grundlegende Prüfung der Kompatibilität (Typ, Fluss)
-    if (c.source === c.target) return false;
+    if (c.source === c.target ) return false;
     if (!c.sourceHandle || !c.targetHandle) return false;
-
+    
     const sourceParsed = erhalteAnschluss(c.sourceHandle);
     const targetParsed = erhalteAnschluss(c.targetHandle);
-
+    
+    function erhalteDTyp(handle:string[]): string { return handle[ID_TEILE_INDICES.TYP] }
+    function erhalteFluß(handle:string[]): string { return handle[ID_TEILE_INDICES.FLUSS] }
+    function bekannt(handle:string[]): boolean { return erhalteDTyp(handle) !== DatenTypen.Unbekannt }
+    
     // Prüfen, ob die IDs valide zerlegt werden konnten (mindestens 4 Teile müssen vorhanden sein)
-    if (sourceParsed.length < 4 || targetParsed.length < 4) return false;
-
+    const UngültigeIDs = sourceParsed.length < 4 || targetParsed.length < 4
+    if (UngültigeIDs) { console.log("IDs",sourceParsed,targetParsed) }
+    // Beide DatenTypen müssen bekannt sein
+    const BeideBekannt = bekannt(sourceParsed) && bekannt(targetParsed)
     // Datentypen müssen übereinstimmen (Index 1)
-    if (sourceParsed[ID_TEILE_INDICES.TYP] !== targetParsed[ID_TEILE_INDICES.TYP]) return false;
-
+    const TypenUngleich = erhalteDTyp(sourceParsed) !== erhalteDTyp(targetParsed)
     // Fluss muss komplementär sein (z.B. source und target) (Index 2)
-    if (sourceParsed[ID_TEILE_INDICES.FLUSS] === targetParsed[ID_TEILE_INDICES.FLUSS]) return false;
-
+    const FlußGleich = erhalteFluß(sourceParsed) === erhalteFluß(targetParsed)
     // 2. Zyklus-Prüfung
-    const zielKnoten = knoten.find((node) => node.id === c.target);
-    if (!zielKnoten) return false;
-
+    const zielKnoten = knoten.find((node) => node.id === c.target);  
+    
+    if (UngültigeIDs || (TypenUngleich && BeideBekannt) || FlußGleich || !zielKnoten) return false;
+    
     // Erstelle eine temporäre Kantenliste, die die neue Verbindung enthält
     const tempKanten = [...kanten, c as Edge];
 

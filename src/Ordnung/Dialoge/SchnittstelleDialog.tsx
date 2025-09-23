@@ -84,6 +84,7 @@ export function SchnittstelleDialog({
   };
 
   const datenOptionen: [string, DatenTypen][] = [
+    ["Unbekannt", DatenTypen.Unbekannt],
     ["Logik", DatenTypen.Logik],
     ["Menge", DatenTypen.Menge],
     ["Zahl", DatenTypen.Zahl],

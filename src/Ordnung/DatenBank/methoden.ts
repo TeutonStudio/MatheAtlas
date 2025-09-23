@@ -118,7 +118,7 @@ export function forceOpen(get: Getter,set: Setter, targetId: string, name?: stri
   if (idx !== -1) {
     neuerVerlauf = neuerVerlauf.slice(0, idx + 1);
   } else {
-    neuerVerlauf.push({ id: targetId, name: name ?? karte.name });
+    neuerVerlauf.push({ id: targetId, name: name ?? karte.name, dirty: false });
   }
 
   set({ aktiveKarteId: targetId, geöffnet: neueGeöffnete, verlauf: neuerVerlauf });
@@ -166,4 +166,13 @@ export function decorateNodesForScope(nodes: Node[] = [], scope: Lebensraum): No
     draggable: movable, 
     selectable: movable,
   }));
+}
+
+export function setVerlaufDirty(get: () => KartenState, set: any, id: string, dirty: boolean) {
+  const { verlauf } = get();
+  const idx = verlauf.findIndex(v => v.id === id);
+  if (idx === -1) return; // wenn nicht drin, nichts tun
+  const neu = verlauf.slice();
+  neu[idx] = { ...neu[idx], dirty };
+  set({ verlauf: neu });
 }

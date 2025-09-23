@@ -1,18 +1,13 @@
 // ./src/Atlas/Knoten/methoden.ts
 
-import {
-    type BasisKnotenDaten,
-} from "@/Atlas/Knoten.types.ts";
-import {
-  type AnschlussNachSeite,
-  type AnschlussDefinition,
-  Fluß, DatenTypen, Variante,
-} from "@/Atlas/Anschlüsse.types.ts";
 import { BlockMath, InlineMath } from "react-katex";
 import { Badge } from "@/components/ui/badge";
 
-const KnotenDebug = false
-export default KnotenDebug
+import { type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { Fluß, DatenTypen, Variante, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
+
+const KnotenDebug = false;
+export default KnotenDebug;
 
 /**
  * Hilfsfunktion zum Erstellen einer sauberen Anschluss-Definition.
@@ -89,7 +84,7 @@ export function MathRenderer({ latex }: { latex?: string }) {
           isDisplay ? <BlockMath .../> : <InlineMath .../>  */}
     </div>
   );
-  return (<InlineMath math={""} />)
+  //return (<InlineMath math={""} />)
 }
   
 
@@ -114,7 +109,7 @@ export function KnotenAbzeichen({badge,onBadgeClick}: {
   }
   if (badge) {
     return <Abzeichen />;
-    return (
+    /*return (
       <button
       type="button"
       onClick={onBadgeClick}
@@ -122,6 +117,6 @@ export function KnotenAbzeichen({badge,onBadgeClick}: {
       aria-label="Karte öffnen"
       style={style}
     ><Abzeichen /></button>
-    )
+    )*/
   }
 }

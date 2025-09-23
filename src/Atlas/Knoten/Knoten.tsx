@@ -1,16 +1,13 @@
-// ./src/Atlas/Knoten/Knoten.tsx
+/// ./src/Atlas/Knoten/Knoten.tsx
 
 import * as React from "react";
 import { Position } from "@xyflow/react";
-
-import { Badge } from "@/components/ui/badge";
 
 import KnotenDebug, { KnotenAbzeichen, type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
 import { erhalteAnschlussNachSeite } from "@/Atlas/Anschlüsse/methoden.ts";
 import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
 import AnschlussLeiste from "@/Atlas/Anschlüsse/AnschlussLeiste.tsx"
-import { _anschlüsse } from "../Karten/Vorlagen/methoden";
 
 const PORT_BAR = 20;
 
@@ -22,9 +19,7 @@ export default function Knoten(argumente: KnotenArgumente): React.JSX.Element {
 
     const erhalteAnschluss = React.useCallback(
       (pos: Position): AnschlussDefinition[] => {
-        return anschlüsse
-          ? erhalteAnschlussNachSeite(anschlüsse, pos)
-          : []
+        return anschlüsse ? erhalteAnschlussNachSeite(anschlüsse, pos) : []
         }, [anschlüsse]
     );
     const [padTop, padBottom, padLeft, padRight] = React.useMemo(() => {
@@ -39,12 +34,11 @@ export default function Knoten(argumente: KnotenArgumente): React.JSX.Element {
     
     const outerStyle = React.useMemo<React.CSSProperties>(() => ({
       border: selected
-      ? "2px solid var(--ring, #60a5fa)"          // sichtbarer Rand bei Auswahl
-      : "1px solid var(--border, #2b2f36)",
+        ? "2px solid var(--ring, #60a5fa)"          // sichtbarer Rand bei Auswahl
+        : "1px solid var(--border, #2b2f36)",
       boxShadow: selected
-      ? "0 0 0 3px color-mix(in oklab, var(--ring, #60a5fa) 30%, transparent)" 
-      : "none",
-      //    border: "1px solid var(--border, #2b2f36)",
+        ? "0 0 0 3px color-mix(in oklab, var(--ring, #60a5fa) 30%, transparent)" 
+        : "none",
       background: "var(--card, #111)",
       color: "var(--card-foreground, #e5e7eb)",
       borderRadius: 10,
@@ -72,28 +66,6 @@ export default function Knoten(argumente: KnotenArgumente): React.JSX.Element {
         userSelect: "none",
       }}>
       <span>{title}</span>
-      {/*badge ? (
-        <button
-          type="button"
-          onClick={onBadgeClick}
-          title="Karte öffnen"
-          aria-label="Karte öffnen"
-          style={{
-            cursor: onBadgeClick ? "pointer" : "default",
-            border: "none",
-            background: "transparent",
-            padding: 0,
-          }}
-        >
-          <Badge
-            variant="outline"
-            className="transition-opacity hover:opacity-80"
-          >
-            {badge}
-          </Badge>
-        </button>
-      ) : null*/}
-      {/*badge ? <Badge variant="outline">{badge}</Badge> : null*/}
       <KnotenAbzeichen badge={badge} />
     </div>
   ) : null;

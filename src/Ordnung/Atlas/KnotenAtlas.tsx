@@ -1,22 +1,53 @@
 // ./src/Ordnung/Atlas/KnotenAtlas.
 
-import React, { useMemo } from "react";
+//import React, { useMemo } from "react";
 import { type Node, type Edge, type Connection } from "@xyflow/react";
 
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+//import { Button } from "@/components/ui/button";
+//import { Label } from "@/components/ui/label";
+//import { Input } from "@/components/ui/input";
+//import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { KNOTEN, Lebensraum } from "@/Atlas/Karten.types.ts";
+import { KartenKnotenDaten, LogikTabelleDaten } from "@/Atlas/Knoten.types.ts";
 
-import { useKartenStore } from "../DatenBank/KartenStore.ts";
-import { SchnittstelleDialog } from "../Dialoge/SchnittstelleDialog.tsx";
-import { SchnittstellenListe } from "../SchnittstellenListe.tsx";
+//import { useKartenStore } from "../DatenBank/KartenStore.ts";
+//import { SchnittstelleDialog } from "../Dialoge/SchnittstelleDialog.tsx";
+//import { SchnittstellenListe } from "../Dialoge/SchnittstellenListe.tsx";
 import { KontextAtlas } from "./methoden.tsx";
+import LogikKontext from "./KnotenKontext/LogikKontext.tsx";
+import KarteKontext from "./KnotenKontext/KarteKontext.tsx";
 
-export default function KnotenAtlas() {
+export default function KnotenAtlas({node}:{node:Node | undefined}) {
+  if (!node) { console.log("Ungültiger Knoten: ",node); return }
+
+  console.log(node, node.type)
+  switch (node.type as KNOTEN) {
+    case KNOTEN.Schnittstelle: return (
+      <KontextAtlas
+        überschrift={(node.data.title as string) ?? "Kein Name"}
+        beschreibung="Platzhalter"
+        interaktionsfeld="Interagieren"
+        interaktion={() => console.log("Interaktion durchgeführt")}
+      />
+    );
+    case KNOTEN.LogikTabelle: return <LogikKontext id={node.id} data={node.data as LogikTabelleDaten} />;
+    case KNOTEN.KartenKnoten: return <KarteKontext id={node.id} data={node.data as KartenKnotenDaten} />
+    case KNOTEN.Element: return (
+      <KontextAtlas 
+        überschrift={(node.data.title as string) ?? "Kein Name"}
+        beschreibung="Platzhalter"
+        interaktionsfeld="Interagieren"
+        interaktion={() => console.log("Interaktion durchgeführt")}
+      />
+    )
+    default: {
+      console.log("Betrachtet Knoten: ",node)
+    }
+  }
+}
+/*{
   const { aktiveKarteId, findKarte, geöffnet } = useKartenStore();
   const selection = useKartenStore(s => s.selection);
   const deleteSelected = useKartenStore(s => s.deleteSelected);
@@ -26,8 +57,8 @@ export default function KnotenAtlas() {
   const moveSelectionToNewCard = useKartenStore(s => s.moveSelectionToNewCard);
 
   const selectedCount = (selection?.nodeIds?.length ?? 0) + (selection?.edgeIds?.length ?? 0);
-  /*const modus: 'none' | 'single' | 'multi' =
-    selectedCount === 0 ? 'none' : selectedCount === 1 ? 'single' : 'multi';*/
+  const modus: 'none' | 'single' | 'multi' =
+    selectedCount === 0 ? 'none' : selectedCount === 1 ? 'single' : 'multi';
     
   const aktiveKarte = aktiveKarteId ? findKarte(aktiveKarteId) : null;
   const offeneKarte = aktiveKarteId ? geöffnet[aktiveKarteId] : undefined;
@@ -85,13 +116,16 @@ export default function KnotenAtlas() {
   } else {
     console.log("Vordefinierte Karten sind unveränderlich")
   }
-}
+}*/
 
+/*
 function KnotenKontext(argumente:{ node: Node; scope: Lebensraum }) {
-  const data = argumente.node.data
+  const node = argumente.node ?? { data: {}, type: undefined }
+  const data = node.data ?? {}
   const title = (data.title as string) ?? "Kein Name"
   const readonly = false
 
+  /*
   const updateNodeData = useKartenStore(s => s.updateNodeData);
   const setInputCount = (countRaw: number) => {
     if (readonly) return;
@@ -104,15 +138,16 @@ function KnotenKontext(argumente:{ node: Node; scope: Lebensraum }) {
     const ergebnisse = old.slice(0, newLen);
     while (ergebnisse.length < newLen) ergebnisse.push(false);
 
-    updateNodeData(argumente.node.id, prev => ({
+    updateNodeData(node.id, prev => ({
       ...prev,
       inputCount,
       anschlüsse,
       ergebnisse,
     }));
   };
+  
 
-  switch (argumente.node.type as KNOTEN) {
+  switch (node.type as KNOTEN) {
     case KNOTEN.Schnittstelle: return (
       <KontextAtlas
         überschrift={title}
@@ -121,7 +156,8 @@ function KnotenKontext(argumente:{ node: Node; scope: Lebensraum }) {
         interaktion={() => console.log("Interaktion durchgeführt")}
       />
     );
-    case KNOTEN.LogikTabelle: {
+    case KNOTEN.LogikTabelle: return <LogikKontext id={node.id} data={data as LogikTabelleDaten} readonly={readonly}  /> 
+    /*{
       const inputCount = Number.isFinite(data.inputCount) ? (data.inputCount as number) : 0;
 
       return (
@@ -153,7 +189,16 @@ function KnotenKontext(argumente:{ node: Node; scope: Lebensraum }) {
         />
       );
     }
-    case KNOTEN.KartenKnoten: return (
+    case KNOTEN.Element: return (
+      <KontextAtlas 
+        überschrift={(data.title as string) ?? "Kein Name"}
+        beschreibung="Platzhalter"
+        interaktionsfeld="Interagieren"
+        interaktion={() => console.log("Interaktion durchgeführt")}
+      />
+    )
+    case KNOTEN.KartenKnoten: return <KarteKontext id={data.karteId as string} />
+    /*(
       <KontextAtlas
         überschrift={(data.title as string) ?? "Kein Name"}
         beschreibung="Platzhalter"
@@ -176,47 +221,6 @@ function KnotenKontext(argumente:{ node: Node; scope: Lebensraum }) {
 }
 
 /*
-function Beschreibung({scope}:{scope:Lebensraum | undefined}) {
-  const text = "Verwalte die Ein- und Ausgänge deiner Karte.";
-  return (
-    <CardDescription>
-      {text}
-    </CardDescription>
-  )
-}
-
-function Inhalt({aktiveKarteId, offeneKarte, schnittstellenKnoten, scope}:{
-  aktiveKarteId: string | null;
-  offeneKarte: any | undefined;
-  schnittstellenKnoten: any;
-  scope: Lebensraum | undefined;
-}) {
-  function Definieren() {
-    if (scope !== "defined") {
-      return (
-        <SchnittstelleDialog
-          aktiveKarteId={aktiveKarteId}
-          offeneKarte={offeneKarte}
-        >
-          <Button className="w-full">Schnittstelle definieren</Button>
-        </SchnittstelleDialog>
-      )
-    }
-  }
-
-  if(aktiveKarteId && offeneKarte) {
-    return (
-      <CardContent>
-        <Definieren />
-        <SchnittstellenListe
-          aktiveKarteId={aktiveKarteId!}
-          schnittstellenKnoten={schnittstellenKnoten}
-        />
-      </CardContent>
-    )
-  } else { return (<></>) }
-}
-*/
 // helpers.ts
 import { Position } from "@xyflow/react";
 import { type AnschlussNachSeite, Fluß, DatenTypen, Variante } from "@/Atlas/Anschlüsse.types";
@@ -263,3 +267,4 @@ export function erzeugePermutationen(n: number): boolean[][] {
   }
   return perms;
 }
+*/

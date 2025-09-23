@@ -1,37 +1,26 @@
+// ./src/Atlas/Karten.types.ts
 
-// ./src/Karten/Karte.types.ts
-import { type NodeTypes, type Node, type Edge, type OnNodesChange, type OnEdgesChange, type OnConnect, type OnReconnect } from "@xyflow/react"
+import { type Node, type Edge } from "@xyflow/react"
 
-import { DatenTypen, Fluß } from "@/Atlas/Anschlüsse.types.ts";
-
-import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
-import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten.tsx"
-import SchnittstellenKnoten from "@/Atlas/Knoten/SchnittstellenKnoten.tsx";
-import KartenKnoten from "@/Atlas/Knoten/KartenKnoten.tsx";
-import LogikTabelleKnoten from "@/Atlas/Knoten/LogikTabelleKnoten.tsx";
+import { DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
+//import { type OffeneKarte } from "@/Ordnung/datenbank.types";
 
 
 export type Lebensraum = "private" | "public" | "defined"
 
-type PaneKontext = { variante: "Pane"; pos: { x: number; y: number }; scope: Lebensraum; onClick?: () => void };
-type NodeKontext = { variante: "Node"; id: string; pos: { x: number; y: number }; scope: Lebensraum; onClick?: () => void };
-type EdgeKontext = { variante: "Edge"; id: string; pos: { x: number; y: number }; scope: Lebensraum; onClick?: () => void };
+type PaneKontext = { variante: "Pane"; id: string; pos: { x: number; y: number }; onClick?: () => void };
+type NodeKontext = { variante: "Node"; id: string; pos: { x: number; y: number }; onClick?: () => void; scope: Lebensraum };
+type EdgeKontext = { variante: "Edge"; id: string; pos: { x: number; y: number }; onClick?: () => void; scope: Lebensraum };
 
 export type Kontext = PaneKontext | NodeKontext | EdgeKontext
 
 
 export type KarteArgumente = {
-  nodes: Node[];
-  edges: Edge[]; 
-  onNodesChange: OnNodesChange;
-  onEdgesChange: OnEdgesChange;
-  onConnect: OnConnect;
-  onReconnect: OnReconnect;
   hintergrundFarbe?: string;
-  // Prop für die dynamische X-position der Controls, abhängig vom Sidebar-Status
   controlsLeft?: string;
-  scope: Lebensraum;
 };
+
+
 
 export type Schnittstelle = {
   id: string;
@@ -62,14 +51,7 @@ export enum KNOTEN {
   LaTeX = "latex",
   Schnittstelle = "schnittstelle",
   KartenKnoten = "kartenKnoten",
-  LogikTabelle = "logiktabelle"
+  LogikTabelle = "logiktabelle",
+  Element = "element",
   // Logikvarianten später
 }
-
-export const KnotenVarianten: NodeTypes = {
-  [KNOTEN.Basis]: BasisKnoten,
-  [KNOTEN.LaTeX]: LaTeXKnoten,
-  [KNOTEN.Schnittstelle]: SchnittstellenKnoten,
-  [KNOTEN.KartenKnoten]: KartenKnoten,
-  [KNOTEN.LogikTabelle]: LogikTabelleKnoten,
-};

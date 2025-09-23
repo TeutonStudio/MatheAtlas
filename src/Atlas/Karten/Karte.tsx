@@ -1,32 +1,50 @@
 /// ./src/Atlas/Karten/Karte.tsx
 
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { ReactFlow, Controls, MiniMap, Background, useReactFlow, BackgroundVariant, Panel, type Node, type Edge, XYPosition } from "@xyflow/react";
-import { KnotenVarianten, type KarteArgumente, type Kontext } from "@/Atlas/Karten.types";
+import { useState, useCallback, useRef } from "react";
+import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant, Panel, type NodeTypes, type Node, type Edge, type Connection } from "@xyflow/react";
+import { useShallow } from "zustand/react/shallow";
+
+import { KNOTEN, type KarteArgumente, type Kontext } from "@/Atlas/Karten.types";
 import Pfad from "@/Atlas/Karten/Pfad";
-import KnotenAtlas from "@/Ordnung/Atlas/KnotenAtlas";
-import { Shell } from "@/Atlas/KontextMenü/methoden.tsx";
+
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
+import { KontextMenü, menuPos } from "./methoden";
+import Atlas from "@/Ordnung/Atlas/KontextAtlas";
 
-
-import PaneItems from "../KontextMenü/PaneKontext";
-import NodeItems from "../KontextMenü/NodeKontext";
-import EdgeItems from "../KontextMenü/EdgeKontext";
-
-function menuPos(e: MouseEvent | React.MouseEvent, pad = 8) {
-  const x = Math.min(e.clientX + 2, window.innerWidth - pad);
-  const y = Math.min(e.clientY + 2, window.innerHeight - pad);
-  return { x, y };
-}
+import { KartenState } from "@/Ordnung/datenbank.types";
 
 export default function Karte(argumente: KarteArgumente) {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onReconnect, hintergrundFarbe, controlsLeft, scope } = argumente;
+  const { hintergrundFarbe, controlsLeft } = argumente;
+  const select = useShallow((s: KartenState) => {
+    const id = s.aktiveKarteId;
+    return {
+      aktiveKarteId: id,
+      offene: id ? s.geöffnet[id] : undefined,
+      definition: id ? s.db[id] : undefined,
+      onNodesChange: s.onNodesChange,
+      onEdgesChange: s.onEdgesChange,
+      onConnectStore: s.onConnect,
+      onReconnectStore: s.onReconnect,
+    };
+  }); const {
+    aktiveKarteId,
+    offene,
+    definition,
+    onNodesChange,
+    onEdgesChange,
+    onConnectStore,
+    onReconnectStore,
+  } = useKartenStore(select);// if (!aktiveKarteId || !offene || !definition) return;
+
   const [menu, setMenu] = useState<Kontext>();
-  const { screenToFlowPosition } = useReactFlow();
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const scope = offene?.scope ?? "defined"
   const selectionEnabled = scope !== "defined";
+
   const setSelectionSnapshot = useKartenStore(s => s.setSelectionSnapshot);
   const clearSelectionSnapshot = useKartenStore(s => s.clearSelectionSnapshot);
+
 
   const onPaneClick = useCallback(() => setMenu(undefined), []);
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
@@ -39,7 +57,7 @@ export default function Karte(argumente: KarteArgumente) {
   }, [onPaneClick, scope]);
   const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
     event.preventDefault();
-    setMenu({ variante: "Pane", pos: menuPos(event), scope, onClick: onPaneClick });
+    setMenu({ variante: "Pane", id: aktiveKarteId ?? "", pos: menuPos(event), onClick: onPaneClick });
   }, [onPaneClick, scope]);
   const onSelectionChange = useCallback((params: { nodes: Node[]; edges: Edge[] }) => {
     if (!selectionEnabled) return;
@@ -49,8 +67,22 @@ export default function Karte(argumente: KarteArgumente) {
     });
   }, [selectionEnabled, setSelectionSnapshot]);
 
+  const onConnect = useCallback(
+    (params: Connection) => { onConnectStore(params); },
+    [onConnectStore]
+  );
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, conn: Connection) => { onReconnectStore(oldEdge, conn); },
+    [onReconnectStore]
+  );
+
+  const nodes = (offene ?? {nodes: []}).nodes
+  const edges = (offene ?? {edges: []}).edges
+
   if (false) {
-    for (const n of nodes ?? []) {
+    console.log("Karte: ",nodes,edges)
+    for (const n of offene!.nodes ?? []) {
       const x = Number((n as any)?.position?.x);
       const y = Number((n as any)?.position?.y);
       if (!Number.isFinite(x) || !Number.isFinite(y)) {
@@ -61,14 +93,10 @@ export default function Karte(argumente: KarteArgumente) {
     }
   }
 
-  
-  console.log("Karte: ",nodes,edges)
-
   return (
     <div ref={ref} style={{ width: "100%", height: "100%" }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={nodes} edges={edges}
         nodeTypes={KnotenVarianten}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -83,38 +111,37 @@ export default function Karte(argumente: KarteArgumente) {
         selectionOnDrag={selectionEnabled}
         multiSelectionKeyCode="Control"
         panOnDrag={!selectionEnabled ? true : undefined}
+        minZoom={.05}
+        maxZoom={100}
+        defaultViewport={{ x: 0, y: 0, zoom: 2 }}
         fitView
       >
-        <Panel position="top-center">
-          <Pfad />
-        </Panel>
-        <Panel position="center-right">
-          <KnotenAtlas />
-        </Panel>
+        <Panel position="top-center"><Pfad /></Panel>
+        <Panel position="center-right"><Atlas karte={{definition, offene}} /></Panel>
         <Background color={hintergrundFarbe} variant={BackgroundVariant.Dots} />
         <Controls position="bottom-left" style={{ ...(controlsLeft ? { left: controlsLeft } : {}), right: "auto" }} />
         <MiniMap />
-        {menu && <KontextMenü ctx={{...menu,screenToFlowPosition}} />}
+        {menu && <KontextMenü ctx={menu} />}
       </ReactFlow>
     </div>
   );
 }
 
 
-function KontextMenü( { ctx }: { ctx: Kontext & { screenToFlowPosition: (p:XYPosition) => XYPosition} } ) {
-  const style: React.CSSProperties = {
-    position: "fixed",
-    left: ctx.pos.x,
-    top: ctx.pos.y,
-    zIndex: 50,
-  }; 
 
-  switch (ctx.variante) {
-    case "Pane":
-      return <Shell style={style}><PaneItems onClose={ctx.onClick} scope={ctx.scope} position={ctx.pos} screenToFlowPosition={ctx.screenToFlowPosition} /></Shell>;
-    case "Node":
-      return <Shell style={style}><NodeItems id={ctx.id} onClose={ctx.onClick} /></Shell>;
-    case "Edge":
-      return <Shell style={style}><EdgeItems id={ctx.id} onClose={ctx.onClick} /></Shell>;
-  }
-}
+
+import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
+import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten.tsx"
+import SchnittstellenKnoten from "@/Atlas/Knoten/SchnittstellenKnoten.tsx";
+import KartenKnoten from "@/Atlas/Knoten/KartenKnoten.tsx";
+import LogikTabelleKnoten from "@/Atlas/Knoten/LogikTabelleKnoten.tsx";
+import ElementKnoten from "@/Atlas/Knoten/ElementKnoten";
+
+export const KnotenVarianten: NodeTypes = {
+  [KNOTEN.Basis]: BasisKnoten,
+  [KNOTEN.LaTeX]: LaTeXKnoten,
+  [KNOTEN.Schnittstelle]: SchnittstellenKnoten,
+  [KNOTEN.KartenKnoten]: KartenKnoten,
+  [KNOTEN.LogikTabelle]: LogikTabelleKnoten,
+  [KNOTEN.Element]: ElementKnoten,
+};
