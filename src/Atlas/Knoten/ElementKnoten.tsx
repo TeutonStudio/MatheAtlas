@@ -2,10 +2,10 @@
 
 import { Position } from "@xyflow/react";
 
-import { ElementKnotenArgumente, LaTeXKnotenArgumente, LaTeXKnotenDaten } from "@Knoten.types";
-import LaTeXKnoten from "@Knoten/LaTeXKnoten";
-import { Anschluss } from "@Knoten/methoden";
-import { DatenTypen, Fluß, Variante } from "@Anschlüsse.types";
+import { ElementKnotenArgumente, LaTeXKnotenArgumente, LaTeXKnotenDaten } from "@/Atlas/Knoten.types";
+import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten";
+import { Anschluss } from "@/Atlas/Knoten/methoden";
+import { DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types";
 
 export default function ElementKnoten(argumente: ElementKnotenArgumente) {
     function wähle(entweder:any,oder:any) { return (argumente.data.def ?? false) ? entweder : oder }

@@ -3,13 +3,13 @@
 import { Position } from "@xyflow/react";
 
 
-import KnotenDebug, { Anschluss } from "@Knoten/methoden.tsx";
-import { type AnschlussDefinition, type AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@Anschlüsse.types.ts";
-import { type KartenKnotenArgumente, type LaTeXKnotenArgumente, type LaTeXKnotenDaten } from "@Knoten.types.ts";
-import { type Schnittstelle } from "@Karten.types";
+import KnotenDebug, { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
+import { type AnschlussDefinition, type AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
+import { type KartenKnotenArgumente, type LaTeXKnotenArgumente, type LaTeXKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { type Schnittstelle } from "@/Atlas/Karten.types";
 
 
-import LaTeXKnoten from "@Knoten/LaTeXKnoten";
+import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten";
 
 
 export default function KartenKnoten(argumente: KartenKnotenArgumente) {

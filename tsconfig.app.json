@@ -12,10 +12,6 @@
       "baseUrl": ".",
       "paths": {
         "@/*": ["./src/*"],
-        "@Atlas*": ["./src/Ordnung/Atlas*"],
-        "@Karten*": ["./src/Atlas/Karten*"],
-        "@Knoten*": ["./src/Atlas/Knoten*"],
-        "@Anschlüsse*": ["./src/Atlas/Anschlüsse*"],
       },
       
       /* Bundler mode */

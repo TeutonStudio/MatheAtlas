@@ -14,10 +14,10 @@ import {
 
 //import { type Bibliothek } from "@/Ordnung/programm.types.ts";
 
-import KontextAtlas from "@Atlas/KnotenKontext/methoden.tsx";
+import KontextAtlas from "@/Ordnung/Atlas/KnotenKontext/methoden.tsx";
 
 import { OffeneKarte, SelectionSnapshot } from "@/Ordnung/datenbank.types.ts";
-import { KartenDefinition } from "@Karten.types.ts";
+import { KartenDefinition } from "@/Atlas/Karten.types.ts";
 
 export default function KartenAtlas({karte}:{karte: {definition:KartenDefinition, offene: OffeneKarte}}) {
   

@@ -10,8 +10,8 @@ import {
 } from "@xyflow/react";
 import { useTheme } from "next-themes";
 
-import { type DatenAnschlussArgumente } from "@Anschlüsse.types.ts";
-import { istValideVerbindung } from "@Anschlüsse/methoden.ts";
+import { type DatenAnschlussArgumente } from "@/Atlas/Anschlüsse.types.ts";
+import { istValideVerbindung } from "@/Atlas/Anschlüsse/methoden.ts";
 
 import erhalteTypenFarben, { erhalteSVG } from "@/Daten/UI/typen.tsx";
 

@@ -2,11 +2,11 @@
 
 import { Position, type Node, type Edge } from "@xyflow/react";
 
-import { KartenDefinition, KNOTEN, type Schnittstelle } from "@Karten.types.ts";
-import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@Anschlüsse.types.ts";
+import { KartenDefinition, KNOTEN, type Schnittstelle } from "@/Atlas/Karten.types.ts";
+import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
 
-import { Anschluss } from "@Knoten/methoden.tsx";
-import { erhalteId } from "@Anschlüsse/methoden";
+import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
+import { erhalteId } from "@/Atlas/Anschlüsse/methoden";
 
 
 function _knoten(

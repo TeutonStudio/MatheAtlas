@@ -4,8 +4,8 @@ import * as React from "react";
 import { Position } from "@xyflow/react";
 import { useTheme } from "next-themes";
 
-import { type AnschlussDefinition } from "@Anschlüsse.types.ts";
-import DatenAnschluss from "@Anschlüsse/DatenAnschluss.tsx";
+import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
+import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
 
 import erhalteTypenFarben from "@/Daten/UI/typen.tsx";
 

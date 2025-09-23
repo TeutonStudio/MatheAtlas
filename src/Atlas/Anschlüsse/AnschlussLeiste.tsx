@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import { Position, useNodeId, useStore } from "@xyflow/react";
 
-import { Variante, Fluß, type AnschlussLeisteArgumente } from "@Anschlüsse.types.ts";
-import { erhalteId } from "@Anschlüsse/methoden.ts";
+import { Variante, Fluß, type AnschlussLeisteArgumente } from "@/Atlas/Anschlüsse.types.ts";
+import { erhalteId } from "@/Atlas/Anschlüsse/methoden.ts";
 
-import DatenAnschluss from "@Anschlüsse/DatenAnschluss.tsx";
-import MultiAnschlussLeiste from "@Anschlüsse/MultiAnschlussLeiste.tsx";
+import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
+import MultiAnschlussLeiste from "@/Atlas/Anschlüsse/MultiAnschlussLeiste.tsx";
 
 export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
   const { nodeId: propNodeId, seite, anschlussListe, edgePaddingPct = 10 } = argumente;

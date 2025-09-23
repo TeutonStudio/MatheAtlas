@@ -5,9 +5,9 @@ import { useMemo } from "react";
 import { OffeneKarte, SelectionSnapshot } from "@/Ordnung/datenbank.types.ts";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 
-import KartenAtlas from "@Atlas/KartenAtlas.tsx";
-import KnotenAtlas from "@Atlas/KnotenAtlas.tsx";
-import { KartenDefinition } from "@Karten.types.ts";
+import KartenAtlas from "@/Ordnung/Atlas/KartenAtlas.tsx";
+import KnotenAtlas from "@/Ordnung/Atlas/KnotenAtlas.tsx";
+import { KartenDefinition } from "@/Atlas/Karten.types.ts";
 
 
 export default function Atlas({karte}:{karte: {definition:KartenDefinition | undefined, offene: OffeneKarte | undefined}}) {

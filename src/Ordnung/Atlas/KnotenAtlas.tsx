@@ -3,11 +3,11 @@
 import { type Node, type Edge, type Connection } from "@xyflow/react";
 
 import { KNOTEN, Lebensraum } from "@/Atlas/Karten.types.ts";
-import { KartenKnotenDaten, LogikTabelleDaten } from "@Knoten.types.ts";
+import { KartenKnotenDaten, LogikTabelleDaten } from "@/Atlas/Knoten.types.ts";
 
-import { KontextAtlas } from "@Atlas/methoden.tsx";
-import LogikKontext from "@Atlas/KnotenKontext/LogikKontext.tsx";
-import KarteKontext from "@Atlas/KnotenKontext/KarteKontext.tsx";
+import { KontextAtlas } from "@/Ordnung/Atlas/methoden.tsx";
+import LogikKontext from "@/Ordnung/Atlas/KnotenKontext/LogikKontext.tsx";
+import KarteKontext from "@/Ordnung/Atlas/KnotenKontext/KarteKontext.tsx";
 
 export default function KnotenAtlas({node}:{node:Node | undefined}) {
   if (!node) { console.log("Ungültiger Knoten: ",node); return }

@@ -6,10 +6,10 @@ import { Position } from "@xyflow/react";
 import { Switch } from "@/components/ui/switch";
 
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
-import BasisKnoten from "@Knoten/BasisKnoten";
+import BasisKnoten from "@/Atlas/Knoten/BasisKnoten";
 import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden";
-import { BasisKnotenArgumente, type LogikTabelleArgumente } from "@Knoten.types";
-import { Fluß, DatenTypen } from "@Anschlüsse.types";
+import { BasisKnotenArgumente, type LogikTabelleArgumente } from "@/Atlas/Knoten.types";
+import { Fluß, DatenTypen } from "@/Atlas/Anschlüsse.types";
 import { lüge, wahr } from "@/Daten/Formeln/logik";
 
 export const maxFälle = 9;

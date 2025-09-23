@@ -1,7 +1,7 @@
 // ./src/Atlas/Anschlüsse/methoden.ts
 
 import { Position, getOutgoers, type Connection, type Node, type Edge } from "@xyflow/react";
-import { AnschlussNachSeite, DatenTypen, type AnschlussDefinition } from "@Anschlüsse.types.ts";
+import { AnschlussNachSeite, DatenTypen, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
 const SEPARATOR = "__";
 

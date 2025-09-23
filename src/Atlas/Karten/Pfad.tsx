@@ -12,7 +12,7 @@ import {
 
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 import { Verlauf } from '@/Ordnung/datenbank.types';
-import { erhalteText } from '@Karten/methoden';
+import { erhalteText } from '@/Atlas/Karten/methoden';
   
 export default function Pfad() {
     const verlauf = useKartenStore(s => s.verlauf);

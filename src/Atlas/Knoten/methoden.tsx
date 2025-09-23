@@ -3,8 +3,8 @@
 import { BlockMath, InlineMath } from "react-katex";
 import { Badge } from "@/components/ui/badge";
 
-import { type BasisKnotenDaten } from "@Knoten.types.ts";
-import { Fluß, DatenTypen, Variante, type AnschlussDefinition } from "@Anschlüsse.types.ts";
+import { type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { Fluß, DatenTypen, Variante, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
 const KnotenDebug = false;
 export default KnotenDebug;
