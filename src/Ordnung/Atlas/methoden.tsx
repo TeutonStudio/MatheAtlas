@@ -1,8 +1,8 @@
 /// ./src/Ordnung/Atlas/methoden.tsx
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import * as React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type InhaltWrapperProps = { children?: React.ReactNode };
 

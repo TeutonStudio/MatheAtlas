@@ -1,23 +1,13 @@
 // ./src/Ordnung/Atlas/KnotenAtlas.
 
-//import React, { useMemo } from "react";
 import { type Node, type Edge, type Connection } from "@xyflow/react";
 
-
-//import { Button } from "@/components/ui/button";
-//import { Label } from "@/components/ui/label";
-//import { Input } from "@/components/ui/input";
-//import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { KNOTEN, Lebensraum } from "@/Atlas/Karten.types.ts";
-import { KartenKnotenDaten, LogikTabelleDaten } from "@/Atlas/Knoten.types.ts";
+import { KartenKnotenDaten, LogikTabelleDaten } from "@Knoten.types.ts";
 
-//import { useKartenStore } from "../DatenBank/KartenStore.ts";
-//import { SchnittstelleDialog } from "../Dialoge/SchnittstelleDialog.tsx";
-//import { SchnittstellenListe } from "../Dialoge/SchnittstellenListe.tsx";
-import { KontextAtlas } from "./methoden.tsx";
-import LogikKontext from "./KnotenKontext/LogikKontext.tsx";
-import KarteKontext from "./KnotenKontext/KarteKontext.tsx";
+import { KontextAtlas } from "@Atlas/methoden.tsx";
+import LogikKontext from "@Atlas/KnotenKontext/LogikKontext.tsx";
+import KarteKontext from "@Atlas/KnotenKontext/KarteKontext.tsx";
 
 export default function KnotenAtlas({node}:{node:Node | undefined}) {
   if (!node) { console.log("Ungültiger Knoten: ",node); return }

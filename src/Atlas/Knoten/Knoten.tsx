@@ -3,11 +3,11 @@
 import * as React from "react";
 import { Position } from "@xyflow/react";
 
-import KnotenDebug, { KnotenAbzeichen, type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
-import { erhalteAnschlussNachSeite } from "@/Atlas/Anschlüsse/methoden.ts";
-import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
+import KnotenDebug, { KnotenAbzeichen, type KnotenArgumente } from "@Knoten/methoden.tsx";
+import { erhalteAnschlussNachSeite } from "@Anschlüsse/methoden.ts";
+import { type AnschlussDefinition } from "@Anschlüsse.types.ts";
 
-import AnschlussLeiste from "@/Atlas/Anschlüsse/AnschlussLeiste.tsx"
+import AnschlussLeiste from "@Anschlüsse/AnschlussLeiste.tsx"
 
 const PORT_BAR = 20;
 

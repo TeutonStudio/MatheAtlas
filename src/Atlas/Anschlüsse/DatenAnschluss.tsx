@@ -8,11 +8,12 @@ import {
   type Edge,
   type Connection,
 } from "@xyflow/react";
-
-import { type DatenAnschlussArgumente } from "@/Atlas/Anschlüsse.types.ts";
-import { istValideVerbindung } from "@/Atlas/Anschlüsse/methoden.ts";
-import erhalteTypenFarben, { erhalteSVG } from "@/Daten/UI/typen.tsx";
 import { useTheme } from "next-themes";
+
+import { type DatenAnschlussArgumente } from "@Anschlüsse.types.ts";
+import { istValideVerbindung } from "@Anschlüsse/methoden.ts";
+
+import erhalteTypenFarben, { erhalteSVG } from "@/Daten/UI/typen.tsx";
 
 const SVG_GROESSE = 26;
 

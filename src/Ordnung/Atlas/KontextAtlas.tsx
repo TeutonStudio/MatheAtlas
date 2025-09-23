@@ -2,12 +2,12 @@
 
 import { useMemo } from "react";
 
-import { OffeneKarte, SelectionSnapshot } from "../datenbank.types.ts";
-import { useKartenStore } from "../DatenBank/KartenStore.ts";
+import { OffeneKarte, SelectionSnapshot } from "@/Ordnung/datenbank.types.ts";
+import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 
-import KartenAtlas from "./KartenAtlas.tsx";
-import KnotenAtlas from "./KnotenAtlas.tsx";
-import { KartenDefinition } from "@/Atlas/Karten.types.ts";
+import KartenAtlas from "@Atlas/KartenAtlas.tsx";
+import KnotenAtlas from "@Atlas/KnotenAtlas.tsx";
+import { KartenDefinition } from "@Karten.types.ts";
 
 
 export default function Atlas({karte}:{karte: {definition:KartenDefinition | undefined, offene: OffeneKarte | undefined}}) {

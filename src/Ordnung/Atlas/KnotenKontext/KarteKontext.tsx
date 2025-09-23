@@ -1,7 +1,7 @@
 /// ./src/Ordnung/Atlas/KnotenKontext/KarteKontext.tsx
 
-import { KartenKnotenDaten } from "@/Atlas/Knoten.types";
-import KontextAtlas from "@/Ordnung/Atlas/KnotenKontext/methoden.tsx";
+import { KartenKnotenDaten } from "@Knoten.types";
+import KontextAtlas from "@Atlas/KnotenKontext/methoden.tsx";
 //import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 
 export default function KarteKontext({id,data}:{id:string,data:KartenKnotenDaten}) {

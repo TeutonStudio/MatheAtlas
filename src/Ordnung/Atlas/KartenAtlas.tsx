@@ -12,12 +12,12 @@ import {
   ChevronLeftIcon,
 } from "@radix-ui/react-icons";
 
-import { type Bibliothek } from "@/Ordnung/programm.types.ts";
+//import { type Bibliothek } from "@/Ordnung/programm.types.ts";
 
-import KontextAtlas from "@/Ordnung/Atlas/KnotenKontext/methoden.tsx";
+import KontextAtlas from "@Atlas/KnotenKontext/methoden.tsx";
 
-import { OffeneKarte, SelectionSnapshot } from "../datenbank.types.ts";
-import { KartenDefinition } from "@/Atlas/Karten.types.ts";
+import { OffeneKarte, SelectionSnapshot } from "@/Ordnung/datenbank.types.ts";
+import { KartenDefinition } from "@Karten.types.ts";
 
 export default function KartenAtlas({karte}:{karte: {definition:KartenDefinition, offene: OffeneKarte}}) {
   
@@ -33,7 +33,7 @@ export default function KartenAtlas({karte}:{karte: {definition:KartenDefinition
     </div></KontextAtlas>
   );
 }
-
+/*
 function GroupList({ items }: { items: { id: string; label: string; onClick?: () => void }[] }) {
   if (!items?.length) {
     return <div className="text-muted-foreground px-3 py-2 text-sm">Keine Einträge</div>;
@@ -153,7 +153,7 @@ type KnotenGruppe = {
  * - ignoriert leere/whitespace Segmente
  * - unterstützt leere Pfade (Items landen auf Root-Ebene)
  * - keine Mutationen der Eingabe
- */
+ *
 function baueKnotenBaum(items: BibliothekItem[]): KnotenGruppe {
   const root: KnotenGruppe = { _items: [], _gruppen: {} };
 
@@ -215,7 +215,7 @@ function KnotenBibliothek() {
       <KnotenBaumGruppe gruppe={baum} ebene={0} />
     </BibliothekEinheit>
   );
-}*/
+}
 
 
 function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; ebene: number; titel?: string }) {
@@ -242,7 +242,7 @@ function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; eben
 
       {(titel ? offen : true) && (
         <div className="space-y-1">
-          {/* Items dieser Ebene */}
+          {/* Items dieser Ebene *}
           {gruppe._items.length > 0 && (
             <ul className="px-2 space-y-1">
               {gruppe._items.map(it => (
@@ -260,7 +260,7 @@ function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; eben
             </ul>
           )}
 
-          {/* Untergruppen rekursiv */}
+          {/* Untergruppen rekursiv *}
           {hatUntergruppen && (
             <div className="space-y-1">
               {Object.entries(gruppe._gruppen).map(([name, sub]) => (
@@ -273,4 +273,4 @@ function KnotenBaumGruppe({ gruppe, ebene, titel }: { gruppe: KnotenGruppe; eben
     </div>
   );
 }
-
+*/

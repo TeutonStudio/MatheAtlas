@@ -2,11 +2,11 @@
 
 import { Position } from "@xyflow/react";
 
-import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
-import { LaTeXKnotenArgumente, LaTeXKnotenDaten, type SchnittstellenArgumente } from "@/Atlas/Knoten.types.ts";
-import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
+import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@Anschlüsse.types.ts";
+import { LaTeXKnotenArgumente, LaTeXKnotenDaten, type SchnittstellenArgumente } from "@Knoten.types.ts";
+import { Anschluss } from "@Knoten/methoden.tsx";
 
-import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten";
+import LaTeXKnoten from "@Knoten/LaTeXKnoten";
 
 type Aussage = undefined | string | Position
 

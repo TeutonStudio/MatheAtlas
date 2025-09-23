@@ -29,6 +29,12 @@ export type Schnittstelle = {
   datentyp: DatenTypen;
 };
 
+export type Variable = {
+  id:string;
+  name: string;
+  datentyp: DatenTypen;
+}
+
 
 /** NEU: universelle ID + Pfad + Abhängigkeiten */
 export type KartenDefinition = {
@@ -38,6 +44,7 @@ export type KartenDefinition = {
   nodes: Node[];              // Inhalt: Knoten
   edges: Edge[];              // Inhalt: Kanten
   schnittstellen: Schnittstelle[]; // Definition der Ein- und Ausgänge
+  variablen: Variable[]; // Liste von Variablen, die in dieser Karte verwendet werden
   abhaengigkeiten: string[];  // Liste von Karten-IDs, auf die diese Karte verweist
   wirdVerwendetIn: string[];  // Liste von Karten-IDs, in denen diese Karte verwendet wird
   scope: Lebensraum;

@@ -3,10 +3,10 @@
 import { Position } from "@xyflow/react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
-import { AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types";
-import { KontextAtlasArgumente } from "@/Ordnung/atlas.types";
+import { AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@Anschlüsse.types";
+import { KontextAtlasArgumente } from "@Atlas.types";
 
-import { maxFälle } from "@/Atlas/Knoten/LogikTabelleKnoten";
+import { maxFälle } from "@Knoten/LogikTabelleKnoten";
 
 
 export default function KontextAtlas(argumente: KontextAtlasArgumente) {

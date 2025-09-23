@@ -3,7 +3,7 @@
 import React from "react";
 
 import { Verlauf } from "@/Ordnung/datenbank.types";
-import { Kontext } from "@/Atlas/Karten.types";
+import { Kontext } from "@Karten.types";
 
 import PaneItems from "@/Atlas/KontextMenü/PaneKontext";
 import NodeItems from "@/Atlas/KontextMenü/NodeKontext";

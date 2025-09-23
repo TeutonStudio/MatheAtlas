@@ -2,11 +2,11 @@
 
 import { Position, type Node, type Edge } from "@xyflow/react";
 
-import { Anschluss } from "@/Atlas/Knoten/methoden.tsx";
-import { KartenDefinition, KNOTEN } from "@/Atlas/Karten.types.ts";
-import { type Schnittstelle } from "@/Atlas/Karten.types.ts";
-import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
-import { erhalteId } from "@/Atlas/Anschlüsse/methoden";
+import { KartenDefinition, KNOTEN, type Schnittstelle } from "@Karten.types.ts";
+import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@Anschlüsse.types.ts";
+
+import { Anschluss } from "@Knoten/methoden.tsx";
+import { erhalteId } from "@Anschlüsse/methoden";
 
 
 function _knoten(
@@ -181,6 +181,7 @@ function Karte(
     pfad: vordefiniert_namensraum+"/"+pafdname,
     nodes: nodes,
     edges: edges,
+    variablen: [],
     schnittstellen: schnittstellen,
     abhaengigkeiten: abhaengigkeiten,
     wirdVerwendetIn: wirdVerwendetIn,
@@ -233,7 +234,7 @@ export function LogikKarte_einzelarg(
         edges: [
             _kante("s1", "l1",DatenTypen.Logik,Variante.Einzel,"E1","E"),
             _kante("l1", "s2",DatenTypen.Logik,Variante.Einzel,"A","A1" ),
-        ],
+        ],variablen: [],
         schnittstellen: [
           _stelle("s1",input,Fluß.Eingang,DatenTypen.Logik),
           _stelle("s2","Ausgabe",  Fluß.Ausgang,DatenTypen.Logik),
@@ -291,6 +292,7 @@ export function MengenKarte_doppelarg(
           _stelle("s2",input2,Fluß.Eingang,DatenTypen.Menge),
           _stelle("s3","Ausgabe",  Fluß.Ausgang,DatenTypen.Menge),
         ],
+        variablen: [],
         abhaengigkeiten: [
           karte,
         ],
@@ -334,7 +336,7 @@ export function LogikKarte_doppelarg(
             _kante("s1", "l1",DatenTypen.Logik,Variante.Einzel,"E1","El"),
             _kante("s2", "l1",DatenTypen.Logik,Variante.Einzel,"E2","Er"),
             _kante("l1", "s3",DatenTypen.Logik,Variante.Einzel,"Ao","A" ),
-        ],
+        ],variablen: [],
         schnittstellen: [
           _stelle("s1",input1,Fluß.Eingang,DatenTypen.Logik),
           _stelle("s2",input2,Fluß.Eingang,DatenTypen.Logik),

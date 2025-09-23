@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { Position } from "@xyflow/react";
-
-import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
-import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
-import erhalteTypenFarben from "@/Daten/UI/typen.tsx";
 import { useTheme } from "next-themes";
+
+import { type AnschlussDefinition } from "@Anschlüsse.types.ts";
+import DatenAnschluss from "@Anschlüsse/DatenAnschluss.tsx";
+
+import erhalteTypenFarben from "@/Daten/UI/typen.tsx";
 
 /**
  * Die Props wurden überarbeitet, um die Komponente "dumm" zu machen.

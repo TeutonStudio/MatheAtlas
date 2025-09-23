@@ -14,7 +14,6 @@ export type Bibliothek = {
 };
 
 export type StrukturArgumente = {
-  // vorlage: KarteVorlage | undefined;
   firstStyle?: React.CSSProperties;
   secondStyle?: React.CSSProperties;
   thirdStyle?: React.CSSProperties;

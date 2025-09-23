@@ -9,9 +9,10 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
   } from "@/components/ui/breadcrumb"
+
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 import { Verlauf } from '@/Ordnung/datenbank.types';
-import { erhalteText } from './methoden';
+import { erhalteText } from '@Karten/methoden';
   
 export default function Pfad() {
     const verlauf = useKartenStore(s => s.verlauf);

@@ -11,7 +11,11 @@
       /* */
       "baseUrl": ".",
       "paths": {
-        "@/*": ["./src/*"]
+        "@/*": ["./src/*"],
+        "@Atlas*": ["./src/Ordnung/Atlas*"],
+        "@Karten*": ["./src/Atlas/Karten*"],
+        "@Knoten*": ["./src/Atlas/Knoten*"],
+        "@Anschlüsse*": ["./src/Atlas/Anschlüsse*"],
       },
       
       /* Bundler mode */

@@ -4,8 +4,8 @@ import { useState, useCallback, useRef } from "react";
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant, Panel, type NodeTypes, type Node, type Edge, type Connection } from "@xyflow/react";
 import { useShallow } from "zustand/react/shallow";
 
-import { KNOTEN, type KarteArgumente, type Kontext } from "@/Atlas/Karten.types";
-import Pfad from "@/Atlas/Karten/Pfad";
+import { KNOTEN, type KarteArgumente, type Kontext } from "@Karten.types";
+import Pfad from "@Karten/Pfad";
 
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { KontextMenü, menuPos } from "./methoden";

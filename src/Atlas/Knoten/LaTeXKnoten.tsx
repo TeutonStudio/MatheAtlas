@@ -1,10 +1,10 @@
 /// ./src/Atlas/Knoten/LaTeXKnoten.tsx
 
 
-import { type LaTeXKnotenArgumente, type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
-import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden.tsx";
+import { type LaTeXKnotenArgumente, type BasisKnotenDaten } from "@Knoten.types.ts";
+import KnotenDebug, { MathRenderer } from "@Knoten/methoden.tsx";
 
-import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
+import BasisKnoten from "@Knoten/BasisKnoten.tsx";
 
 export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   const basis = { 

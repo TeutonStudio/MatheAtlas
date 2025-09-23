@@ -6,9 +6,9 @@ import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LogikTabelleDaten } from "@/Atlas/Knoten.types";
-import { buildLogikAnschluesse, erzeugePermutationen } from "./methoden";
-import { maxFälle } from "@/Atlas/Knoten/LogikTabelleKnoten";
+import { LogikTabelleDaten } from "@Knoten.types";
+import { buildLogikAnschluesse, erzeugePermutationen } from "@Atlas/KnotenKontext/methoden";
+import { maxFälle } from "@Knoten/LogikTabelleKnoten";
 
 export default function LogikKontext({id, data, readonly}:{
     id: string;

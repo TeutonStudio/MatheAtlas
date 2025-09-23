@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
 
-import { KNOTEN } from '@/Atlas/Karten.types.ts';
+import { KNOTEN } from '@Karten.types.ts';
 
 import { useKartenStore } from '@/Ordnung/DatenBank/KartenStore';
 

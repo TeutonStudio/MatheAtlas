@@ -1,7 +1,7 @@
 
 // ./src/Atlas/Karten/Vorlagem/KartenVorlage.ts
 
-import { type KartenDefinition } from "@/Atlas/Karten.types.ts";
+import { type KartenDefinition } from "@Karten.types.ts";
 
 import { _pos, _basis, _latex, _logik, _stelle, _schnittstelle, _kante, _anschlüsse, LogikKarte_einzelarg, LogikKarte_doppelarg, MengenKarte_doppelarg } from "./methoden.ts"
 import { disjunktion, konjunktion, negation, subjunktion } from "@/Daten/Formeln/logik.ts";
@@ -13,6 +13,7 @@ export const vorlageLeer: KartenDefinition = {
   pfad: "Vorlagen/leer",
   nodes: [],
   edges: [],
+  variablen: [],
   schnittstellen: [],
   abhaengigkeiten: [],
   wirdVerwendetIn: [],

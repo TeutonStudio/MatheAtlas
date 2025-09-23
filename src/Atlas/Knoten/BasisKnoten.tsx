@@ -1,10 +1,10 @@
 /// ./src/Knoten/BasisKnoten.tsx
 
 
-import { type BasisKnotenDaten, type BasisKnotenArgumente } from "@/Atlas/Knoten.types.ts";
-import KnotenDebug, { type KnotenArgumente } from "@/Atlas/Knoten/methoden.tsx";
+import { type BasisKnotenDaten, type BasisKnotenArgumente } from "@Knoten.types.ts";
+import KnotenDebug, { type KnotenArgumente } from "@Knoten/methoden.tsx";
 
-import Knoten from "@/Atlas/Knoten/Knoten.tsx";
+import Knoten from "@Knoten/Knoten.tsx";
 
 
 export default function BasisKnoten(argumente: BasisKnotenArgumente) {
