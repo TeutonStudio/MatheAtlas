@@ -83,11 +83,12 @@ function _karte(
     id:string,
     position:[number,number], 
     karteID: string,
+    definition: KartenDefinition,
 ) {
   return {
     id, type: KNOTEN.KartenKnoten, 
     position: { x: position[0], y: position[1] }, 
-    data: { karteID },
+    data: { karteID, karte: {definition} },
   }
 }
 
@@ -253,7 +254,7 @@ export function LogikKarte_einzelarg(
 export function MengenKarte_doppelarg(
     name:string,
     operation:string,
-    karte: string,
+    karte: string, definition: KartenDefinition,
     ausgabe: (wert1: string, wert2: string) => string,
  ): KartenDefinition {
     const vollerName = "logik-"+name+"-knoten";
@@ -270,7 +271,7 @@ export function MengenKarte_doppelarg(
             _schnittstelle("s2","E2", _pos(-1, 1), input2, Fluß.Eingang, DatenTypen.Menge),
             _element("e1",_pos(0,-1), false), _element("e2",_pos(0,1), false),
             _element("e3",_pos(1,-2), true),
-            _karte("k",_pos(0,-2),karte),
+            _karte("k",_pos(0,-2),karte,definition),
             /*_logik("l1",_pos(0,-2),{
               [Position.Bottom]: [
                 Anschluss("El", DatenTypen.Menge, Fluß.Eingang, Variante.Einzel),
@@ -286,13 +287,12 @@ export function MengenKarte_doppelarg(
             _kante("s1", "e1",DatenTypen.Menge,Variante.Einzel,"E1","menge"),
             _kante("s2", "e2",DatenTypen.Menge,Variante.Einzel,"E2","menge"),
             _kante("l1", "s3",DatenTypen.Menge,Variante.Einzel,"Ao","A" ),
-        ],
+        ],variablen: [],
         schnittstellen: [
           _stelle("s1",input1,Fluß.Eingang,DatenTypen.Menge),
           _stelle("s2",input2,Fluß.Eingang,DatenTypen.Menge),
           _stelle("s3","Ausgabe",  Fluß.Ausgang,DatenTypen.Menge),
         ],
-        variablen: [],
         abhaengigkeiten: [
           karte,
         ],

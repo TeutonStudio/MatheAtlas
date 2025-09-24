@@ -16,8 +16,8 @@ export default function KartenKnoten(argumente: KartenKnotenArgumente) {
   const { id, selected, data } = argumente
   //const { findKarte, aktiveKarteId, openFromKartenKnoten } = useKartenStore();
   //const karte = findKarte(data.karteId);
-  const karte = data.karte.definition
-
+  if (!data.karte) { return <div>Karte nicht gefunden</div> }
+  const karte = data.karte.definition; 
   if (!karte) { return <div>Karte nicht gefunden</div> }
 
   function gefiltert(_fluss: Fluß, logik: boolean = false) {

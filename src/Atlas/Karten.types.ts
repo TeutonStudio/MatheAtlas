@@ -57,9 +57,10 @@ export enum KNOTEN {
   Basis = "basis",
   LaTeX = "latex",
   Schnittstelle = "schnittstelle",
+  Variable = "variable",
+  Parameter = "parameter",
   KartenKnoten = "kartenKnoten",
   LogikTabelle = "logiktabelle",
   Element = "element",
-  Variable = "variable",
   // Logikvarianten später
 }

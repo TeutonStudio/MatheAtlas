@@ -9,7 +9,7 @@ import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
 import ListenDialog from "@/Ordnung/Dialoge/ListenDialog";
 import { ListenAktion } from "@/Ordnung/dialoge.types";
-import { ElementKnotenDaten, LogikTabelleDaten } from "../Knoten.types";
+import { ElementKnotenDaten, LogikTabelleDaten, ParameterKnotenDaten } from "../Knoten.types";
 
 
 
@@ -88,7 +88,7 @@ function Speichern({dirty,onSpeichern}:{
   }
 }
 
-function NeuerKnoten({open, setOpen, scope, position, onClose}:{
+function NeuerKnoten(argumente:{
   open: boolean; 
   setOpen: (open: boolean) => void;
   scope: Lebensraum; 
@@ -98,6 +98,7 @@ function NeuerKnoten({open, setOpen, scope, position, onClose}:{
 }) {
   const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKnoten, addKartenKnoten, onNodesChange } = useKartenStore();
   const { screenToFlowPosition } = useReactFlow();
+  const open = argumente.open;
   const instanziierbareKarten = Object.values(db).filter(
     (karte) =>
       karte.id &&
@@ -109,34 +110,44 @@ function NeuerKnoten({open, setOpen, scope, position, onClose}:{
     name: "LogikTabelle",
   } as KartenDefinition); instanziierbareKarten.push({
     id: "E",
-    name: "ElementKnoten"
-  } as KartenDefinition);
+    name: "ElementKnoten",
+  } as KartenDefinition); instanziierbareKarten.push({
+    id: "P",
+    name: "ParemeterKnoten",
+  } as KartenDefinition)
 
   function onClick(e:React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    setOpen(true);
+    argumente.setOpen(true);
     console.log("neuer Knoten wird ausgewählt")
   };
   function handlePick(id: string) {
-    const flowPos = screenToFlowPosition(position);
+    const flowPos = screenToFlowPosition(argumente.position);
     if (id==="LT") {
       console.log("LogikKnoten hinzufügen")
       const data = {ergebnisse: [false,false,false,false]} as LogikTabelleDaten
       addKnoten(KNOTEN.LogikTabelle,flowPos,data)
     } else if (id==="E") {
       console.log("Elementnoten hinzufügen")
-      const data = { menge: "\\emptyset", objekt: "\\mathcal{X}"} as ElementKnotenDaten
+      const data = {menge: "\\emptyset", objekt: "\\mathcal{X}"} as ElementKnotenDaten
       addKnoten(KNOTEN.Element,flowPos,data)
+    } else if (id==="P") {
+      console.log("ParameterKnoten hinzufügen")
+      const data = {} as ParameterKnotenDaten
+      addKnoten(KNOTEN.Parameter,flowPos,data)
     } else {
       console.log("Karte hinzufügen")
       addKartenKnoten(id, flowPos);
-      setOpen(false);
-      onClose?.()
-    }
+      argumente.setOpen(false);
+    }; argumente.onClose?.()
   };
+  const onClose = () => {
+    argumente.setOpen(false);
+    argumente.onClose?.();
+  }
 
-  if (scope !== "defined") {
+  if (argumente.scope !== "defined") {
     return (
       <>
         <Item onClick={onClick}>Neuer Knoten</Item>
@@ -145,12 +156,12 @@ function NeuerKnoten({open, setOpen, scope, position, onClose}:{
           <ListenDialog 
             open={open}
             title="Instanzierbare Knoten"
-            onClose={() => setOpen(false)}
+            onClose={onClose}
             items={instanziierbareKarten}
             mode="pick"
             onPick={handlePick}
           />
-          )}
+        ) }
       </>
     )
   }

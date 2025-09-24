@@ -17,11 +17,12 @@ export default function Atlas({karte}:{karte: {definition:KartenDefinition | und
   //if (!karte.definition || !karte.offene || karte.offene.scope==="defined") return;
   const definition = karte.definition;
   const offene = karte.offene;
+  if (!offene || !definition) return;
   
   const selektion = useKartenStore(s => s.selection);
   const selectedNode = useMemo(() => {
     const id = selektion.nodeIds[0];
-    return karte.offene!.nodes.find(n => n.id === id) ?? undefined;
+    return offene.nodes.find(n => n.id === id) ?? undefined;
   }, [karte, selektion]); // if (!selectedNode) return;
   //const selectedCount = (selection?.nodeIds?.length ?? 0) + (selection?.edgeIds?.length ?? 0);
   

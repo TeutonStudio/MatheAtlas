@@ -20,6 +20,7 @@ export default function KartenAtlas({
   karte: { definition: KartenDefinition; offene: OffeneKarte };
 }) {
   const { onNodesChange, removeSchnittstelle, removeVariable } = useKartenStore();
+  const scope = karte.offene.scope
 
   const schnittstellenKnoten = useMemo(
     () => karte.offene.nodes.filter(n => n.type === KNOTEN.Schnittstelle),
@@ -59,6 +60,35 @@ export default function KartenAtlas({
     dtype: (k.data?.dtype as DatenTypen) ?? DatenTypen.Unbekannt,
   } as ListItem));
 
+  function NeueSchnittstelle() {
+    if (scope!=="defined") {
+      return (
+        <div>
+          <SchnittstelleDialog
+            aktiveKarteId={karte.definition.id}
+            offeneKarte={karte.offene}
+          >
+            <Button> Schnittstelle definieren </Button>
+          </SchnittstelleDialog>
+        </div>
+      )
+    }
+  };
+  function NeueVariable() {
+    if (scope!=="defined") {
+      return (
+        <div>
+          <VariableDialog
+            aktiveKarteId={karte.definition.id}
+            offeneKarte={karte.offene}
+          >
+            <Button> Variable definieren </Button>
+          </VariableDialog>
+        </div>
+      )
+    }
+  }
+
   return (
     <KontextAtlas überschrift={karte.definition.name} beschreibung="TODO">
       <div className="flex flex-col gap-6">
@@ -79,14 +109,7 @@ export default function KartenAtlas({
         />
 
         {/* Button direkt unter der Liste */}
-        <div>
-          <SchnittstelleDialog
-            aktiveKarteId={karte.definition.id}
-            offeneKarte={karte.offene}
-          >
-            <Button> Schnittstelle definieren </Button>
-          </SchnittstelleDialog>
-        </div>
+        <NeueSchnittstelle />
 
         {/* 2) Variablen-Liste */}
         <Liste
@@ -102,14 +125,7 @@ export default function KartenAtlas({
         />
 
         {/* Button direkt unter der Variablenliste */}
-        <div>
-          <VariableDialog
-            aktiveKarteId={karte.definition.id}
-            offeneKarte={karte.offene}
-          >
-            <Button> Variable definieren </Button>
-          </VariableDialog>
-        </div>
+        <NeueVariable />
       </div>
     </KontextAtlas>
   );

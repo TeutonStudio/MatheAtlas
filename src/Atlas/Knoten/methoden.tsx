@@ -5,9 +5,27 @@ import { Badge } from "@/components/ui/badge";
 
 import { type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
 import { Fluß, DatenTypen, Variante, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
+import { Position } from "@xyflow/react";
 
 const KnotenDebug = false;
 export default KnotenDebug;
+
+type Aussage = undefined | string | Position
+type Ausgabe = boolean | string | any
+
+export function _if(bed:boolean,falls: Aussage,nicht:Aussage): Ausgabe {
+  return bed ? (falls ?? true) : (nicht ?? false)
+};
+export function istEingang(falls: Aussage,nicht: Aussage, fluss: Fluß): Ausgabe { 
+  return _if(fluss === Fluß.Eingang,falls,nicht) 
+};
+export function istVertikal(falls: Aussage,nicht: Aussage, dtype: DatenTypen): Ausgabe { 
+  return _if(dtype === DatenTypen.Logik,falls,nicht) 
+};
+export function invertFluß(_fluss:Fluß): Fluß {
+  return _fluss === Fluß.Eingang ? Fluß.Ausgang : Fluß.Eingang
+};
+
 
 /**
  * Hilfsfunktion zum Erstellen einer sauberen Anschluss-Definition.

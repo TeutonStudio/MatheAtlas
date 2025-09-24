@@ -3,11 +3,13 @@
 import { type Node, type Edge, type Connection } from "@xyflow/react";
 
 import { KNOTEN, Lebensraum } from "@/Atlas/Karten.types.ts";
-import { KartenKnotenDaten, LogikTabelleDaten } from "@/Atlas/Knoten.types.ts";
+import { KartenKnotenDaten, LogikTabelleDaten, ParameterKnotenDaten, VariableKnotenDaten } from "@/Atlas/Knoten.types.ts";
 
 import { KontextAtlas } from "@/Ordnung/Atlas/methoden.tsx";
 import LogikKontext from "@/Ordnung/Atlas/KnotenKontext/LogikKontext.tsx";
 import KarteKontext from "@/Ordnung/Atlas/KnotenKontext/KarteKontext.tsx";
+import ParameterKontext from "./KnotenKontext/ParameterKontext";
+import VariableKontext from "./KnotenKontext/VariableKontext";
 
 export default function KnotenAtlas({node}:{node:Node | undefined}) {
   if (!node) { console.log("Ungültiger Knoten: ",node); return }
@@ -22,8 +24,10 @@ export default function KnotenAtlas({node}:{node:Node | undefined}) {
         interaktion={() => console.log("Interaktion durchgeführt")}
       />
     );
+    case KNOTEN.Parameter: return <ParameterKontext id={node.id} data={node.data as ParameterKnotenDaten} />;
+    case KNOTEN.Variable: return <VariableKontext id={node.id} data={node.data as VariableKnotenDaten } />;
     case KNOTEN.LogikTabelle: return <LogikKontext id={node.id} data={node.data as LogikTabelleDaten} />;
-    case KNOTEN.KartenKnoten: return <KarteKontext id={node.id} data={node.data as KartenKnotenDaten} />
+    case KNOTEN.KartenKnoten: return <KarteKontext id={node.id} data={node.data as KartenKnotenDaten} />;
     case KNOTEN.Element: return (
       <KontextAtlas 
         überschrift={(node.data.title as string) ?? "Kein Name"}

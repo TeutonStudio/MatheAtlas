@@ -49,17 +49,18 @@ export const vorlageDemo: KartenDefinition = {
 
 
 
-
+const und = LogikKarte_doppelarg("und","Konjunktion",[true,false,false,false],(a,b) => doppelargument(a,b,konjunktion,true))
+const oder = LogikKarte_doppelarg("oder","Disjunktion",[true,true,true,false],(a,b) => doppelargument(a,b,disjunktion,true))
 
 // Definition der Knoten-Bibliothek als Record<string, KartenDefinition>
 export const knotenBibliothek: Record<string, KartenDefinition> = {
   "logik-nicht": LogikKarte_einzelarg("nicht","Negation",[false,true],(a) => einzelargument(a,negation)),
-  "logik-und": LogikKarte_doppelarg("und","Konjunktion",[true,false,false,false],(a,b) => doppelargument(a,b,konjunktion,true)),
-  "logik-oder": LogikKarte_doppelarg("oder","Disjunktion",[true,true,true,false],(a,b) => doppelargument(a,b,disjunktion,true)),
+  "logik-und": und,
+  "logik-oder": oder,
   "logik-dann": LogikKarte_doppelarg("dann","Implikation",[true,false,true,true],(a,b) => doppelargument(a,b,subjunktion,false)),
 
-  "mengen-vereinigung": MengenKarte_doppelarg("vereinigung","Vereinigung","bib-logik-oder-knoten",(a,b) => doppelargument(a,b,konjunktion,true)),
-  "mengen-schnitt": MengenKarte_doppelarg("schnitt","Schnitt","bib-logik-und-knoten",(a,b) => doppelargument(a,b,konjunktion,true)),
+  "mengen-vereinigung": MengenKarte_doppelarg("vereinigung","Vereinigung","bib-logik-oder-knoten",oder,(a,b) => doppelargument(a,b,konjunktion,true)),
+  "mengen-schnitt": MengenKarte_doppelarg("schnitt","Schnitt","bib-logik-und-knoten",und,(a,b) => doppelargument(a,b,konjunktion,true)),
 }; export default knotenBibliothek
 
 
