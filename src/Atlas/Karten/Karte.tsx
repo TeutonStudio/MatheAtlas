@@ -126,8 +126,6 @@ export default function Karte(argumente: KarteArgumente) {
           </div>
         </Panel>
         <Background color={hintergrundFarbe} variant={BackgroundVariant.Dots} />
-        {/*<Controls position="bottom-left" style={{ ...(controlsLeft ? { left: controlsLeft } : {}), right: "auto" }} />
-        <MiniMap position="bottom-left" style={{ ...(controlsLeft ? { left: `calc(${controlsLeft} + 12)` } : {}), right: "auto" }} />*/}
         {menu && <KontextMenü ctx={menu} />}
       </ReactFlow>
     </div>
