@@ -924,6 +924,38 @@ export const useKartenStore = create<KartenState>()(
         toast.info("Verschieben in neue Karte: TODO-Implementierung.");
       },
 
+      // --- Variablen Mutationen (NEU) ---
+      addVariable: (karteId, variable) => {
+        const { db } = get();
+        const alt = db[karteId];
+        if (!alt) return;
+
+        // Name-Eindeutigkeit pro Karte sichern
+        const dup = (alt.variablen ?? []).some(v => v.name.trim() === variable.name.trim());
+        if (dup) { toast.error(`Variable „${variable.name}“ existiert bereits.`); return; }
+
+        const neu: KartenDefinition = {
+          ...alt,
+          variablen: [...(alt.variablen ?? []), variable],
+          updatedAt: Date.now(),
+        };
+        setVerlaufDirty(get, set, karteId, true);
+        set({ db: { ...db, [karteId]: neu } });
+      },
+
+      removeVariable: (karteId, variableId) => {
+        const { db } = get();
+        const alt = db[karteId];
+        if (!alt) return;
+        const neu: KartenDefinition = {
+          ...alt,
+          variablen: (alt.variablen ?? []).filter(v => v.id !== variableId),
+          updatedAt: Date.now(),
+        };
+        setVerlaufDirty(get, set, karteId, true);
+        set({ db: { ...db, [karteId]: neu } });
+      },
+
     }),
     { name: "karten-db" }
   )

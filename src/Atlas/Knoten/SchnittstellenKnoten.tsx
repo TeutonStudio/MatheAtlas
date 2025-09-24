@@ -35,12 +35,14 @@ export default function SchnittstellenKnoten(argumente: SchnittstellenArgumente)
   );
   
   const badge = istEingang("Eingabe","Ausgabe")
-  let anschlussName = argumente.data.handleID ?? argumente.data.title;
-  if (anschlussName === "") { anschlussName = argumente.data.title ?? "Hafen" }
+  function anschlussName() {
+    const ausgabe = argumente.data.handleID ?? argumente.data.title;
+    return ausgabe==="" ? "Hafen" : ausgabe;
+  };
   const anschlüsse = {
-    [seite]: [Anschluss(anschlussName,argumente.data.dtype,invertFluß(fluss),Variante.Einzel)], 
+    [seite]: [Anschluss(anschlussName(),argumente.data.dtype,invertFluß(fluss),Variante.Einzel)], 
   } as AnschlussNachSeite;
-  const data = { ...argumente.data, badge, anschlüsse, latex: argumente.data.latex ?? "\\LaTeX" } as LaTeXKnotenDaten;
+  const data = {...argumente.data, badge, anschlüsse, latex: argumente.data.latex} as LaTeXKnotenDaten;
   
   const argument = {...argumente, data } as LaTeXKnotenArgumente
   return <LaTeXKnoten {...argument} />

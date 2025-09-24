@@ -10,7 +10,7 @@ import {
   type XYPosition,
 } from "@xyflow/react";
 
-import { KNOTEN, Lebensraum, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
+import { KNOTEN, Lebensraum, Variable, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import { type User } from "@/Ordnung/programm.types.ts";
 //import { _anschlüsse } from "@/Atlas/Karten/Vorlagen/methoden";
 
@@ -138,4 +138,6 @@ export type KartenState = {
   copySelectionToNewCard: () => void; // Zu neuer Karte kopieren
   moveSelectionToNewCard: () => void; // Zu neuer Karte verschieben
 
+  addVariable: (karteId: string, variable: Variable) => void;
+  removeVariable: (karteId: string, variableId: string) => void;
 };

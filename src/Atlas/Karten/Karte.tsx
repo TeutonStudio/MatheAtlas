@@ -118,9 +118,16 @@ export default function Karte(argumente: KarteArgumente) {
       >
         <Panel position="top-center"><Pfad /></Panel>
         <Panel position="center-right"><Atlas karte={{definition, offene}} /></Panel>
+        <Panel position="bottom-left" style={{ left: controlsLeft }}>
+          <div className="rf-bottom-bar" style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            {/* Controls und MiniMap werden in diesem Panel „normal“ gelayoutet */}
+            <MiniMap style={{ position: "static", width: 220, height: 180 }} />
+            <Controls style={{ position: "static" }} />
+          </div>
+        </Panel>
         <Background color={hintergrundFarbe} variant={BackgroundVariant.Dots} />
-        <Controls position="bottom-left" style={{ ...(controlsLeft ? { left: controlsLeft } : {}), right: "auto" }} />
-        <MiniMap />
+        {/*<Controls position="bottom-left" style={{ ...(controlsLeft ? { left: controlsLeft } : {}), right: "auto" }} />
+        <MiniMap position="bottom-left" style={{ ...(controlsLeft ? { left: `calc(${controlsLeft} + 12)` } : {}), right: "auto" }} />*/}
         {menu && <KontextMenü ctx={menu} />}
       </ReactFlow>
     </div>
@@ -136,11 +143,13 @@ import SchnittstellenKnoten from "@/Atlas/Knoten/SchnittstellenKnoten.tsx";
 import KartenKnoten from "@/Atlas/Knoten/KartenKnoten.tsx";
 import LogikTabelleKnoten from "@/Atlas/Knoten/LogikTabelleKnoten.tsx";
 import ElementKnoten from "@/Atlas/Knoten/ElementKnoten";
+import VariableKnoten from "@/Atlas/Knoten/VariableKnoten";
 
 export const KnotenVarianten: NodeTypes = {
   [KNOTEN.Basis]: BasisKnoten,
   [KNOTEN.LaTeX]: LaTeXKnoten,
   [KNOTEN.Schnittstelle]: SchnittstellenKnoten,
+  [KNOTEN.Variable]: VariableKnoten,
   [KNOTEN.KartenKnoten]: KartenKnoten,
   [KNOTEN.LogikTabelle]: LogikTabelleKnoten,
   [KNOTEN.Element]: ElementKnoten,

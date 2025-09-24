@@ -22,6 +22,12 @@ export type SchnittstellenDaten = LaTeXKnotenDaten & {
   handleID:string;
 };
 
+export type VariableKnotenDaten = LaTeXKnotenDaten & {
+  label: string;
+  dtype: DatenTypen;
+  handleID:string;
+}
+
 export type KartenKnotenDaten = BasisKnotenDaten & {
   aktiveKarteId: string;
   karte: {definition: KartenDefinition, /*offene: OffeneKarte*/};
@@ -57,6 +63,10 @@ type KnotenArgumente = NodeProps & {
 
 export type SchnittstellenArgumente = NodeProps & {
   data: SchnittstellenDaten;
+};
+
+export type VariableKnotenArgumente = NodeProps & {
+  data: VariableKnotenDaten;
 };
 
 export type KartenKnotenArgumente = KnotenArgumente & {

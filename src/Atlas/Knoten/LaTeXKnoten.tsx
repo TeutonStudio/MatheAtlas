@@ -14,6 +14,7 @@ export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   } as BasisKnotenDaten;
 
   // BasisKnoten kümmert sich um Titel/Badge/Anschlüsse.
+  const latex = argumente.data.latex ?? "\\LaTeX"
   const argument = {...argumente}; argument.data = basis//{ id, anschlüsse, style, selected, data: basis, zIndex: 4, dragging, draggable, selectable, deletable, type };
   
   if (KnotenDebug) {
@@ -22,7 +23,7 @@ export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   }
   return (
     <BasisKnoten {...argument}>
-      <MathRenderer latex={argumente.data.latex} />
+      <MathRenderer latex={latex==="" ? "\\latex" : latex} />
     </BasisKnoten>
   );
 }

@@ -60,5 +60,6 @@ export enum KNOTEN {
   KartenKnoten = "kartenKnoten",
   LogikTabelle = "logiktabelle",
   Element = "element",
+  Variable = "variable",
   // Logikvarianten später
 }
