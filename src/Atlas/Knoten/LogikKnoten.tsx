@@ -7,29 +7,14 @@ import { Switch } from "@/components/ui/switch";
 
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten";
-import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden";
-import { BasisKnotenArgumente, type LogikTabelleArgumente } from "@/Atlas/Knoten.types";
+import KnotenDebug, { erzeugePermutationen, MathRenderer } from "@/Atlas/Knoten/methoden";
+import { BasisKnotenArgumente, type LogikArgumente } from "@/Atlas/Knoten.types";
 import { Fluß, DatenTypen } from "@/Atlas/Anschlüsse.types";
 import { lüge, wahr } from "@/Daten/Formeln/logik";
 
 export const maxFälle = 9;
 
-/** Alle möglichen Permutationen für n Eingänge */
-const erzeugePermutationen = (n: number): boolean[][] => {
-  if (n <= 0) return [[]];
-  const perms: boolean[][] = [];
-  const anzahlZeilen = 1 << n;
-  for (let i = 0; i < anzahlZeilen; i++) {
-    const zeile: boolean[] = [];
-    for (let j = n - 1; j >= 0; j--) {
-      zeile.push(((i >> j) & 1) === 0);
-    }
-    perms.push(zeile);
-  }
-  return perms;
-};
-
-export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
+export default function LogikKnoten(argumente: LogikArgumente) {
   const { id, data, selected, draggable, deletable } = argumente;
   const isReadOnly = draggable === false && deletable === false;
   const anschlüsse = data.anschlüsse;
@@ -65,12 +50,6 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
     }
   }, [anzahlZeilen, data.ergebnisse, id, updateNodeData, isReadOnly]);
 
-  const handleSwitchChange = (index: number, neuerWert: boolean) => {
-    if (isReadOnly) return;
-    const neueErgebnisse = [...ergebnisse];
-    neueErgebnisse[index] = neuerWert;
-    updateNodeData(id, prev => ({ ...prev, ergebnisse: neueErgebnisse }));
-  };
   
   const style = { minWidth: 280 } as React.CSSProperties;
   const title = data.title ?? "Logik Tabelle";
@@ -109,17 +88,7 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
                       <MathRenderer latex={wert ? wahr() : lüge()} />
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-center border-l dark:border-gray-600">
-                    {isReadOnly ? (
-                      <MathRenderer latex={ergebnisse[zeilenIndex] ? wahr() : lüge()} />
-                    ) : (
-                      <Switch
-                        checked={!!ergebnisse[zeilenIndex]}
-                        onCheckedChange={(val) => handleSwitchChange(zeilenIndex, val)}
-                        className="mx-auto"
-                      />
-                    )}
-                  </td>
+                  <Ergebniss id={id} isReadOnly={isReadOnly} ergebnisse={ergebnisse} zeilenIndex={zeilenIndex} />
                 </tr>
               ))}
             </tbody>
@@ -128,4 +97,30 @@ export default function LogikTabelleKnoten(argumente: LogikTabelleArgumente) {
       )}
     </BasisKnoten>
   );
+}
+
+function Ergebniss({id,isReadOnly,ergebnisse,zeilenIndex}:{id:string,isReadOnly:boolean,ergebnisse:boolean[],zeilenIndex:number}) {
+  const updateNodeData = useKartenStore(s => s.updateNodeData);
+  const handleSwitchChange = (index: number, neuerWert: boolean) => {
+    if (isReadOnly) return;
+    const neueErgebnisse = [...ergebnisse];
+    neueErgebnisse[index] = neuerWert;
+    updateNodeData(id, prev => ({ ...prev, ergebnisse: neueErgebnisse }));
+  };
+  function Anzeige() {
+    if (isReadOnly) {
+      return <MathRenderer latex={ergebnisse[zeilenIndex] ? wahr() : lüge()} />
+    } else {
+      return <Switch
+        checked={!!ergebnisse[zeilenIndex]}
+        onCheckedChange={(val) => handleSwitchChange(zeilenIndex, val)}
+        className="mx-auto"
+      />
+    }
+  };
+  const style = "px-3 py-2 text-center border-l dark:border-gray-600"
+
+  return (
+    <td className={style}><Anzeige /></td>
+  )
 }

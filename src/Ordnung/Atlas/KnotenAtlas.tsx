@@ -3,7 +3,7 @@
 import { type Node, type Edge, type Connection } from "@xyflow/react";
 
 import { KNOTEN, Lebensraum } from "@/Atlas/Karten.types.ts";
-import { KartenKnotenDaten, LogikTabelleDaten, ParameterKnotenDaten, VariableKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { KartenKnotenDaten, type LogikDaten, type ParameterKnotenDaten, type VariableKnotenDaten } from "@/Atlas/Knoten.types.ts";
 
 import { KontextAtlas } from "@/Ordnung/Atlas/methoden.tsx";
 import LogikKontext from "@/Ordnung/Atlas/KnotenKontext/LogikKontext.tsx";
@@ -26,7 +26,7 @@ export default function KnotenAtlas({node}:{node:Node | undefined}) {
     );
     case KNOTEN.Parameter: return <ParameterKontext id={node.id} data={node.data as ParameterKnotenDaten} />;
     case KNOTEN.Variable: return <VariableKontext id={node.id} data={node.data as VariableKnotenDaten } />;
-    case KNOTEN.LogikTabelle: return <LogikKontext id={node.id} data={node.data as LogikTabelleDaten} />;
+    case KNOTEN.Logik: return <LogikKontext id={node.id} data={node.data as LogikDaten} />;
     case KNOTEN.KartenKnoten: return <KarteKontext id={node.id} data={node.data as KartenKnotenDaten} />;
     case KNOTEN.Element: return (
       <KontextAtlas 

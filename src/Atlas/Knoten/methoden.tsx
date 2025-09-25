@@ -138,3 +138,18 @@ export function KnotenAbzeichen({badge,onBadgeClick}: {
     )*/
   }
 }
+
+/** Alle möglichen Permutationen für n Eingänge */
+export const erzeugePermutationen = (n: number): boolean[][] => {
+  if (n <= 0) return [[]];
+  const perms: boolean[][] = [];
+  const anzahlZeilen = 1 << n;
+  for (let i = 0; i < anzahlZeilen; i++) {
+    const zeile: boolean[] = [];
+    for (let j = n - 1; j >= 0; j--) {
+      zeile.push(((i >> j) & 1) === 0);
+    }
+    perms.push(zeile);
+  }
+  return perms;
+};

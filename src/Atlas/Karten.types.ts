@@ -59,8 +59,8 @@ export enum KNOTEN {
   Schnittstelle = "schnittstelle",
   Variable = "variable",
   Parameter = "parameter",
+  Logik = "logik",
   KartenKnoten = "kartenKnoten",
-  LogikTabelle = "logiktabelle",
   Element = "element",
   // Logikvarianten später
 }

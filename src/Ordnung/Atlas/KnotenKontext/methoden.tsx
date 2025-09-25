@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { AnschlussNachSeite, DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types";
 import { KontextAtlasArgumente } from "@/Ordnung/Atlas.types";
 
-import { maxFälle } from "@/Atlas/Knoten/LogikTabelleKnoten";
+import { maxFälle } from "@/Atlas/Knoten/LogikKnoten";
 
 
 export default function KontextAtlas(argumente: KontextAtlasArgumente) {

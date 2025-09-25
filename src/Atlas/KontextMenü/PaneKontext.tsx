@@ -1,15 +1,15 @@
 // ./src/Atlas/KontextMenü/PaneKontext.tsx
 
 
-import React, { useEffect, useRef, useState } from "react";
-import { type XYPosition, type EdgeChange, Position, useReactFlow } from "@xyflow/react";
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import React, { useState } from "react";
+import { type XYPosition, useReactFlow } from "@xyflow/react";
+
 import { KartenDefinition, KNOTEN, type Lebensraum } from "@/Atlas/Karten.types.ts";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
 import ListenDialog from "@/Ordnung/Dialoge/ListenDialog";
-import { ListenAktion } from "@/Ordnung/dialoge.types";
-import { ElementKnotenDaten, LogikTabelleDaten, ParameterKnotenDaten } from "../Knoten.types";
+
+import { type ElementKnotenDaten, type LogikDaten, type ParameterKnotenDaten } from "../Knoten.types";
 
 
 
@@ -96,7 +96,7 @@ function NeuerKnoten(argumente:{
   onClose?: () => void;
   
 }) {
-  const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKnoten, addKartenKnoten, onNodesChange } = useKartenStore();
+  const { db, aktiveKarteId, hatZirkulaereAbhaengigkeit, addKnoten, addKartenKnoten } = useKartenStore();
   const { screenToFlowPosition } = useReactFlow();
   const open = argumente.open;
   const instanziierbareKarten = Object.values(db).filter(
@@ -106,7 +106,7 @@ function NeuerKnoten(argumente:{
       karte.id !== aktiveKarteId &&
       !hatZirkulaereAbhaengigkeit(aktiveKarteId, karte.id)
   ); instanziierbareKarten.push({
-    id: "LT",
+    id: "L",
     name: "LogikTabelle",
   } as KartenDefinition); instanziierbareKarten.push({
     id: "E",
@@ -124,10 +124,10 @@ function NeuerKnoten(argumente:{
   };
   function handlePick(id: string) {
     const flowPos = screenToFlowPosition(argumente.position);
-    if (id==="LT") {
+    if (id==="L") {
       console.log("LogikKnoten hinzufügen")
-      const data = {ergebnisse: [false,false,false,false]} as LogikTabelleDaten
-      addKnoten(KNOTEN.LogikTabelle,flowPos,data)
+      const data = {ergebnisse: [false,false,false,false]} as LogikDaten
+      addKnoten(KNOTEN.Logik,flowPos,data)
     } else if (id==="E") {
       console.log("Elementnoten hinzufügen")
       const data = {menge: "\\emptyset", objekt: "\\mathcal{X}"} as ElementKnotenDaten

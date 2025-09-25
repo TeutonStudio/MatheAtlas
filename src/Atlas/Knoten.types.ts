@@ -49,7 +49,7 @@ export type LaTeXKnotenDaten = BasisKnotenDaten & {
   latex?: string;
 };
 
-export type LogikTabelleDaten = BasisKnotenDaten & {
+export type LogikDaten = BasisKnotenDaten & {
   ergebnisse: boolean[];
   eingabeAnzahl: number;
 };
@@ -92,8 +92,8 @@ export type LaTeXKnotenArgumente = KnotenArgumente & {
   data: LaTeXKnotenDaten;
 };
 
-export type LogikTabelleArgumente = KnotenArgumente & {
-  data: LogikTabelleDaten;
+export type LogikArgumente = KnotenArgumente & {
+  data: LogikDaten;
 };
 
 export type ElementKnotenArgumente = KnotenArgumente & {

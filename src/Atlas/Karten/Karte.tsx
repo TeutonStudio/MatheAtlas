@@ -139,7 +139,7 @@ import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
 import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten.tsx"
 import SchnittstellenKnoten from "@/Atlas/Knoten/SchnittstellenKnoten.tsx";
 import KartenKnoten from "@/Atlas/Knoten/KartenKnoten.tsx";
-import LogikTabelleKnoten from "@/Atlas/Knoten/LogikTabelleKnoten.tsx";
+import LogikKnoten from "@/Atlas/Knoten/LogikKnoten.tsx";
 import ElementKnoten from "@/Atlas/Knoten/ElementKnoten";
 import VariableKnoten from "@/Atlas/Knoten/VariableKnoten";
 import ParameterKnoten from "../Knoten/ParameterKnoten";
@@ -151,6 +151,6 @@ export const KnotenVarianten: NodeTypes = {
   [KNOTEN.Variable]: VariableKnoten,
   [KNOTEN.Parameter]: ParameterKnoten,
   [KNOTEN.KartenKnoten]: KartenKnoten,
-  [KNOTEN.LogikTabelle]: LogikTabelleKnoten,
+  [KNOTEN.Logik]: LogikKnoten,
   [KNOTEN.Element]: ElementKnoten,
 };
