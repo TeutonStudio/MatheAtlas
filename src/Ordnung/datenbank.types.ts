@@ -144,4 +144,6 @@ export type KartenState = {
   deleteNodeById: (nodeId: string) => void;
   revalidateEdgesForNode: (nodeId: string) => void;
 
+  graphVersion: Record<string, number>;
+  nodeDataVersions: Record<string, Record<string, number>>;
 };

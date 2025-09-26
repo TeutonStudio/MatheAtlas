@@ -28,6 +28,8 @@ import {
   collectDirtyIds, closeAllExceptIds, forceOpen, promptMultiSaveOrDiscard,
   decorateNodesForScope,
   setVerlaufDirty, _findeHandle,
+  bumpNode,
+  bumpGraph,
 } from "@/Ordnung/DatenBank/methoden.ts"
 import { KartenState, OffeneKarte, DialogAnfrageUmbenennen } from "../datenbank.types";
 import { Fluß } from "@/Atlas/Anschlüsse.types";
@@ -128,6 +130,7 @@ export const useKartenStore = create<KartenState>()(
           n.id === nodeId ? { ...n, data: updater(n.data) } : n
         );
       
+        bumpNode(get,set,aktiveKarteId, nodeId);
         set({
           geöffnet: {
             ...geöffnet,
@@ -577,6 +580,7 @@ export const useKartenStore = create<KartenState>()(
 
         const edges = applyEdgeChanges(changes, offene.edges);
         setVerlaufDirty(get, set, aktiveKarteId, true)
+        bumpGraph(get,set,aktiveKarteId);
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges, dirty: true } } });
       },
       
@@ -588,6 +592,7 @@ export const useKartenStore = create<KartenState>()(
 
         const nextEdges = addEdgeWithSingleTarget(connection, offene.edges);
         setVerlaufDirty(get, set, aktiveKarteId, true)
+        bumpGraph(get,set,aktiveKarteId);
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
       },
 
@@ -599,6 +604,7 @@ export const useKartenStore = create<KartenState>()(
 
         const nextEdges = reconnectWithSingleTarget(oldEdge, connection, offene.edges);
         setVerlaufDirty(get, set, aktiveKarteId, true)
+        bumpGraph(get,set,aktiveKarteId);
         set({ geöffnet: { ...geöffnet, [aktiveKarteId]: { ...offene, edges: nextEdges, dirty: true } } });
       },
 
@@ -653,6 +659,7 @@ export const useKartenStore = create<KartenState>()(
         const updatedNodes = [...(offene.nodes ?? []), neuerKnoten];
 
         setVerlaufDirty(get, set, aktiveKarteId, true)
+        bumpGraph(get,set,aktiveKarteId);
         set({
           geöffnet: {
             ...geöffnet,
@@ -1020,6 +1027,7 @@ export const useKartenStore = create<KartenState>()(
         };
 
         setVerlaufDirty(get, set, aktiveKarteId, true);
+        bumpGraph(get,set,aktiveKarteId);
         set({
           geöffnet: {
             ...geöffnet,
@@ -1062,6 +1070,7 @@ export const useKartenStore = create<KartenState>()(
         }
 
         if (neueEdges.length !== offene.edges.length) {
+          bumpGraph(get,set,aktiveKarteId);
           set({
             geöffnet: {
               ...geöffnet,
@@ -1072,6 +1081,8 @@ export const useKartenStore = create<KartenState>()(
         }
       },
 
+      graphVersion: {},
+      nodeDataVersions: {},
 
     }),
     { name: "karten-db" }

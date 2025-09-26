@@ -3,7 +3,7 @@
 import { Position, getOutgoers, type Connection, type Node, type Edge } from "@xyflow/react";
 import { AnschlussNachSeite, DatenTypen, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
 
-const SEPARATOR = "__";
+const SEPARATOR = "_$_";
 
 /**
  * Definiert die feste Reihenfolge der ID-Bestandteile. Die ID des Knotens ist NICHT Teil der Handle-ID.

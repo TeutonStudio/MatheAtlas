@@ -192,3 +192,25 @@ export function _findeHandle(node: Node, handleId: string | null | undefined, fl
 
   return alle.find(h => h?.id === handleId && h?.fluss === fluss);
 }
+
+export function bumpGraph(get: Getter,set: Setter,kartenId: string) {
+  const { graphVersion } = get();
+  set({
+    graphVersion: {
+      ...graphVersion,
+      [kartenId]: (graphVersion[kartenId] ?? 0) + 1,
+    },
+  });
+}
+
+export function bumpNode(get: Getter,set: Setter,kartenId: string, nodeId: string) {
+  const { nodeDataVersions } = get();
+  const cur = nodeDataVersions[kartenId] ?? {};
+  set({
+    nodeDataVersions: {
+      ...nodeDataVersions,
+      [kartenId]: { ...cur, [nodeId]: (cur[nodeId] ?? 0) + 1 },
+    },
+  });
+}
+
