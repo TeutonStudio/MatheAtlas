@@ -8,6 +8,7 @@ export enum DatenTypen {
   Logik = "bool",
   Menge = "set",
   Zahl = "number",
+  Term = "term",
 }
 
 export enum Fluß {

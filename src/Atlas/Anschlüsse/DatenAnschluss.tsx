@@ -16,6 +16,7 @@ import { istValideVerbindung } from "@/Atlas/Anschlüsse/methoden.ts";
 import erhalteTypenFarben, { erhalteSVG } from "@/Daten/UI/typen.tsx";
 
 const SVG_GROESSE = 26;
+const HITBOX = 5;
 
 /**
  * DatenAnschluss:
@@ -139,8 +140,8 @@ function griffStil(farbe: string): React.CSSProperties {
     pointerEvents: "auto",
     background: farbe,
     border: "1px solid rgba(0,0,0,.35)",
-    width: 3,
-    height: 3,
+    width: HITBOX,
+    height: HITBOX,
     borderRadius: "50%",
     zIndex: 6,
     position: "absolute",

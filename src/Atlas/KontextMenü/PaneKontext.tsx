@@ -9,16 +9,11 @@ import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
 import ListenDialog from "@/Ordnung/Dialoge/ListenDialog";
 
-import { type ElementKnotenDaten, type LogikDaten, type ParameterKnotenDaten } from "../Knoten.types";
+import { AuswertungsKnotenDaten, RechenKnotenDaten, type ElementKnotenDaten, type LogikKnotenDaten, type ParameterKnotenDaten } from "../Knoten.types";
 
+type PaneItemKontext = { id: string,onClose?: () => void, position: XYPosition }
 
-
-export default function PaneItems( argument: { 
-  id: string,
-  onClose?: () => void, 
-  // karte: KartenSammlung, 
-  position: XYPosition,
-} ) {
+export default function PaneItems( argument: PaneItemKontext ) {
   const { id, onClose, position } = argument
   
   const [open, setOpen] = useState(false);
@@ -107,14 +102,20 @@ function NeuerKnoten(argumente:{
       !hatZirkulaereAbhaengigkeit(aktiveKarteId, karte.id)
   ); instanziierbareKarten.push({
     id: "L",
-    name: "LogikTabelle",
+    name: "Logik Knoten",
   } as KartenDefinition); instanziierbareKarten.push({
     id: "E",
-    name: "ElementKnoten",
+    name: "Element Knoten",
   } as KartenDefinition); instanziierbareKarten.push({
     id: "P",
-    name: "ParemeterKnoten",
-  } as KartenDefinition)
+    name: "Paremeter Knoten",
+  } as KartenDefinition); instanziierbareKarten.push({
+    id: "A",
+    name: "Auswertungs Knoten",
+  } as KartenDefinition); instanziierbareKarten.push({
+    id: "R",
+    name: "Rechen Knoten",
+  } as KartenDefinition); 
 
   function onClick(e:React.MouseEvent) {
     e.preventDefault();
@@ -126,7 +127,7 @@ function NeuerKnoten(argumente:{
     const flowPos = screenToFlowPosition(argumente.position);
     if (id==="L") {
       console.log("LogikKnoten hinzufügen")
-      const data = {ergebnisse: [false,false,false,false]} as LogikDaten
+      const data = {ergebnisse: [false,false,false,false]} as LogikKnotenDaten
       addKnoten(KNOTEN.Logik,flowPos,data)
     } else if (id==="E") {
       console.log("Elementnoten hinzufügen")
@@ -136,6 +137,14 @@ function NeuerKnoten(argumente:{
       console.log("ParameterKnoten hinzufügen")
       const data = {} as ParameterKnotenDaten
       addKnoten(KNOTEN.Parameter,flowPos,data)
+    } else if (id==="A") {
+      console.log("AuswertungsKnoten hinzufügen")
+      const data = {} as AuswertungsKnotenDaten
+      addKnoten(KNOTEN.Auswertung,flowPos,data)
+    } else if (id==="R") {
+      console.log("RechenKnoten hinzufügen")
+      const data = {} as RechenKnotenDaten
+      addKnoten(KNOTEN.Rechen,flowPos,data)
     } else {
       console.log("Karte hinzufügen")
       addKartenKnoten(id, flowPos);

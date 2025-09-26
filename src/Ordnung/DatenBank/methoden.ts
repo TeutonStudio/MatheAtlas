@@ -6,11 +6,13 @@ import {
   type Node,
   type Edge,
   type Connection,
+  Position,
 } from "@xyflow/react";
 import { nanoid } from "nanoid";
 import { KNOTEN, Lebensraum, type KartenDefinition, type Schnittstelle } from "@/Atlas/Karten.types.ts";
 import knotenBibliothek, { vorlageLeer } from "@/Atlas/Karten/Vorlagen/KartenVorlage";
 import { KartenState } from "../datenbank.types";
+import { Fluß } from "@/Atlas/Anschlüsse.types";
 
 // Entfernt alle Edges, die auf dasselbe Ziel-Handle zeigen, und fügt die neue Verbindung hinzu.
 export function addEdgeWithSingleTarget(conn: Connection, edges: Edge[]): Edge[] {
@@ -175,4 +177,18 @@ export function setVerlaufDirty(get: () => KartenState, set: any, id: string, di
   const neu = verlauf.slice();
   neu[idx] = { ...neu[idx], dirty };
   set({ verlauf: neu });
+}
+
+export function _findeHandle(node: Node, handleId: string | null | undefined, fluss: Fluß) {
+  const ports = (node?.data as any)?.anschlüsse;
+  if (!ports) return undefined;
+
+  const alle = [
+    ...(ports[Position.Top] ?? []),
+    ...(ports[Position.Bottom] ?? []),
+    ...(ports[Position.Left] ?? []),
+    ...(ports[Position.Right] ?? []),
+  ] as any[];
+
+  return alle.find(h => h?.id === handleId && h?.fluss === fluss);
 }

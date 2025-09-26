@@ -1,5 +1,8 @@
 /// ./src/Ordnung/Atlas/KnotenKontext/LogikKontext.tsx
 
+import { useMemo, useState } from "react";
+import { ReactFlowState, useStore } from "@xyflow/react";
+
 import KontextAtlas from "@/Ordnung/Atlas/KnotenKontext/methoden.tsx";
 
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
@@ -14,25 +17,41 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { type LogikDaten } from "@/Atlas/Knoten.types";
+import { type LogikKnotenDaten } from "@/Atlas/Knoten.types";
 import { buildLogikAnschluesse, erzeugePermutationen } from "@/Ordnung/Atlas/KnotenKontext/methoden";
 import { maxFälle } from "@/Atlas/Knoten/LogikKnoten";
-import { useState } from "react";
+//import { useState } from "react";
 
 
-export const LOGIK_VARIANTEN = ["Tabelle", "und", "oder", "dann", "Auswählen"] as const;
+export const LOGIK_VARIANTEN = ["Tabelle", "nicht", "und", "oder", "dann", "Auswählen"] as const;
 export type LogikVariante = (typeof LOGIK_VARIANTEN)[number];
 
 
-export default function LogikKontext({id, data, readonly}:{
-    id: string;
-    data: LogikDaten;
-    readonly?: boolean;
-}) {
-    const [LogikVariante, setLogikVariante] = useState<LogikVariante>("Auswählen");
+//import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore.ts";
+import { buildLogikAnschluesseVariante } from "@/Ordnung/Atlas/KnotenKontext/methoden";
+//import { LOGIK_VARIANTEN, type LogikVariante } from "./LogikKontext"; // oder lokal
+
+export default function LogikKontext({ id, data, readonly }: { id: string; data: LogikKnotenDaten; readonly?: boolean; }) {
+    const [variante, setVariante] = useState<LogikVariante>(data.variante ?? "Auswählen");
+    const updateNodeData = useKartenStore(s => s.updateNodeData);
+    const setEdges = useStore((s: ReactFlowState) => s.setEdges);
+    const edges = useStore((s: ReactFlowState) => s.edges);
+
+    function applyVariante(next: LogikVariante) {
+        // 13: beim Wechsel Edges dieses Knotens entfernen
+        //setEdges((old: Edge[]) => old.filter(e => e.source !== id && e.target !== id));
+
+        const anschlüsse =
+        next === "Tabelle"
+            ? buildLogikAnschluesseVariante("Tabelle", id, [], data.eingabeAnzahl ?? 0)
+            : buildLogikAnschluesseVariante(next, id, edges);
+
+        updateNodeData(id, prev => ({...prev,variante: next,anschlüsse} as LogikKnotenDaten));
+        setVariante(next);
+    }
 
     function Inhalt() {
-        switch (LogikVariante) {
+        switch (variante) {
             case "Tabelle":return <LogikTabelle id={id} data={data} readonly={readonly ?? false} />
             default: console.log("Dummheit muss weh tun")
         }
@@ -41,9 +60,9 @@ export default function LogikKontext({id, data, readonly}:{
     return (
         <KontextAtlas
           überschrift={"Logik Knoten"}
-          beschreibung="Dieser Knoten eignet sich, um logische Werte mit einander zu verarbeiten"
+          beschreibung="Dieser Knoten eignet sich,\n um logische Werte mit \n einander zu verarbeiten"
         ><div className="flex flex-col gap-3">
-            <Auswahl {...{get:LogikVariante,set:setLogikVariante}} />
+            <Auswahl {...{get:variante,set:applyVariante}} />
             <Inhalt />
         </div></KontextAtlas>
       );
@@ -69,7 +88,7 @@ function Auswahl({get,set}:{get:LogikVariante,set:(name:LogikVariante) => void})
     )
 };
 
-function LogikTabelle({id,data,readonly}:{id:string,data:LogikDaten,readonly:boolean}) {
+function LogikTabelle({id,data,readonly}:{id:string,data:LogikKnotenDaten,readonly:boolean}) {
     const eingabeAnzahl = Number.isFinite(data.eingabeAnzahl) ? (data.eingabeAnzahl as number) : 0;
     const eingabeArgumente = {
         type: "number",

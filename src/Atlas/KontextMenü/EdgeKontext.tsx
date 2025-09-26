@@ -5,8 +5,10 @@ import { useKartenStore } from '@/Ordnung/DatenBank/KartenStore';
 import { Item } from "@/Atlas/KontextMenü/methoden.tsx";
 import { type Lebensraum } from "@/Atlas/Karten.types.ts";
 
+type EdgeItemKontext = { id?: string; onClose?: () => void }
 
-export default function EdgeItems({ id, onClose }: { id?: string; onClose?: () => void }) {
+export default function EdgeItems(argumente: EdgeItemKontext) {
+  const { id, onClose } = argumente;
   const onEdgesChange = useKartenStore((s) => s.onEdgesChange);
 
   return (

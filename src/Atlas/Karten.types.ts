@@ -1,6 +1,6 @@
 // ./src/Atlas/Karten.types.ts
 
-import { type Node, type Edge } from "@xyflow/react"
+import { type Node, type Edge, type XYPosition } from "@xyflow/react"
 
 import { DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
 //import { type OffeneKarte } from "@/Ordnung/datenbank.types";
@@ -8,11 +8,12 @@ import { DatenTypen, Fluß, Variante } from "@/Atlas/Anschlüsse.types.ts";
 
 export type Lebensraum = "private" | "public" | "defined"
 
-type PaneKontext = { variante: "Pane"; id: string; pos: { x: number; y: number }; onClick?: () => void };
-type NodeKontext = { variante: "Node"; id: string; pos: { x: number; y: number }; onClick?: () => void; scope: Lebensraum };
-type EdgeKontext = { variante: "Edge"; id: string; pos: { x: number; y: number }; onClick?: () => void; scope: Lebensraum };
+type selektKontext = { variante: "Selekt"; ids: string[]; pos: XYPosition; onClick: () => void };
+type PaneKontext = { variante: "Pane"; id: string; pos: XYPosition; onClick: () => void };
+type NodeKontext = { variante: "Node"; id: string; pos: XYPosition; onClick: () => void; scope: Lebensraum };
+type EdgeKontext = { variante: "Edge"; id: string; pos: XYPosition; onClick: () => void; scope: Lebensraum };
 
-export type Kontext = PaneKontext | NodeKontext | EdgeKontext
+export type Kontext = selektKontext | PaneKontext | NodeKontext | EdgeKontext
 
 
 export type KarteArgumente = {
@@ -62,5 +63,6 @@ export enum KNOTEN {
   Logik = "logik",
   KartenKnoten = "kartenKnoten",
   Element = "element",
-  // Logikvarianten später
+  Auswertung = "auswerten",
+  Rechen = "rechen",
 }

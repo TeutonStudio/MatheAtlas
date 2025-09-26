@@ -140,4 +140,8 @@ export type KartenState = {
 
   addVariable: (karteId: string, variable: Variable) => void;
   removeVariable: (karteId: string, variableId: string) => void;
+
+  deleteNodeById: (nodeId: string) => void;
+  revalidateEdgesForNode: (nodeId: string) => void;
+
 };

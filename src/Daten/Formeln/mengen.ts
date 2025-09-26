@@ -5,6 +5,7 @@ import { _liste } from "@/Daten/Formeln/LaTeX.ts"
 
 export function LeereMenge() { return "\\emptyset" };
 
+export function Mengen(buchstabe:string) { return "\\mathbb{"+buchstabe+"}" }
 
 export function vereinigung(einträge:string[]) {
   return _liste(einträge,"\\cup");

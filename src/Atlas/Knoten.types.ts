@@ -4,7 +4,8 @@ import type React from "react";
 import { type NodeProps } from "@xyflow/react";
 
 import { DatenTypen, Fluß, Variante, type AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
-import { KartenDefinition } from "./Karten.types";
+import { KartenDefinition, Schnittstelle } from "./Karten.types";
+import { LogikVariante } from "@/Ordnung/Atlas/KnotenKontext/LogikKontext";
 //import { OffeneKarte } from "@/Ordnung/datenbank.types";
 
 
@@ -49,15 +50,26 @@ export type LaTeXKnotenDaten = BasisKnotenDaten & {
   latex?: string;
 };
 
-export type LogikDaten = BasisKnotenDaten & {
+export type LogikKnotenDaten = BasisKnotenDaten & {
   ergebnisse: boolean[];
   eingabeAnzahl: number;
+  variante?: LogikVariante; 
 };
 
 export type ElementKnotenDaten = LaTeXKnotenDaten & {
   def: boolean;
   menge:string;
   objekt:string;
+}
+
+export type AuswertungsKnotenDaten = LaTeXKnotenDaten & {
+  eingangsTyp: DatenTypen;
+  hatVariablen: boolean;
+  schnittstellen: Schnittstelle[];
+}
+
+export type RechenKnotenDaten = LaTeXKnotenDaten & {
+
 }
 
 /// Argumente
@@ -93,9 +105,17 @@ export type LaTeXKnotenArgumente = KnotenArgumente & {
 };
 
 export type LogikArgumente = KnotenArgumente & {
-  data: LogikDaten;
+  data: LogikKnotenDaten;
 };
 
 export type ElementKnotenArgumente = KnotenArgumente & {
   data: ElementKnotenDaten;
+}
+
+export type AuswertungsKnotenArgumente = KnotenArgumente & {
+  data: AuswertungsKnotenDaten;
+}
+
+export type RechenKnotenArgumente = KnotenArgumente & {
+  data: RechenKnotenDaten;
 }

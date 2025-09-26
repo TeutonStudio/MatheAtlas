@@ -27,9 +27,10 @@ import {
   cloneNodes, cloneEdges, indexById, findBibliotheksKarte, reconnectWithSingleTarget, addEdgeWithSingleTarget,
   collectDirtyIds, closeAllExceptIds, forceOpen, promptMultiSaveOrDiscard,
   decorateNodesForScope,
-  setVerlaufDirty
+  setVerlaufDirty, _findeHandle,
 } from "@/Ordnung/DatenBank/methoden.ts"
 import { KartenState, OffeneKarte, DialogAnfrageUmbenennen } from "../datenbank.types";
+import { Fluß } from "@/Atlas/Anschlüsse.types";
 
 
 export const useKartenStore = create<KartenState>()(
@@ -955,6 +956,122 @@ export const useKartenStore = create<KartenState>()(
         setVerlaufDirty(get, set, karteId, true);
         set({ db: { ...db, [karteId]: neu } });
       },
+
+      deleteNodeById: (nodeId: string) => {
+        const { aktiveKarteId, geöffnet, db, selection } = get();
+        if (!aktiveKarteId) return;
+        const offene = geöffnet[aktiveKarteId];
+        if (!offene || offene.scope === "defined") return;
+
+        const node = offene.nodes.find(n => n.id === nodeId);
+        if (!node) {
+          toast.info("Knoten nicht gefunden.");
+          return;
+        }
+
+        // Knoten und alle angrenzenden Kanten entfernen
+        const nodes = offene.nodes.filter(n => n.id !== nodeId);
+        const edges = offene.edges.filter(e => e.source !== nodeId && e.target !== nodeId);
+
+        // Dependency-Graph pflegen, falls es ein KartenKnoten ist
+        try {
+          if (node.type === KNOTEN.KartenKnoten) {
+            const data = node.data as KartenKnotenDaten
+            // tolerant gegenüber alten/verschiedenen Datenformen
+            const targetId: string | undefined = data.karte.definition?.id;
+
+            if (targetId) {
+              // Prüfen, ob noch weitere KartenKnoten auf dieselbe Zielkarte zeigen
+              const weitereReferenzen = nodes.some(
+                n =>
+                  n.type === KNOTEN.KartenKnoten && (n.data as KartenKnotenDaten).karte.definition.id === targetId
+              );
+
+              if (!weitereReferenzen) {
+                const newDb = { ...db };
+                // aus abhaengigkeiten der aktiven Karte entfernen
+                if (newDb[aktiveKarteId]) {
+                  newDb[aktiveKarteId] = {
+                    ...newDb[aktiveKarteId],
+                    abhaengigkeiten: (newDb[aktiveKarteId].abhaengigkeiten ?? []).filter(id => id !== targetId),
+                  };
+                }
+                // aus wirdVerwendetIn der Zielkarte entfernen
+                if (newDb[targetId]) {
+                  newDb[targetId] = {
+                    ...newDb[targetId],
+                    wirdVerwendetIn: (newDb[targetId].wirdVerwendetIn ?? []).filter(id => id !== aktiveKarteId),
+                  };
+                }
+                set({ db: newDb });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("[deleteNodeById] Dependency-Cleanup übersprungen:", e);
+        }
+
+        // Auswahl aufräumen (falls der gelöschte Node/Kanten selektiert waren)
+        const neueSelection = {
+          nodeIds: (selection?.nodeIds ?? []).filter(id => id !== nodeId),
+          edgeIds: (selection?.edgeIds ?? []).filter(
+            eid => edges.some(e => e.id === eid)
+          ),
+        };
+
+        setVerlaufDirty(get, set, aktiveKarteId, true);
+        set({
+          geöffnet: {
+            ...geöffnet,
+            [aktiveKarteId]: { ...offene, nodes, edges, dirty: true },
+          },
+          selection: neueSelection,
+        });
+
+        toast.success("Knoten gelöscht.");
+      },
+
+
+      revalidateEdgesForNode: (nodeId: string) => {
+        const { aktiveKarteId, geöffnet } = get();
+        if (!aktiveKarteId) return;
+        const offene = geöffnet[aktiveKarteId];
+        if (!offene) return;
+
+        const nodeMap = new Map(offene.nodes.map(n => [n.id, n]));
+        const neueEdges: Edge[] = [];
+
+        for (const e of offene.edges) {
+          const src = nodeMap.get(e.source);
+          const tgt = nodeMap.get(e.target);
+          if (!src || !tgt) continue;
+
+          const sh = _findeHandle(src, e.sourceHandle ?? null, Fluß.Ausgang);
+          const th = _findeHandle(tgt, e.targetHandle ?? null, Fluß.Eingang);
+
+          // Wenn die Kante diesen Node berührt, streng prüfen.
+          if (e.source === nodeId || e.target === nodeId) {
+            if (!sh || !th || sh.dtype !== th.dtype) {
+              // inkompatibel -> weg
+              continue;
+            }
+          }
+
+          // sonst unverändert behalten
+          neueEdges.push(e);
+        }
+
+        if (neueEdges.length !== offene.edges.length) {
+          set({
+            geöffnet: {
+              ...geöffnet,
+              [aktiveKarteId]: { ...offene, edges: neueEdges, dirty: true },
+            },
+          });
+          toast.info("Inkompatible Verbindungen wurden entfernt.");
+        }
+      },
+
 
     }),
     { name: "karten-db" }

@@ -8,6 +8,7 @@ import { Kontext } from "@/Atlas/Karten.types";
 import PaneItems from "@/Atlas/KontextMenü/PaneKontext";
 import NodeItems from "@/Atlas/KontextMenü/NodeKontext";
 import EdgeItems from "@/Atlas/KontextMenü/EdgeKontext";
+import SelektItems from "../KontextMenü/SelektKontext";
 
 
 export function erhalteText(v: Verlauf): string {
@@ -24,6 +25,7 @@ export function KontextMenü( { ctx }: { ctx: Kontext } ) {
   }; 
   function Inhalt() {
     switch (ctx.variante) {
+        case "Selekt": return <SelektItems ids={ctx.ids} onClose={ctx.onClick} />
         case "Pane": return <PaneItems id={ctx.id} onClose={ctx.onClick} position={ctx.pos} />;
         case "Node": return <NodeItems id={ctx.id} onClose={ctx.onClick} />;
         case "Edge": return <EdgeItems id={ctx.id} onClose={ctx.onClick} />;
