@@ -1,11 +1,20 @@
 // ./src/Atlas/Knoten/methoden.ts
 
+import * as React from "react";
+import { Position, type Node, type Edge } from "@xyflow/react";
+
 import { BlockMath, InlineMath } from "react-katex";
+import { useShallow } from "zustand/react/shallow";
+import shallow from "zustand/shallow";
+
 import { Badge } from "@/components/ui/badge";
 
-import { type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
-import { Fluß, DatenTypen, Variante, type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
-import { Position } from "@xyflow/react";
+import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
+import { KartenState } from "@/Ordnung/datenbank.types";
+
+
+import { type Daten, type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { Fluß, DatenTypen, Variante, type AnschlussDefinition, AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
 
 const KnotenDebug = false;
 export default KnotenDebug;
@@ -153,3 +162,40 @@ export const erzeugePermutationen = (n: number): boolean[][] => {
   }
   return perms;
 };
+
+
+/**
+ * Liefert die Daten-Referenzen aller Quellen, die auf `nodeId` zeigen.
+ * Verglichen wird per shallow über den useShallow-Wrapper (kein equalityFn-Param mehr).
+ */
+export function useEingangsDaten(nodeId: string): Daten[] {
+  const { dataRefs } = useKartenStore(
+    useShallow((s: KartenState) => {
+      const kId = s.aktiveKarteId ?? null;
+      const offene = kId ? s.geöffnet[kId] : undefined;
+      const nodes = (offene?.nodes ?? []) as Node[];
+      const edges = (offene?.edges ?? []) as Edge[];
+
+      if (!nodeId) return { dataRefs: [] as unknown[] };
+
+      const incoming = edges.filter(e => e.target === nodeId);
+      if (incoming.length === 0) return { dataRefs: [] as unknown[] };
+
+      const byId = new Map(nodes.map(n => [n.id, n] as const));
+      const sources = incoming
+        .map(e => byId.get(e.source))
+        .filter((n): n is Node => !!n);
+
+      return { dataRefs: sources.map(n => n.data as unknown) };
+    })
+  );
+
+  return dataRefs as Daten[];
+}
+
+export function shallowArrayRefEqual(a: unknown[], b: unknown[]) {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}

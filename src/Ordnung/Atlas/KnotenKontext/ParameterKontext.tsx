@@ -18,6 +18,10 @@ const MENGETYPEN = [
   { value: "C",    label: "Komplexe (ℂ)" },
 ] as const;
 
+const TERMTYPEN = [
+    { value: "identität", label: "Identische Abbildung" },
+]
+
 export default function ParameterKontext({ id, data }: { id: string; data: ParameterKnotenDaten }) {
   const updateNodeData = useKartenStore(s => s.updateNodeData);
   const revalidate = useKartenStore(s => s.revalidateEdgesForNode);
@@ -43,6 +47,7 @@ export default function ParameterKontext({ id, data }: { id: string; data: Param
     { value: DatenTypen.Logik, label: "Logik" },
     { value: DatenTypen.Menge, label: "Menge" },
     { value: DatenTypen.Zahl,  label: "Zahl"  },
+    { value: DatenTypen.Term,  label: "Term"  },
   ];
 
   function WertFeld() {
@@ -77,6 +82,18 @@ export default function ParameterKontext({ id, data }: { id: string; data: Param
             value={Number.isFinite(Number(data.wert)) ? String(data.wert) : "0"}
             onChange={e => setWert(e.target.value === "" ? 0 : Number(e.target.value))}
           />
+        );
+        
+      case DatenTypen.Term:
+        return (
+          <Select value={String(data.wert ?? "leer")} onValueChange={v => setWert(v)}>
+            <SelectTrigger><SelectValue placeholder="Term wählen" /></SelectTrigger>
+            <SelectContent>
+              {MENGETYPEN.map(m => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
 
       default:

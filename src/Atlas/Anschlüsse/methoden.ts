@@ -45,7 +45,7 @@ export function erhalteAnschluss(handleId: string): string[] {
 
 
 export function erhalteAnschlussNachSeite(
-    anschlüsse: AnschlussNachSeite,
+    anschlüsse: AnschlussNachSeite | undefined,
     seite: Position
   ): AnschlussDefinition[] {
     return anschlüsse?.[seite] ?? [];

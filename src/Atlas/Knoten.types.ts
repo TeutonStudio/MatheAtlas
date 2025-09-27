@@ -14,6 +14,7 @@ import { LogikVariante } from "@/Ordnung/Atlas/KnotenKontext/LogikKontext";
 export type KnotenDaten = {
   title?: string;
   anschlüsse?: AnschlussNachSeite;
+  eingangsDaten?: Daten[]
 };
 
 export type SchnittstellenDaten = LaTeXKnotenDaten & {
@@ -71,6 +72,19 @@ export type AuswertungsKnotenDaten = LaTeXKnotenDaten & {
 export type RechenKnotenDaten = LaTeXKnotenDaten & {
 
 }
+
+export type Daten =
+  | KnotenDaten 
+  | SchnittstellenDaten 
+  | VariableKnotenDaten 
+  | ParameterKnotenDaten 
+  | KartenKnotenDaten 
+  | BasisKnotenDaten
+  | LaTeXKnotenDaten
+  | LogikKnotenDaten
+  | ElementKnotenDaten
+  | AuswertungsKnotenDaten
+  | RechenKnotenDaten
 
 /// Argumente
 
