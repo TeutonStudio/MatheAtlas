@@ -3,22 +3,22 @@
 import { useMemo } from "react";
 import { Position, useNodeId, useStore } from "@xyflow/react";
 
-import { Variante, Fluß, type AnschlussLeisteArgumente } from "@/Atlas/Anschlüsse.types.ts";
-import { erhalteId } from "@/Atlas/Anschlüsse/methoden.ts";
+import { Variante, Fluß, type AnschlussLeisteArgumente, AnschlussDefinition, EingangsDefinition } from "@/Atlas/Anschlüsse.types";
+import { erhalteId, SEPARATOR } from "@/Atlas/Anschlüsse/methoden";
 
-import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
-import MultiAnschlussLeiste from "@/Atlas/Anschlüsse/MultiAnschlussLeiste.tsx";
+import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss";
+import MultiAnschlussLeiste from "@/Atlas/Anschlüsse/MultiAnschlussLeiste";
+
+const edgePaddingPctSt = 10
 
 export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
-  const { nodeId: propNodeId, seite, anschlussListe, edgePaddingPct = 10 } = argumente;
-  const anschlüsse = anschlussListe(seite);
-  const contextNodeId = useNodeId();
-  const nodeId = propNodeId ?? contextNodeId;
+  //const { nodeId: propNodeId, seite, anschlussListe, edgePaddingPct = 10 } = argumente;
+  const anschlüsse = argumente.anschlussListe(argumente.seite);
+  //const contextNodeId = useNodeId();
+  const nodeId = argumente.nodeId ?? useNodeId();
 
-  // Edges direkt aus dem React Flow Store lesen
   const edges = useStore(s => s.edges);
 
-  // Handle-IDs SOFORT und SYNCHRON berechnen, nicht in useEffect
   const flatHandles = useMemo(() => {
     if (!nodeId || !anschlüsse?.length) return [];
 
@@ -33,15 +33,12 @@ export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
       } else {
         const basisId = erhalteId(basisTeile);
 
-        // Nur Kanten an DIESEM Knoten zählen
+        // Verbindungen am *eigenen* Knoten zählen
         const cnt = edges.filter(kante => {
-          return def.fluss === Fluß.Ausgang
-            ? kante.source === nodeId && kante.sourceHandle?.startsWith(basisId + "__")
-            : kante.target === nodeId && kante.targetHandle?.startsWith(basisId + "__");
+          return (kante.target === nodeId && kante.targetHandle?.startsWith(basisId + SEPARATOR));
         }).length;
 
-        // Mindestens 1 Handle sofort rendern
-        const anzahlHandles = Math.max(1, cnt + 1);
+        const anzahlHandles = Math.max(1, cnt + 1); // immer ein freier Anschluss
         for (let j = 0; j < anzahlHandles; j++) {
           rows.push({
             handleId: erhalteId([...basisTeile, j]),
@@ -58,27 +55,28 @@ export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
   if (!nodeId || !flatHandles.length) return null;
 
   const anzahlAnschlüsseTotal = flatHandles.length;
-  const innenBereich = 100 - 2 * edgePaddingPct;
+  const innenBereich = 100 - 2 * (argumente.edgePaddingPct ?? edgePaddingPctSt);
   const slotGröße = innenBereich / anzahlAnschlüsseTotal;
 
   function ankerProzentFuer(index: number): number {
     if (anzahlAnschlüsseTotal === 1) return 50;
-    return edgePaddingPct + index * slotGröße + slotGröße / 2;
+    return (argumente.edgePaddingPct ?? edgePaddingPctSt) + index * slotGröße + slotGröße / 2;
   }
 
-  const style: React.CSSProperties = {
+  const containerStyle: React.CSSProperties = {
     position: "absolute",
     width: "100%",
     height: "100%",
     top: 0,
     left: 0,
     pointerEvents: "none",
+    zIndex: 4, // über dem Header-Content
   };
 
-  const istVertikal = seite === Position.Left || seite === Position.Right;
+  const istVertikal = argumente.seite === Position.Left || argumente.seite === Position.Right;
 
   return (
-    <div style={style}>
+    <div style={containerStyle}>
       {anschlüsse.map((def, i) => {
         const handlesForThisDef = flatHandles.filter(h => h.defIndex === i);
         if (!handlesForThisDef.length) return null;
@@ -90,7 +88,7 @@ export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
             <DatenAnschluss
               key={handle.handleId}
               handleId={handle.handleId}
-              position={seite}
+              position={argumente.seite}
               fluss={def.fluss}
               datenTyp={def.dtype}
               topPct={istVertikal ? ankerProzent : undefined}
@@ -102,15 +100,14 @@ export default function AnschlussLeiste(argumente: AnschlussLeisteArgumente) {
           const anzahlHandlesInGroup = handlesForThisDef.length;
 
           const pillSize = slotGröße * anzahlHandlesInGroup;
-          const pillCenter =
-            ankerProzentFuer(firstHandle.globalIndex) + pillSize / 2 - slotGröße / 2;
+          const pillCenter = ankerProzentFuer(firstHandle.globalIndex) + pillSize / 2 - slotGröße / 2;
 
           return (
             <MultiAnschlussLeiste
               key={def.id}
-              nodeId={nodeId}
-              position={seite}
-              definition={def}
+              nodeId={nodeId!}
+              position={argumente.seite}
+              definition={def as EingangsDefinition}
               handleIds={handlesForThisDef.map(h => h.handleId)}
               topPct={istVertikal ? pillCenter : undefined}
               leftPct={!istVertikal ? pillCenter : undefined}

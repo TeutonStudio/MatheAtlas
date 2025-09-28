@@ -11,15 +11,15 @@ import { Input } from "@/components/ui/input";
 
 const MENGETYPEN = [
   { value: "leer", label: "Leere Menge (∅)" },
-  { value: "N",    label: "Natürliche (ℕ)" },
-  { value: "Z",    label: "Ganze (ℤ)" },
-  { value: "Q",    label: "Rationale (ℚ)" },
-  { value: "R",    label: "Reelle (ℝ)" },
-  { value: "C",    label: "Komplexe (ℂ)" },
+  { value: "N",    label: "Natürliche Zahlen (ℕ)" },
+  { value: "Z",    label: "Ganze Zahlen (ℤ)" },
+  { value: "Q",    label: "Rationale Zahlen (ℚ)" },
+  { value: "R",    label: "Reelle Zahlen (ℝ)" },
+  { value: "C",    label: "Komplexe Zahlen (ℂ)" },
 ] as const;
 
 const TERMTYPEN = [
-    { value: "identität", label: "Identische Abbildung" },
+  { value: "identität", label: "Identische Abbildung" },
 ]
 
 export default function ParameterKontext({ id, data }: { id: string; data: ParameterKnotenDaten }) {
@@ -86,10 +86,10 @@ export default function ParameterKontext({ id, data }: { id: string; data: Param
         
       case DatenTypen.Term:
         return (
-          <Select value={String(data.wert ?? "leer")} onValueChange={v => setWert(v)}>
+          <Select value={String(data.wert ?? "identität")} onValueChange={v => setWert(v)}>
             <SelectTrigger><SelectValue placeholder="Term wählen" /></SelectTrigger>
             <SelectContent>
-              {MENGETYPEN.map(m => (
+              {TERMTYPEN.map(m => (
                 <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
               ))}
             </SelectContent>

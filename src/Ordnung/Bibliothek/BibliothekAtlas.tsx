@@ -51,7 +51,7 @@ export default function BibliothekAtlas(): React.ReactElement {
           publicItems={oeffentlicheKarten}
           onAdd={() => erstelleNeueKarte()}
         />
-        <KnotenBibliothek />
+        {/*<KnotenBibliothek />*/}
       </SidebarContent>
       <SidebarFooter>
         <BenutzerFußleiste />

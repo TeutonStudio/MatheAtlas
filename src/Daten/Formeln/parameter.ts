@@ -3,6 +3,7 @@
 import { DatenTypen } from "@/Atlas/Anschlüsse.types";
 import { wahr, lüge } from "@/Daten/Formeln/logik";
 import { LeereMenge, Mengen } from "@/Daten/Formeln/mengen";
+import { _farbig, _latex } from "./LaTeX";
 
 export type LogikToken = "wahr" | "lüge";
 export type MengenToken = "leer" | "N" | "Z" | "Q" | "R" | "C";
@@ -14,8 +15,7 @@ export function parameterZuLatex(dtype: DatenTypen, wert: any): string {
 
     case DatenTypen.Menge: {
       const t = wert as MengenToken;
-      if (t === "leer") return LeereMenge();
-      // N, Z, Q, R, C
+      if (t === "leer") return LeereMenge;
       return Mengen(t); // nutzt deine gefixte \mathbb{...}-Funktion
     }
 
@@ -24,7 +24,11 @@ export function parameterZuLatex(dtype: DatenTypen, wert: any): string {
       return n; // Zahlen müssen nicht extra eingerahmt werden
     }
 
+    case DatenTypen.Term: {
+      return "x\\mapsto x"
+    }
+
     default:
-      return "\\color{gray}{\\text{unbestimmt}}";
+      return _farbig("gray",_latex); // "\\color{gray}{\\text{unbestimmt}}";
   }
 }

@@ -5,17 +5,13 @@ import { type LaTeXKnotenArgumente, type BasisKnotenDaten } from "@/Atlas/Knoten
 import KnotenDebug, { MathRenderer } from "@/Atlas/Knoten/methoden.tsx";
 
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten.tsx";
+import { _latex } from "@/Daten/Formeln/LaTeX";
 
 export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
-  const basis = { 
-    title: argumente.data.title, 
-    badge: argumente.data.badge, 
-    anschlüsse: argumente.data.anschlüsse,
-  } as BasisKnotenDaten;
-
   // BasisKnoten kümmert sich um Titel/Badge/Anschlüsse.
-  const latex = argumente.data.latex ?? "\\LaTeX"
-  const argument = {...argumente}; argument.data = basis//{ id, anschlüsse, style, selected, data: basis, zIndex: 4, dragging, draggable, selectable, deletable, type };
+  const latex = argumente.data.latex ?? _latex
+  const data = {...argumente.data} as BasisKnotenDaten;
+  const argument = {...argumente, data}; 
   
   if (KnotenDebug) {
     console.log("selektiert LaTeXKnoten",argumente.selected,argumente.id)
@@ -23,7 +19,7 @@ export default function LaTeXKnoten(argumente: LaTeXKnotenArgumente) {
   }
   return (
     <BasisKnoten {...argument}>
-      <MathRenderer latex={latex==="" ? "\\latex" : latex} />
+      <MathRenderer latex={latex==="" ? _latex : latex} />
     </BasisKnoten>
   );
 }

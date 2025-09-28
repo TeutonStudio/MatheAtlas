@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { type AuswertungsKnotenDaten } from "@/Atlas/Knoten.types";
+import { Button } from "@/components/ui/button";
 
 const TYPEN: DatenTypen[] = [DatenTypen.Zahl, DatenTypen.Menge, DatenTypen.Logik, DatenTypen.Term];
 type AuswertungsArgumente = { id: string; data: AuswertungsKnotenDaten; readonly?: boolean }
@@ -49,6 +50,7 @@ export default function AuswertungsKontext(argumente: AuswertungsArgumente) {
             <div className="grid grid-cols-2 items-center gap-2">
             <Label>LaTeX</Label>
             <Input readOnly value={latex} />
+            <Button onClick={() => console.log(data)}>Term-Ausgang</Button>
             </div>
         </div>
         </KontextAtlas>

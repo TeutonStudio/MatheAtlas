@@ -5,7 +5,7 @@ import { useStore as useRFStore } from "@xyflow/react";
 import { type Node } from "@xyflow/react";
 import LaTeXKnoten from "./LaTeXKnoten";
 import { DatenTypen, Fluß } from "@/Atlas/Anschlüsse.types";
-import { type AuswertungsKnotenArgumente, type AuswertungsKnotenDaten, type LaTeXKnotenArgumente } from "@/Atlas/Knoten.types";
+import { LaTeXKnotenDaten, type AuswertungsKnotenArgumente, type AuswertungsKnotenDaten, type LaTeXKnotenArgumente } from "@/Atlas/Knoten.types";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { KNOTEN, type Schnittstelle } from "@/Atlas/Karten.types";
 import { getUpstreamNodes, upstreamContainsType, collectByType, uniqueBy, sortBy } from "@/Ordnung/Graph/utils";
@@ -13,18 +13,15 @@ import { buildAuswertungAnschlüsse } from "@/Ordnung/Atlas/KnotenKontext/method
 //import { buildAuswertungAnschluesse } from "@/Ordnung/Atlas/KnotenKontext/AuswertungAnschlüsse";
 
 export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente) {
-    const { id } = argumente;
+    //const { id } = argumente;
     const updateNodeData = useKartenStore(s => s.updateNodeData);
     const nodes = useRFStore(s => s.nodes);
     const edges = useRFStore(s => s.edges);
 
-    const data = {
-        ...{title: "Auswerten",eingangsTyp: DatenTypen.Zahl},
-        ...(argumente.data ?? {}),
-    } as AuswertungsKnotenDaten;
+    const dataArgument = {...dataStandard,...(argumente.data),} as AuswertungsKnotenDaten;
 
     // Upstream-Analyse
-    const upstream = React.useMemo(() => getUpstreamNodes(nodes as Node[], edges, id), [nodes, edges, id]);
+    const upstream = React.useMemo(() => getUpstreamNodes(nodes as Node[], edges, argumente.id), [nodes, edges, argumente.id]);
     const hatVariablen = React.useMemo(() => upstreamContainsType(upstream, KNOTEN.Variable), [upstream]);
 
     // Schnittstellen aus dem Pfad, dedupliziert per data.handleID oder id; sortiert nach data.title
@@ -44,7 +41,7 @@ export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente)
 
     // Wenn der Eingang auf Term steht: Variablen selbst werden als "Argument-Eingänge" behandelt
     const argVariablenNamen = React.useMemo(() => {
-        if (data.eingangsTyp !== DatenTypen.Term) return [];
+        if (dataArgument.eingangsTyp !== DatenTypen.Term) return [];
         const varNodes = collectByType(upstream, KNOTEN.Variable);
         const names = varNodes.map(n => {
         const d = n.data as any;
@@ -53,16 +50,16 @@ export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente)
         // nach data.title sortieren und deduplizieren
         const uniq = uniqueBy(names, n => n);
         return uniq.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-    }, [upstream, data.eingangsTyp]);
+    }, [upstream, dataArgument.eingangsTyp]);
 
     // Ports bauen
     const anschlüsse = React.useMemo(() => buildAuswertungAnschlüsse({
-        eingangsTyp: data.eingangsTyp!,
+        eingangsTyp: dataArgument.eingangsTyp!,
         hatVariablen,
         schnittstellen: upSchnitt,
         argVariablenNamen,
         }),
-        [data.eingangsTyp, hatVariablen, upSchnitt, argVariablenNamen]
+        [dataArgument.eingangsTyp, hatVariablen, upSchnitt, argVariablenNamen]
     );
 
     // LaTeX-Placeholder bauen: "komplette" Formel bis CAS existiert
@@ -78,12 +75,12 @@ export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente)
         }
 
         // keine Variablen: reine Auswertung des Eingangstyps
-        const sym = data.eingangsTyp === DatenTypen.Zahl ? "x"
-                : data.eingangsTyp === DatenTypen.Menge ? "A"
-                : data.eingangsTyp === DatenTypen.Logik ? "p"
+        const sym = dataArgument.eingangsTyp === DatenTypen.Zahl ? "x"
+                : dataArgument.eingangsTyp === DatenTypen.Menge ? "A"
+                : dataArgument.eingangsTyp === DatenTypen.Logik ? "p"
                 : "t";
         return `${sym}${sTail}\\;=\\;\\text{Auswertung}`;
-    }, [hatVariablen, argVariablenNamen, upSchnitt, data.eingangsTyp]);
+    }, [hatVariablen, argVariablenNamen, upSchnitt, dataArgument.eingangsTyp]);
 
     // Daten ins Node schreiben, aber nur wenn sich wirklich etwas geändert hat
 
@@ -95,7 +92,7 @@ export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente)
         const next: AuswertungsKnotenDaten = {
             ...(prev as any),
             title: "Auswerten",
-            eingangsTyp: data.eingangsTyp,
+            eingangsTyp: dataArgument.eingangsTyp,
             hatVariablen,
             schnittstellen: upSchnitt,
             anschlüsse,
@@ -105,18 +102,18 @@ export default function AuswertungsKnoten(argumente: AuswertungsKnotenArgumente)
         // Vor dem Store-Call vergleichen, um *jeden* nutzlosen set() zu vermeiden
         if (shallowEqualAuswertung(prev, next)) return;
 
-        updateNodeData(id, old => {
+        updateNodeData(argumente.id, old => {
             // Falls parallel etwas anderes kam: noch mal checken
             const cur = old as AuswertungsKnotenDaten | undefined;
             if (shallowEqualAuswertung(cur, next)) return old;
             return next;
         });
-    }, [id, updateNodeData, argumente.data, data.eingangsTyp, hatVariablen, upSchnitt, anschlüsse, latex]);
+    }, [argumente.id, updateNodeData, argumente.data, dataArgument.eingangsTyp, hatVariablen, upSchnitt, anschlüsse, latex]);
 
 
     // an LaTeXKnoten übergeben
-    const latexData = { title: "Auswerten", badge: "Auswertung", anschlüsse, latex } as any;
-    const argument = { ...argumente, data: latexData } as LaTeXKnotenArgumente;
+    const data = { title: "Auswerten", badge: "Auswertung", anschlüsse, latex } as LaTeXKnotenDaten;
+    const argument = {...argumente, data} as LaTeXKnotenArgumente;
     return <LaTeXKnoten {...argument} />;
 }
 
@@ -134,3 +131,5 @@ function shallowEqualAuswertung(a?: AuswertungsKnotenDaten, b?: AuswertungsKnote
   const jb = JSON.stringify(b.anschlüsse ?? {});
   return ja === jb;
 }
+
+const dataStandard = {title: "Auswerten",eingangsTyp: DatenTypen.Zahl}

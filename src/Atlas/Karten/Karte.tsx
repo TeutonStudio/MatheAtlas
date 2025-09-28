@@ -49,7 +49,7 @@ export default function Karte(argumente: KarteArgumente) {
   
   function selectNode(id:string) {
     const selekt = nodes.find(n => n.id === id) as Node
-    if (selekt.selected === true) return;
+    if (!selekt || selekt.selected === true) return;
     const selectChanges = nodes.map(n => ({
       id: n.id,
       type: "select" as const,

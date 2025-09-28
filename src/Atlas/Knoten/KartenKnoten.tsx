@@ -13,11 +13,11 @@ import LaTeXKnoten from "@/Atlas/Knoten/LaTeXKnoten";
 
 
 export default function KartenKnoten(argumente: KartenKnotenArgumente) {
-  const { id, selected, data } = argumente
+  //const { id, selected, data } = argumente
   //const { findKarte, aktiveKarteId, openFromKartenKnoten } = useKartenStore();
   //const karte = findKarte(data.karteId);
-  if (!data.karte) { return <div>Karte nicht gefunden</div> }
-  const karte = data.karte.definition; 
+  if (!argumente.data.karte) { return <div>Karte nicht gefunden</div> }
+  const karte = argumente.data.karte.definition; 
   if (!karte) { return <div>Karte nicht gefunden</div> }
 
   function gefiltert(_fluss: Fluß, logik: boolean = false) {
@@ -44,9 +44,10 @@ export default function KartenKnoten(argumente: KartenKnotenArgumente) {
       openFromKartenKnoten(data.aktiveKarteId, karte.id);
     }*/
   
-  const argument = {
-    id, selected, data: { title: karte.name, badge: data.badge, anschlüsse, latex: "\\LaTeX" } as LaTeXKnotenDaten,
-  } as LaTeXKnotenArgumente //BasisKnotenArgumente;
+  const title = karte.name;
+  const latex = "\\LaTeX";
+  const data = {...argumente.data, title, anschlüsse, latex } as LaTeXKnotenDaten;
+  const argument = {...argumente, data } as LaTeXKnotenArgumente //BasisKnotenArgumente;
   
   if (KnotenDebug) {
     console.log("selektiert KartenKnoten",argumente.selected,argumente.id)

@@ -13,8 +13,9 @@ import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import { KartenState } from "@/Ordnung/datenbank.types";
 
 
-import { type Daten, type BasisKnotenDaten } from "@/Atlas/Knoten.types.ts";
+import { type Daten, type BasisKnotenDaten, LaTeXKnotenDaten, LaTeXKnotenArgumente, VariableKnotenDaten, VariableKnotenArgumente, SchnittstellenDaten, SchnittstellenArgumente, ParameterKnotenDaten, ParameterKnotenArgumente } from "@/Atlas/Knoten.types.ts";
 import { Fluß, DatenTypen, Variante, type AnschlussDefinition, AnschlussNachSeite } from "@/Atlas/Anschlüsse.types.ts";
+import LaTeXKnoten from "./LaTeXKnoten";
 
 const KnotenDebug = false;
 export default KnotenDebug;
@@ -199,3 +200,72 @@ export function shallowArrayRefEqual(a: unknown[], b: unknown[]) {
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
   return true;
 }
+
+
+// ------------------------------------------------------------
+// Gemeinsame Hilfen
+// ------------------------------------------------------------
+
+
+const FALLBACK_HANDLE_NAME = "Hafen";
+
+
+function resolveHandleName(data: { handleID?: string; title?: string }): string {
+const n = data.handleID ?? data.title ?? "";
+return n === "" ? FALLBACK_HANDLE_NAME : n;
+}
+
+
+export function resolveStandardSeite(dtype: DatenTypen): Position {
+// Standard: Top/Right vertikal prüfen (wie bei Variable/Parameter)
+return istVertikal(Position.Top, Position.Right, dtype) as Position;
+}
+
+
+// ------------------------------------------------------------
+// Fabrik: erzeugt einen LaTeX-basierten Knoten mit Single-Handle
+// ------------------------------------------------------------
+
+
+type BasisDaten = {
+latex?: string;
+title?: string;
+handleID?: string;
+dtype: DatenTypen;
+};
+
+type KnotenKonfig<TData extends BasisDaten, TArgs extends { data: TData }> = {
+  badge: string | ((data: TData) => string);
+  seite: (data: TData) => Position;
+  handleFluss: (data: TData) => Fluß;
+  latex: (data: TData) => string | undefined;
+  finalizeData?: (data: TData & LaTeXKnotenDaten) => TData & LaTeXKnotenDaten;
+};
+
+export function makeLaTeXNode<TData extends BasisDaten, TArgs extends { data: TData }>(
+  config: KnotenKonfig<TData, TArgs>
+) {
+  return function KnotenVorlage(argumente: TArgs) {
+  const { data: inData, ...rest } = argumente as unknown as LaTeXKnotenArgumente;
+
+  const badge = typeof config.badge === "function" ? config.badge(argumente.data) : config.badge;
+
+  const name = resolveHandleName(argumente.data);
+  const seite = config.seite(argumente.data);
+  const fluss = config.handleFluss(argumente.data);
+
+  const anschluss = Anschluss(name, argumente.data.dtype, fluss, Variante.Einzel);
+  const anschlüsse = { [seite]: [anschluss] } as AnschlussNachSeite;
+
+  const latex = config.latex(argumente.data);
+
+  const data: LaTeXKnotenDaten = {...argumente.data, badge, anschlüsse, latex} as LaTeXKnotenDaten;
+
+  const finalData = config.finalizeData ? config.finalizeData(argumente.data) : data;
+
+  const argument: LaTeXKnotenArgumente = {...(rest as Omit<LaTeXKnotenArgumente, "data">), data: finalData};
+
+  return <LaTeXKnoten {...argument} />;
+  };
+}
+

@@ -10,6 +10,7 @@ import { DatenTypen, Fluß, Variante, type AnschlussNachSeite, type AnschlussDef
 
 import { maxFälle } from "@/Atlas/Knoten/LogikKnoten";
 import { LOGIK_VARIANTEN, type LogikVariante } from "./LogikKontext";
+import { SEPARATOR } from "@/Atlas/Anschlüsse/methoden";
 
 export default function KontextAtlas(argumente: KontextAtlasArgumente) {
   const { überschrift, beschreibung, children } = argumente;
@@ -121,8 +122,8 @@ function hatVerbindungZuBasisId(edges: Edge[], nodeId: string, basisId: string, 
   const istTarget = fluss === Fluß.Eingang;
   const hits = edges.filter(e =>
     istTarget
-      ? e.target === nodeId && (e.targetHandle?.startsWith(basisId + "__") || e.targetHandle === basisId)
-      : e.source === nodeId && (e.sourceHandle?.startsWith(basisId + "__") || e.sourceHandle === basisId)
+      ? e.target === nodeId && (e.targetHandle?.startsWith(basisId + SEPARATOR) || e.targetHandle === basisId)
+      : e.source === nodeId && (e.sourceHandle?.startsWith(basisId + SEPARATOR) || e.sourceHandle === basisId)
   ).length;
   return hits >= erwarteteAnzahl;
 }

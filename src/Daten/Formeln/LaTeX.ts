@@ -1,5 +1,7 @@
 // ./src/Daten/Formeln/LaTeX.ts
 
+export const _latex = "\\LaTeX";
+
 export function _variable(bezeichner:string) {
   return "\\text{"+bezeichner+"}"
 }
@@ -37,4 +39,8 @@ export function _zeilenTupel(einträge: string[]) {
 
 export function _spaltenTupel(einträge:string[]) {
   return _Tupel(einträge,"\\\\");
+}
+
+export function _farbig(farbe:string,str:string) {
+  return "\\color{" + farbe + "}{" + str + "}";
 }

@@ -98,6 +98,7 @@ function NeuerKnoten(argumente:{
     (karte) =>
       karte.id &&
       aktiveKarteId &&
+      karte.scope !== "defined" &&
       karte.id !== aktiveKarteId &&
       !hatZirkulaereAbhaengigkeit(aktiveKarteId, karte.id)
   ); instanziierbareKarten.push({

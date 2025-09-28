@@ -3,6 +3,9 @@
 import { _liste, _operator } from "@/Daten/Formeln/LaTeX.ts"
 import { element } from "@/Daten/Formeln/logik.ts"
 
+export function komplex(reel:string,imaginär:string) {
+  return addition([reel,imaginär+"\\cdot\\mathrm{i}"])
+}
 
 export function addition(einträge:string[]) {
   return _liste(einträge,"+")

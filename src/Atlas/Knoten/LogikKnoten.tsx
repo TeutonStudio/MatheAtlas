@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useKartenStore } from "@/Ordnung/DatenBank/KartenStore";
 import BasisKnoten from "@/Atlas/Knoten/BasisKnoten";
 import KnotenDebug, { erzeugePermutationen, MathRenderer } from "@/Atlas/Knoten/methoden";
-import { BasisKnotenArgumente, LogikKnotenDaten, type LogikArgumente } from "@/Atlas/Knoten.types";
+import { BasisKnotenArgumente, BasisKnotenDaten, LogikKnotenDaten, type LogikArgumente } from "@/Atlas/Knoten.types";
 import { Fluß, DatenTypen } from "@/Atlas/Anschlüsse.types";
 import { lüge, wahr } from "@/Daten/Formeln/logik";
 import { buildLogikAnschluesseVariante } from "@/Ordnung/Atlas/KnotenKontext/methoden";
@@ -24,10 +24,10 @@ const ErgebnisseNachVariante: Record<LogikVariante,boolean[] | undefined> = {
 }
 
 export default function LogikKnoten(argumente: LogikArgumente) {
-  const { id, data, selected } = argumente;
-  const variante = data.variante ?? "Tabelle";
+  //const { id, data, selected } = argumente;
+  const variante = argumente.data.variante ?? "Tabelle";
   const isReadOnly = variante !== "Tabelle";
-  const anschlüsse = data.anschlüsse ?? {};
+  const anschlüsse = argumente.data.anschlüsse ?? {};
 
   const edges = useStore(s => s.edges);
   const updateNodeData = useKartenStore(s => s.updateNodeData);
@@ -35,16 +35,16 @@ export default function LogikKnoten(argumente: LogikArgumente) {
   // Ausgang nur darstellen, wenn Inputs belegt (gilt für nicht/dann)
   React.useEffect(() => {
     if (variante === "nicht" || variante === "dann") {
-      const next = buildLogikAnschluesseVariante(variante as any, id, edges);
+      const next = buildLogikAnschluesseVariante(variante as any, argumente.id, edges);
       const curTop = (anschlüsse[Position.Top] ?? []).map(d => d.id).join("|");
       const nextTop = (next[Position.Top] ?? []).map(d => d.id).join("|");
       const curBot = (anschlüsse[Position.Bottom] ?? []).map(d => d.id).join("|");
       const nextBot = (next[Position.Bottom] ?? []).map(d => d.id).join("|");
       if (curTop !== nextTop || curBot !== nextBot) {
-        updateNodeData(id, prev => ({ ...prev, anschlüsse: next }));
+        updateNodeData(argumente.id, prev => ({ ...prev, anschlüsse: next }));
       }
     }
-  }, [variante, id, edges, updateNodeData]); // eslint-disable-line
+  }, [variante, argumente.id, edges, updateNodeData]); // eslint-disable-line
 
   // 1) Eingänge, so wie bisher ermittelt (für Fallback)
   const valideEingänge = React.useMemo(() => {
@@ -81,32 +81,28 @@ export default function LogikKnoten(argumente: LogikArgumente) {
       return fixedResults;
     }
     // Sonst wie zuvor: aus Node-Daten, auf Länge clampen
-    const aktuelle = data.ergebnisse ?? [];
+    const aktuelle = argumente.data.ergebnisse ?? [];
     if (aktuelle.length !== anzahlZeilen) {
       return Array(anzahlZeilen).fill(false);
     }
     return aktuelle;
-  }, [isReadOnly, fixedResults, anzahlZeilen, data.ergebnisse]);
+  }, [isReadOnly, fixedResults, anzahlZeilen, argumente.data.ergebnisse]);
 
   // 5) Nur im editierbaren Tabellenmodus Datenlänge nachziehen
   React.useEffect(() => {
-    if (!isReadOnly && (data.ergebnisse?.length ?? 0) !== anzahlZeilen) {
-      updateNodeData(id, prev => ({ ...prev, ergebnisse: Array(anzahlZeilen).fill(false) }));
+    if (!isReadOnly && (argumente.data.ergebnisse?.length ?? 0) !== anzahlZeilen) {
+      updateNodeData(argumente.id, prev => ({ ...prev, ergebnisse: Array(anzahlZeilen).fill(false) }));
     }
-  }, [anzahlZeilen, data.ergebnisse, id, updateNodeData, isReadOnly]);
+  }, [anzahlZeilen, argumente.data.ergebnisse, argumente.id, updateNodeData, isReadOnly]);
 
   const style = { minWidth: 280 } as React.CSSProperties;
-  const title = data.title ?? "Logik Knoten";
-  const badge = data.badge ?? `Logik`;
-  const basisArgument = {
-    id, selected, style,
-    data: { title, badge, anschlüsse },
-    isConnectable: argumente.isConnectable,
-    type: "logik-tabelle",
-  } as BasisKnotenArgumente;
+  const title = argumente.data.title ?? "Logik Knoten";
+  const badge = argumente.data.badge ?? `Logik`;
+  const data = { ...argumente.data, title, badge, anschlüsse } as BasisKnotenDaten
+  const basisArgument = {...argumente, style, data, type: "logik-tabelle" } as BasisKnotenArgumente;
 
   if (KnotenDebug) {
-    console.log("selektiert LogikTabelleKnoten", selected, id, "n=", n, "rows=", anzahlZeilen, "fixed?", !!fixedResults);
+    console.log("selektiert LogikTabelleKnoten", argumente.selected, argumente.id, "n=", n, "rows=", anzahlZeilen, "fixed?", !!fixedResults);
   }
 
   return (
@@ -136,7 +132,7 @@ export default function LogikKnoten(argumente: LogikArgumente) {
                     </td>
                   ))}
                   <Ergebniss
-                    id={id}
+                    id={argumente.id}
                     isReadOnly={isReadOnly}
                     ergebnisse={ergebnisseAnzeigen}
                     zeilenIndex={zeilenIndex}

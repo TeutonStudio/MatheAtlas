@@ -43,7 +43,7 @@ function _logik(
   title: string, 
   badge: string,
   ergebnisse:boolean[],
-) { return _knoten(id, KNOTEN.LogikTabelle, position, { title, badge, ergebnisse }, anschlüsse) }
+) { return _knoten(id, KNOTEN.Logik, position, { title, badge, ergebnisse }, anschlüsse) }
 
 function _element(
   id:string,

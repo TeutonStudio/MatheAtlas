@@ -1,109 +1,108 @@
 // ./src/Atlas/Anschlüsse/MultiAnschlussLeiste.tsx
 
 import * as React from "react";
-import { Position } from "@xyflow/react";
+import { Position, useStoreApi } from "@xyflow/react";
 import { useTheme } from "next-themes";
 
-import { type AnschlussDefinition } from "@/Atlas/Anschlüsse.types.ts";
-import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss.tsx";
+import { MultiAnschlussLeisteArgumente } from "@/Atlas/Anschlüsse.types";
+import DatenAnschluss from "@/Atlas/Anschlüsse/DatenAnschluss";
+import erhalteTypenFarben from "@/Daten/UI/typen";
 
-import erhalteTypenFarben from "@/Daten/UI/typen.tsx";
+const PILL_DICKE_PX = 26;     // Querachse der Kapsel
+const PILL_STROKE_PX = 9;     // Linienbreite
+const EDGE_GAP_PX   = 5;      // Abstand zur Node-Kante nach außen
 
-/**
- * Die Props wurden überarbeitet, um die Komponente "dumm" zu machen.
- * Sie erhält nun alle zur Darstellung nötigen Informationen von der übergeordneten AnschlussLeiste.
- */
-export type MultiAnschlussLeisteProps = {
-  nodeId: string;
-  position: Position;
-  definition: AnschlussDefinition;
-  handleIds: string[]; // Definitive, von der AnschlussLeiste berechnete Liste von Handle-IDs
-  topPct?: number;
-  leftPct?: number;
-  widthPct?: number;
-  heightPct?: number;
-};
-
-export default function MultiAnschlussLeiste(argumente: MultiAnschlussLeisteProps) {
-  const { position, definition, handleIds, topPct, leftPct, widthPct, heightPct } = argumente;
-  //const { dtype } = definition;
-  const { theme } = useTheme();
-  const farbe = erhalteTypenFarben(definition.dtype,theme)
+export default function MultiAnschlussLeiste(a: MultiAnschlussLeisteArgumente) {
+  const { nodeId, position, definition, handleIds, topPct, leftPct, widthPct, heightPct } = a;
   const istHorizontal = position === Position.Top || position === Position.Bottom;
+  const { theme } = useTheme();
+  const farbe = erhalteTypenFarben(definition.dtype, theme);
+  const store = useStoreApi();
 
-  // Der Stil für den Hauptcontainer ("Pill").
-  // Er verwendet die von der AnschlussLeiste übergebenen prozentualen Werte für Position und Größe.
-  const leisteStil: React.CSSProperties = {
+  // Anzahl Slots und Bandbreite (Prozent entlang der Seite)
+  const N = Math.max(1, handleIds.length);
+  const bandPct   = istHorizontal ? (widthPct  ?? 0) : (heightPct ?? 0);
+  const centerPct = istHorizontal ? (leftPct   ?? 50) : (topPct   ?? 50);
+  const startDerSlotsPct = centerPct - bandPct / 2;
+  const slotBreitePct = N > 0 ? bandPct / N : 0;
+
+  // Prozentposition eines Slots auf der Node-Kante
+  const handlePosPct = (i: number) =>
+    N === 1 ? centerPct : startDerSlotsPct + (i + 0.5) * slotBreitePct;
+
+  // Distanz zwischen äußersten Slots
+  const distPct = N > 1 ? (N - 1) * slotBreitePct : 0;
+  const ersterPct = handlePosPct(0);
+
+  // Start der Pill so, dass Halbkreise auf den äußeren Handle-Zentren sitzen:
+  // Start = Position des ersten Handles minus Pill-Radius
+  const pillStartCalc = `calc(${ersterPct}% - ${PILL_DICKE_PX / 2}px)`;
+  const pillSizeCalc  = N > 1
+    ? `calc(${distPct}% + ${PILL_DICKE_PX}px)`   // Distanz + 2 * Radius
+    : `${PILL_DICKE_PX}px`;                       // N=1 → Kreis
+
+  // Andocken an die Node-Kante inkl. 5px Außenabstand
+  const anchor: React.CSSProperties = (() => {
+    switch (position) {
+      case Position.Top:
+        return { top: `calc(0% - ${EDGE_GAP_PX}px)`, left: pillStartCalc, width: pillSizeCalc, height: PILL_DICKE_PX, transform: "translate(0, -100%)" };
+      case Position.Bottom:
+        return { top: `calc(100% + ${EDGE_GAP_PX}px)`, left: pillStartCalc, width: pillSizeCalc, height: PILL_DICKE_PX };
+      case Position.Left:
+        return { left: `calc(0% - ${EDGE_GAP_PX}px)`, top: pillStartCalc, height: pillSizeCalc, width: PILL_DICKE_PX, transform: "translate(-100%, 0)" };
+      case Position.Right:
+        return { left: `calc(100% + ${EDGE_GAP_PX}px)`, top: pillStartCalc, height: pillSizeCalc, width: PILL_DICKE_PX };
+      default:
+        return {};
+    }
+  })();
+
+  // Pill optisch über dem Header, aber unter den Handles
+  const pillStyle: React.CSSProperties = {
     position: "absolute",
-    top: topPct !== undefined ? `${topPct}%` : undefined,
-    left: leftPct !== undefined ? `${leftPct}%` : undefined,
-    width: widthPct !== undefined ? `${widthPct}%` : undefined,
-    height: heightPct !== undefined ? `${heightPct}%` : undefined,
-    transform: `translate(-50%, -50%)`, // Zentriert die Pill auf ihrem Ankerpunkt
-    zIndex: 4,
-    pointerEvents: "auto", // Erlaubt Maus-Events für die Handles im Inneren
+    zIndex: 5, // Header < 5 < Handles(6)
+    pointerEvents: "none",
+    boxSizing: "border-box",
+    border: `${PILL_STROKE_PX}px solid ${farbe}`,
+    borderRadius: 9999,
+    background: "transparent",
+    ...anchor,
   };
 
-  // Bestimmt den Radius für die abgerundeten Ecken der Pill.
-  const rx = istHorizontal ? undefined : "50%";
-  const ry = istHorizontal ? "50%" : undefined;
-
-  /**
-   * Berechnet den Stil für einen einzelnen Handle (Slot) innerhalb der Pill.
-   * Die Positionierung erfolgt relativ zur Größe der Pill.
-   */
-  const slotStil = (rang: number): React.CSSProperties => {
-    const slotAnzahl = handleIds.length;
-    // Berechnet den Mittelpunkt des Slots als prozentualen Wert entlang der Hauptachse
-    const positionPct = ((rang + 0.5) / slotAnzahl) * 100;
-
-    return {
-      position: "absolute",
-      top: istHorizontal ? '50%' : `${positionPct}%`,
-      left: istHorizontal ? `${positionPct}%` : '50%',
-      // Zentriert den Handle auf dem berechneten Punkt
-      transform: 'translate(-50%, -50%)',
-      zIndex: 5,
-    };
-  };
+  // Edges nach Layout-Änderung neu einmessen lassen
+  React.useEffect(() => {
+    if (!nodeId) return;
+    const update = store.getState().updateNodeInternals;
+    if (typeof update === "function") update(new Map([[nodeId, {} as any]]));
+  }, [nodeId, N, leftPct, topPct, widthPct, heightPct, position, store]);
 
   return (
-    <div style={leisteStil}>
-      <svg
-        aria-hidden
-        width="100%"
-        height="100%"
-        preserveAspectRatio="none" // Sorgt dafür, dass das Rechteck den Container füllt
-        viewBox="0 0 100 100"
-        style={{ display: "block", pointerEvents: "none", position: "absolute" }}
-      >
-        <rect
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          rx={rx}
-          ry={ry}
-          fill="rgba(0,0,0,.05)"
-          stroke={farbe}
-          strokeWidth="1.5" // Etwas dicker für bessere Sichtbarkeit
-          vectorEffect="non-scaling-stroke" // Verhindert, dass die Umrandung bei Skalierung dicker/dünner wird
-        />
-      </svg>
+    <>
+      {/* Pill unter den einzelnen Anschlüssen */}
+      <div style={pillStyle} />
 
-      {/* Iteriert über die von der AnschlussLeiste übergebene Liste von Handle-IDs */}
-      {handleIds.map((handleId, rang) => (
-        <DatenAnschluss
-          key={handleId}
-          handleId={handleId}
-          position={position}
-          fluss={definition.fluss}
-          datenTyp={definition.dtype}
-          // Der berechnete Stil wird direkt übergeben, um die Standard-Positionierung
-          // des DatenAnschlusses zu überschreiben.
-          style={slotStil(rang)}
-        />
-      ))}
-    </div>
+      {/* Handles exakt auf der Kante (kein style-Override, nur Prozent-Pos) */}
+      {handleIds.map((hid, i) =>
+        istHorizontal ? (
+          <DatenAnschluss
+            key={hid}
+            handleId={hid}
+            position={position}
+            fluss={definition.fluss}
+            datenTyp={definition.dtype}
+            leftPct={handlePosPct(i)}
+          />
+        ) : (
+          <DatenAnschluss
+            key={hid}
+            handleId={hid}
+            position={position}
+            fluss={definition.fluss}
+            datenTyp={definition.dtype}
+            topPct={handlePosPct(i)}
+          />
+        )
+      )}
+    </>
   );
 }

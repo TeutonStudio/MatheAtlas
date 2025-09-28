@@ -2,8 +2,7 @@
 
 import { _liste } from "@/Daten/Formeln/LaTeX.ts"
 
-
-export function LeereMenge() { return "\\emptyset" };
+export const LeereMenge = "\\emptyset";
 
 export function Mengen(buchstabe:string) { return "\\mathbb{"+buchstabe+"}" }
 

@@ -13,7 +13,7 @@ export default function EdgeItems(argumente: EdgeItemKontext) {
 
   return (
     <div className="min-w-44">
-      <LöscheEdge id={id} scope="defined" onEdgesChange={onEdgesChange} onClose={onClose} />
+      <LöscheEdge id={id} scope="private" onEdgesChange={onEdgesChange} onClose={onClose} />
       <Item onSelect={onClose}>Stil ändern</Item>
       <div className="px-3 pt-1 text-xs opacity-60">ID: {id}</div>
     </div>

@@ -8,15 +8,16 @@ import Knoten from "@/Atlas/Knoten/Knoten.tsx";
 
 
 export default function BasisKnoten(argumente: BasisKnotenArgumente) {
-  const { id, style, selected, data, children } = argumente;
-  const anschlüsse = data.anschlüsse;
+  //const { id, style, selected, data, children } = argumente;
+  //const anschlüsse = data.anschlüsse;
   //if (selected) console.log(id+" wurde ausgewählt");
   const styleErsatz = { x: 0, y: 0 } as React.CSSProperties;
-  const basis = { title: data.title, badge: data.badge, anschlüsse } as BasisKnotenDaten;
-  const argument = {id, basis, style: style ?? styleErsatz, selected, children} as KnotenArgumente;
+  const basis = {...argumente.data} as BasisKnotenDaten;
+  const style = argumente.style ?? styleErsatz
+  const argument = {...argumente, basis, style} as KnotenArgumente;
 
   if (KnotenDebug) {
-    console.log("selektiert BasisKnoten",selected,id)
+    console.log("selektiert BasisKnoten",argumente.selected,argumente.id)
     // Debug
   }
   return (

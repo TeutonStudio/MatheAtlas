@@ -21,23 +21,18 @@ export enum Variante {
   Multi = "multi",
 }
 
-
-// Definiert einen handle (oder alle des MultiAnschluss)
-// This is the source of truth for creating handles in AnschlussLeiste.
 export type AnschlussDefinition = {
-  id: string; // Unique identifier for the handle within the node
+  id: string;
   dtype: DatenTypen;
   fluss: Fluß;
   variante: Variante;
-
-  // Optional properties for Multi-handles
   gapPx?: number;
   radiusPx?: number;
 };
+export type EingangsDefinition = AnschlussDefinition & {fluss: Fluß.Eingang}
+export type AusgangsDefinition = AnschlussDefinition & {fluss: Fluß.Ausgang}
 
-// Defines the layout of handles on all sides of a node.
 export type AnschlussNachSeite = Partial<Record<Position, AnschlussDefinition[]>>;
-
 
 export type DatenAnschlussArgumente = {
   handleId: string;
@@ -49,17 +44,26 @@ export type DatenAnschlussArgumente = {
   style?: React.CSSProperties;
 };
 
-
-// Props for the component that lays out all handles on one side of a node.
 export type AnschlussLeisteArgumente = {
-  nodeId?: string; // Optional, as it can be retrieved from React Flow context
+  nodeId?: string;
   seite: Position;
   anschlussListe: (pos: Position) => AnschlussDefinition[];
   edgePaddingPct?: number;
 };
 
-// --- Utility Functions ---
+// NEU: Props für MultiAnschlussLeiste (explizit, damit überall konsistent)
+export type MultiAnschlussLeisteArgumente = {
+  nodeId: string;
+  position: Position;
+  definition: EingangsDefinition;
+  handleIds: string[];
+  topPct?: number;
+  leftPct?: number;
+  widthPct?: number;
+  heightPct?: number;
+};
 
+// Utility
 export function isKnownDatenTyp(x: string): boolean {
   return (Object.values(DatenTypen) as string[]).includes(x);
 }
