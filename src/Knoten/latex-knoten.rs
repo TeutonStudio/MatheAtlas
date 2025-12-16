@@ -170,64 +170,23 @@ impl LatexNode {
             had_error: false,
         }
     }
+    
+    fn tex_to_svg_with_mathjax(tex: &str) -> Result<String, String> {
+        use mathjax::MathJax;
 
-    fn mathjax_script_path() -> Result<std::path::PathBuf, String> {
-        // Script liegt im Repo: tools/mathjax_tex2svg.mjs
-        // Passe das an, falls dein Working Directory anders ist.
-        let p = std::path::PathBuf::from("tools/mathjax_tex2svg.mjs");
-        if p.exists() { Ok(p) } else { Err(format!("MathJax script not found at: {}", p.display())) }
+        let expression = r#"y=\frac{1}{x}"#;
+        let renderer = MathJax::new().unwrap();
+        let result = renderer.render(tex).unwrap();
+        let svg_string = result.into_raw(); // This is a `<svg></svg>` element.
+        return Ok(svg_string);
     }
-
-    fn tex_to_svg_with_mathjax(tex: &str, display: bool) -> Result<String, String> {
-        let script = Self::mathjax_script_path()?;
-
-        let mut cmd = std::process::Command::new("node");
-        cmd.arg(script);
-
-        if display {
-            cmd.arg("--display");
-        }
-
-        cmd.stdin(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped());
-
-        let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn node: {e}"))?;
-
-        {
-            let stdin = child.stdin.as_mut().ok_or("Failed to open stdin for node")?;
-            stdin
-                .write_all(tex.as_bytes())
-                .map_err(|e| format!("Failed to write TeX to node stdin: {e}"))?;
-        }
-
-        let out = child.wait_with_output().map_err(|e| format!("Failed to wait for node: {e}"))?;
-
-        if !out.status.success() {
-            let stderr = String::from_utf8_lossy(&out.stderr);
-            return Err(format!("MathJax node script failed:\n{stderr}"));
-        }
-
-        let svg = String::from_utf8_lossy(&out.stdout).to_string();
-        let trimmed = svg.trim_start_matches('\u{feff}').trim_start();
-
-        if !trimmed.starts_with("<svg") {
-            return Err(format!(
-                "MathJax returned non-SVG output.\n--- head ---\n{}",
-                trimmed.chars().take(200).collect::<String>()
-            ));
-        }
-
-        Ok(svg)
-    }
-
     fn render_latex_src_to_svg(fragment: &str) -> Result<String, String> {
         // WICHTIG:
         // MathJax erwartet TeX-MATH, kein LaTeX-Dokument.
         // Also fragment sollte sowas sein wie: r"\frac{a}{b}" oder "x^2+1"
         // Wenn du bisher "$...$" lieferst: geht meistens auch, aber besser ohne $.
         let display = true; // oder heuristisch: enthält \begin{aligned} etc.
-        Self::tex_to_svg_with_mathjax(fragment, display)
+        Self::tex_to_svg_with_mathjax(fragment)
     }
 
     fn ensure_pin_vec_sizes(&mut self) {
