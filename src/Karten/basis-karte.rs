@@ -59,6 +59,26 @@ fn punkt_raster(
     }
 }
 
+fn update_node_inputs(
+    snarl: &mut Snarl<Box<dyn Knoten>>,
+    node_id: NodeId,
+) {
+    // 1) Zielnode Pin-Anzahl abfragen (oder max aus Connections, je nach Design)
+    let mut inputs: Vec<Option<typen::OutputInfo>> = vec![None; snarl[node_id].inputs()];
+
+    // 2) Alle Verbindungen durchgehen und die, die in node_id reingehen, einsammeln
+    for (from,to) in snarl.wires() {
+        // wire: { from: OutPinId, to: InPinId }
+        if to.node == node_id && to.input < inputs.len() {
+            inputs[to.input] = Some(snarl[from.node].output_info(from.output));
+        }
+    }
+
+    // 3) Node informieren
+    snarl[node_id].on_inputs_changed(inputs);
+}
+
+
 impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     fn draw_background(
         &mut self,
@@ -143,9 +163,32 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<Box<dyn Knoten>>) {
-        if typen::compatible(&snarl[from.id.node].output_type(from.id.output), &snarl[to.id.node].input_type(to.id.input)) {
-            snarl.connect(from.id, to.id);
+        let node_id = to.id.node;
+
+        let ok = {
+            let from_id = from.id.node;
+            let selbst = node_id == from_id;
+            let out_ty = snarl[from_id].output_type(from.id.output);
+            let in_ty  = snarl[node_id].input_type(to.id.input);
+            typen::compatible(&out_ty, &in_ty) && !selbst
+        }; if !ok { return }
+        
+        let mut remove: Vec<(egui_snarl::OutPinId, egui_snarl::InPinId)> = Vec::new();
+        for (von,nach) in snarl.wires() {
+            if to.id == nach && from.id != von { remove.push((von, nach)) }
         }
+        for (von, nach) in remove {
+            snarl.disconnect(von, nach);
+        }
+
+        snarl.connect(from.id, to.id);
+        update_node_inputs(snarl, node_id);
+    }
+
+    fn disconnect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<Box<dyn Knoten>>) {
+        let node_id = to.id.node;
+        snarl.disconnect(from.id,to.id);
+        update_node_inputs(snarl, node_id);
     }
 }
 

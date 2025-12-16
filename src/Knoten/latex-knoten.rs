@@ -42,18 +42,6 @@ fn show_section_at(
     }
 }
 
-fn show_pin_label(
-    ui: &mut Ui,
-    idx: usize,
-    sections: &mut [LatexSection],
-    supersample: f32,
-) {
-    if let Some(section) = sections.get_mut(idx) {
-        show_section_at(section, ui, supersample);
-    } else {
-        ui.label("?");
-    }
-}
 
 
 /// Trait: Die Anwendung liefert hiermit LaTeX-Strings basierend auf Inputs.
@@ -401,37 +389,47 @@ impl Knoten for LatexNode {
 
 
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) {
-        let idx = pin.id.input;
-        show_pin_label(ui, idx, &mut self.in_pin_sections, 3.0);
+        if let Some(section) = self.in_pin_sections.get_mut(pin.id.input) {
+            let ppp: f32 = ui.ctx().pixels_per_point();
+            let raster_scale = ppp * 3.0;
+
+            LatexNode::render_section_if_needed(section, ui.ctx(), raster_scale);
+
+            if let Some(tex) = &section.texture {
+                // Optional: EXAKT zeichnen, damit egui nicht nochmal skaliert (schärfer).
+                let size_points = vec2(
+                    section.pixel_size[0] as f32 / raster_scale,
+                    section.pixel_size[1] as f32 / raster_scale,
+                );
+                ui.add(Image::new(tex).fit_to_exact_size(size_points));
+            } else {
+                ui.label("…");
+            }
+        } else {
+            ui.label("?");
+        }
     }
 
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) {
-        let idx = pin.id.output;
-        show_pin_label(ui, idx, &mut self.out_pin_sections, 3.0);
-/*
-        // Zusätzlich: Node-Body (einfach angezeigt, damit man überhaupt was sieht)
-        let scale = ui.ctx().pixels_per_point();
-        Self::render_section_if_needed(&mut self.title, ui.ctx(), scale);
-        Self::render_section_if_needed(&mut self.body, ui.ctx(), scale);
-        Self::render_section_if_needed(&mut self.footer, ui.ctx(), scale);
+        if let Some(section) = self.out_pin_sections.get_mut(pin.id.output) {
+            let ppp = ui.ctx().pixels_per_point();
+            let raster_scale = ppp * 3.0;
 
-        ui.separator();
+            LatexNode::render_section_if_needed(section, ui.ctx(), raster_scale);
 
-        if let Some(tex) = &self.title.texture { ui.image(tex); }
-        if let Some(tex) = &self.body.texture { ui.image(tex); }
-        if let Some(tex) = &self.footer.texture { ui.image(tex); }
-
-        // Error-Badge + Log
-        let now_error = self.any_error();
-        if now_error && !self.had_error {
-            self.log_errors();
+            if let Some(tex) = &section.texture {
+                // Optional: EXAKT zeichnen, damit egui nicht nochmal skaliert (schärfer).
+                let size_points = vec2(
+                    section.pixel_size[0] as f32 / raster_scale,
+                    section.pixel_size[1] as f32 / raster_scale,
+                );
+                ui.add(Image::new(tex).fit_to_exact_size(size_points));
+            } else {
+                ui.label("…");
+            }
+        } else {
+            ui.label("?");
         }
-        self.had_error = now_error;
-
-        if now_error {
-            // rotes Badge
-            ui.colored_label(Color32::RED, "LaTeX Render Error");
-        }  */
     }
 
     fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {

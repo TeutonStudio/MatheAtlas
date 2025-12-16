@@ -168,13 +168,9 @@ pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
 pub fn compatible(output: &PinType, input: &PinType) -> bool {
     match input {
         PinType::Element => true,
-
         PinType::Logik => matches!(output, PinType::Logik),
-
         PinType::Zahl => matches!(output, PinType::Zahl),
-
         PinType::Menge => matches!(output, PinType::Menge),
-
         PinType::Abbild { wertevorrat: w_in, zielmenge: z_in } => match output {
             PinType::Abbild { wertevorrat: w_out, zielmenge: z_out } => {
                 is_superset(w_in, w_out) && is_superset(z_in, z_out)
