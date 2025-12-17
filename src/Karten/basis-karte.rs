@@ -6,6 +6,7 @@ use egui_snarl::{
     ui::{SnarlViewer, SnarlWidget, SnarlStyle, SnarlPin, PinInfo, PinShape, BackgroundPattern, PinPlacement::Edge},
 };
 
+use std::collections::{BTreeSet, HashSet};
 use crate::{basis_knoten::Knoten, typen};
 
 #[path = "../Kontext/karte.rs"]
@@ -87,6 +88,33 @@ fn pin_style_for(ty: &typen::PinType) -> PinInfo {
         typen::PinType::Abbild { .. } => PinInfo::square()
             .with_stroke(Stroke::new(2.0, Color32::WHITE)),
         _ => PinInfo::square(), // Vektor/Matrix/Tensor (und was du als nächstes erfindest)
+    }
+}
+
+
+fn propagate_dirty(snarl: &mut Snarl<Box<dyn Knoten>>) {
+    // 1) welche nodes sind dirty?
+    let mut dirty: HashSet<NodeId> = HashSet::new();
+    for (id, node) in snarl.nodes_ids_mut() {
+        if node.take_dirty() {
+            dirty.insert(id);
+        }
+    }
+    if dirty.is_empty() {
+        return;
+    }
+
+    // 2) welche nodes hängen downstream an dirty-outputs?
+    let mut affected: BTreeSet<NodeId> = BTreeSet::new();
+    for (from, to) in snarl.wires() {
+        if dirty.contains(&from.node) {
+            affected.insert(to.node);
+        }
+    }
+
+    // 3) Inputs bei den betroffenen Nodes neu einsammeln
+    for node_id in affected {
+        update_node_inputs(snarl, node_id);
     }
 }
 
@@ -218,4 +246,5 @@ pub fn show_demo_karte(
         .id(Id::new("demo-snarl"))
         .style(style)
         .show(&mut karte.snarl, &mut DemoViewer, ui);
+    propagate_dirty(&mut karte.snarl);
 }

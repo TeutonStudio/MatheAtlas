@@ -22,8 +22,9 @@ pub trait Knoten {
     fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,);
     fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui);
     
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>);
     fn output_info(&self, output: usize) -> OutputInfo;
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>);
+    fn take_dirty(&mut self) -> bool { false }
 
     /// Für Downcasting (leider nötig mit Trait-Objekten)
     fn as_any(&mut self) -> &mut dyn Any;

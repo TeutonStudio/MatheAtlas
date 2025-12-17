@@ -51,6 +51,7 @@ impl VordefMenge {
 pub struct DefiniereMengeNode {
     selected: VordefMenge,
     latex: LatexNode,
+    dirty: bool,
 }
 
 impl DefiniereMengeNode {
@@ -58,6 +59,7 @@ impl DefiniereMengeNode {
         Self {
             selected: VordefMenge::Leer,
             latex: LatexNode::new("Definiere Menge", Box::new(DefineSetProvider)),
+            dirty: true,
         }
     }
 }
@@ -70,10 +72,7 @@ impl Knoten for DefiniereMengeNode {
     fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
     fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
 
-    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {
-        // 0-input
-        self.latex.on_inputs_changed(vec![]);
-    }
+    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) { self.latex.on_inputs_changed(vec![]) }
 
     fn output_info(&self, _o: usize) -> OutputInfo {
         OutputInfo {
@@ -91,6 +90,7 @@ impl Knoten for DefiniereMengeNode {
     }
 
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
+        let mut changed = false;
         // UI: Dropdown
         ComboBox::from_id_salt(("define_set", node))
             .selected_text(self.selected.label())
@@ -104,9 +104,13 @@ impl Knoten for DefiniereMengeNode {
                     VordefMenge::Real,
                     VordefMenge::Komplex,
                 ] {
-                    ui.selectable_value(&mut self.selected, v, v.label());
+                    if ui.selectable_value(&mut self.selected, v, v.label()).changed() {
+                        changed = true;
+                    }
                 }
             });
+        
+        if changed { self.dirty = true }
 
     }
 
@@ -114,6 +118,7 @@ impl Knoten for DefiniereMengeNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
 
+    fn take_dirty(&mut self) -> bool { std::mem::take(&mut self.dirty) }
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
 
