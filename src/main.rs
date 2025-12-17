@@ -3,6 +3,9 @@
 #[path = "typen.rs"]
 mod typen;
 
+#[path = "LaTeX/mod.rs"]
+mod LaTeX;
+
 #[path = "Knoten/basis-knoten.rs"]
 mod basis_knoten;
 #[path = "Knoten/latex-knoten.rs"]

@@ -5,10 +5,9 @@ use std::any::Any;
 use eframe::egui::{Ui,ComboBox};
 use egui_snarl::{InPin, OutPin};
 
-#[path = "../../LaTeX/menge.rs"]
-mod mengeLaTeX;
-
 use crate::typen::{OutputInfo, PinType, SetId};
+use crate::LaTeX::{logik,menge};
+
 
 use crate::basis_knoten::Knoten;
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
@@ -121,10 +120,7 @@ impl Knoten for DefiniereMengeNode {
 struct DefineSetProvider;
 impl LatexSourceProvider for DefineSetProvider {
     fn title(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(r"\textbf{ZFC Menge}".into()) }
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
-        // inputs[0] = eigene OutputInfo, missbraucht für Anzeige
-        Some(inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| r"\mathbb{N}".to_string()))
-    }
+    fn body(&self, _: &[OutputInfo]) -> Option<String> { None }
     fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }
     fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { None }
     fn out_pin_label(&self, _: usize, inputs: &[OutputInfo]) -> Option<String> { Some(erhalte_mengenlatex(inputs)) }
@@ -133,5 +129,5 @@ impl LatexSourceProvider for DefineSetProvider {
 }
 
 fn erhalte_mengenlatex(inputs: &[OutputInfo]) -> String { 
-    return inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| r"\emptyset".to_string()) 
+    return inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| menge::leer()) 
 }
