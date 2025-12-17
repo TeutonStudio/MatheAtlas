@@ -10,7 +10,6 @@ use std::{
 };
 
 use eframe::egui::{ColorImage, Image, TextureHandle, TextureOptions, Ui, Context, Color32, vec2};
-
 use egui_snarl::{InPin, OutPin, NodeId};
 
 use usvg::{Options as UsvgOptions};

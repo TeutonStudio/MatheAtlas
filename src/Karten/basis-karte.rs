@@ -1,9 +1,9 @@
 // Pfad: ../src/Karten/basis-karte.rs
 
-use eframe::egui::{Id, Ui, Style, Rect, Color32, Painter, Pos2,Vec2, pos2,vec2};
+use eframe::egui::{Id, Ui, Style, Rect, Color32, Stroke, Painter, Pos2,Vec2, pos2,vec2};
 use egui_snarl::{
-    InPin, NodeId, OutPin, Snarl,
-    ui::{SnarlViewer, SnarlWidget, SnarlStyle, SnarlPin, PinInfo, BackgroundPattern},
+    InPin, NodeId, OutPin, Snarl, InPinId, OutPinId,
+    ui::{SnarlViewer, SnarlWidget, SnarlStyle, SnarlPin, PinInfo, PinShape, BackgroundPattern, PinPlacement::Edge},
 };
 
 use crate::{basis_knoten::Knoten, typen};
@@ -78,6 +78,23 @@ fn update_node_inputs(
     snarl[node_id].on_inputs_changed(inputs);
 }
 
+fn pin_style_for(ty: &typen::PinType) -> PinInfo {
+    match ty {
+        typen::PinType::Element => PinInfo::circle(),
+
+        typen::PinType::Menge => PinInfo::square(),
+
+        typen::PinType::Zahl => PinInfo::triangle(),
+
+        typen::PinType::Logik => PinInfo::star(),
+
+        typen::PinType::Abbild { .. } => {
+            // Kein “Diamond” eingebaut, also z.B. Square + anderer Stroke
+            PinInfo::square()
+                .with_stroke(Stroke::new(2.0, Color32::WHITE))
+        }
+    }
+}
 
 impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     fn draw_background(
@@ -102,7 +119,7 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
         snarl: &mut Snarl<Box<dyn Knoten>>,
     ) -> impl SnarlPin + 'static {
         snarl[pin.id.node].show_input(pin, ui);
-        PinInfo::circle()
+        pin_style_for(&snarl[pin.id.node].input_type(pin.id.input))
     }
 
     #[allow(refining_impl_trait)]
@@ -113,7 +130,7 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
         snarl: &mut Snarl<Box<dyn Knoten>>,
     ) -> impl SnarlPin + 'static {
         snarl[pin.id.node].show_output(pin, ui);
-        PinInfo::circle()
+        pin_style_for(&snarl[pin.id.node].output_type(pin.id.output))
     }
 
     fn show_header(
@@ -173,7 +190,7 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
             typen::compatible(&out_ty, &in_ty) && !selbst
         }; if !ok { return }
         
-        let mut remove: Vec<(egui_snarl::OutPinId, egui_snarl::InPinId)> = Vec::new();
+        let mut remove: Vec<(OutPinId, InPinId)> = Vec::new();
         for (von,nach) in snarl.wires() {
             if to.id == nach && from.id != von { remove.push((von, nach)) }
         }
@@ -200,7 +217,10 @@ pub fn show_demo_karte(
     karte: &mut DemoKarte,
     ui: &mut Ui,
 ) {
+    let mut style = SnarlStyle::new();
+    style.pin_placement = Some(Edge);
     SnarlWidget::new()
         .id(Id::new("demo-snarl"))
+        .style(style)
         .show(&mut karte.snarl, &mut DemoViewer, ui);
 }
