@@ -2,10 +2,7 @@
 
 use std::fmt;
 
-#[path = "LaTeX/mod.rs"]
-mod LaTeX;
-
-use LaTeX::{logik,menge};
+use crate::LaTeX::{logik,menge};
 use symbolica::domains::integer;
 
 /// Identität / Symbol für Mengen.
