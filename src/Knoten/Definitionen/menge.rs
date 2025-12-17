@@ -127,7 +127,11 @@ impl LatexSourceProvider for DefineSetProvider {
     }
     fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }
     fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { None }
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"A".into()) }
+    fn out_pin_label(&self, _: usize, inputs: &[OutputInfo]) -> Option<String> { Some(erhalte_mengenlatex(inputs)) }
     fn in_pins(&self, _: &[OutputInfo]) -> usize { 0 }
     fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+}
+
+fn erhalte_mengenlatex(inputs: &[OutputInfo]) -> String { 
+    return inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| r"\emptyset".to_string()) 
 }
