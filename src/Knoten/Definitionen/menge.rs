@@ -17,11 +17,7 @@ use crate::latex_knoten::{LatexNode, LatexSourceProvider};
 pub enum VordefMenge {
     Leer,
     Logik,
-    Nat,
-    Ganz,
-    Rat,
-    Real,
-    Komplex,
+    Nat,Ganz,Rat,Real,Komplex,
 }
 
 impl VordefMenge {
@@ -37,27 +33,17 @@ impl VordefMenge {
         }
     }
         
-    pub fn latex(self) -> String {
-        match self {
-            VordefMenge::Leer => mengeLaTeX::leer(),
-            VordefMenge::Nat => r"\mathbb{N}".to_string(),
-            VordefMenge::Ganz => r"\mathbb{Z}".to_string(),
-            VordefMenge::Rat => r"\mathbb{Q}".to_string(),
-            VordefMenge::Real => r"\mathbb{R}".to_string(),
-            VordefMenge::Komplex => r"\mathbb{C}".to_string(),
-            VordefMenge::Logik => mengeLaTeX::zustand(), // String passt jetzt
-        }
-    }
+    pub fn latex(self) -> String { return self.to_set_id().latex() }
 
     pub fn label(self) -> &'static str {
         match self {
             VordefMenge::Leer => "Leere Menge",
+            VordefMenge::Logik => "Logik zustand",
             VordefMenge::Nat => "Natürliche Zahlen",
             VordefMenge::Ganz => "Ganze Zahlen",
             VordefMenge::Rat => "Rationale Zahlen",
             VordefMenge::Real => "Reelle Zahlen",
             VordefMenge::Komplex => "Komplexe Zahlen",
-            VordefMenge::Logik => "Logik zustand",
         }
     }
 }
@@ -112,12 +98,12 @@ impl Knoten for DefiniereMengeNode {
             .show_ui(ui, |ui| {
                 for v in [
                     VordefMenge::Leer,
+                    VordefMenge::Logik,
                     VordefMenge::Nat,
                     VordefMenge::Ganz,
                     VordefMenge::Rat,
                     VordefMenge::Real,
                     VordefMenge::Komplex,
-                    VordefMenge::Logik,
                 ] {
                     ui.selectable_value(&mut self.selected, v, v.label());
                 }
