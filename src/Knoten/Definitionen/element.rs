@@ -6,6 +6,7 @@ use eframe::egui::{Ui,Color32};
 use egui_snarl::{InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType, SetId};
+use crate::LaTeX::{logik,menge};
 
 use crate::basis_knoten::Knoten;
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
@@ -105,6 +106,11 @@ impl Knoten for DefiniereElementNode {
     }
 
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) {
+        self.latex.on_inputs_changed(vec![Some(self.output_info(0))]);
+        self.latex.show_output(pin, ui);
+    }
+
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
         // Anzeige + Edit
         ui.horizontal(|ui| {
             if !self.editing {
@@ -125,13 +131,6 @@ impl Knoten for DefiniereElementNode {
                 }
             }
         });
-
-        self.latex.on_inputs_changed(vec![Some(self.output_info(0))]);
-        self.latex.show_output(pin, ui);
-    }
-
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
-        
     }
 
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
@@ -155,8 +154,12 @@ impl LatexSourceProvider for DefineElemProvider {
         Some(inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| r"x".into()))
     }
     fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\in]".to_string()) }
-    fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"A".into())  }
+    fn in_pin_label(&self, _: usize, outputs: &[OutputInfo]) -> Option<String> { Some(erhalte_mengenlatex(outputs))  }
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"x".into()) }
     fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
     fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+}
+
+fn erhalte_mengenlatex(outputs: &[OutputInfo]) -> String { 
+    return outputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| menge::leer()) 
 }
