@@ -31,10 +31,18 @@ impl SetId {
             SetId::Custom(s) => s.clone(),
         }
     }
+    
+    pub fn elements_latex(&self) -> Option<Vec<String>> {
+        match self {
+            SetId::Leer => Some(vec![]),
+            SetId::Logik => Some(vec![logik::wahr(), logik::lüge()]),
+            _ => None, // unendlich/unklar
+        }
+    }
 
     /// Ob diese Menge "endlich" ist (für deine Dropdown-Element-UI).
     pub fn is_finite(&self) -> bool {
-        matches!(self, SetId::Logik)
+        matches!(self, SetId::Leer | SetId::Logik)
     }
 }
 
