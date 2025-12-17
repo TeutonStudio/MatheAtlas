@@ -311,7 +311,7 @@ impl Knoten for LatexNode {
     }
 
     fn output_type(&self, _o: usize) -> PinType {
-        return PinType::Zahl;
+        return PinType::Zahl { raum: crate::typen::SetId::Any };
     }
 
     fn output_info(&self, _output: usize) -> OutputInfo {

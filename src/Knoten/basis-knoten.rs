@@ -4,7 +4,7 @@ use eframe::egui::{DragValue, Ui};
 use egui_snarl::{InPin, OutPin, NodeId};
 use std::any::Any;
 
-use crate::typen::{PinType,OutputInfo};
+use crate::typen::{PinType,OutputInfo,SetId};
 
 
 /// Gemeinsames Interface für ALLE Knoten
@@ -63,7 +63,7 @@ impl Knoten for NumberNode {
     }
 
     fn output_type(&self, _o: usize) -> PinType {
-        return PinType::Zahl;
+        return PinType::Zahl { raum: SetId::Any };
     }
 
     fn show_input(&mut self, _: &InPin, _: &mut Ui) {
@@ -119,7 +119,7 @@ impl Knoten for SinkNode {
     }
 
     fn output_type(&self, _o: usize) -> PinType {
-        return PinType::Zahl;
+        return PinType::Zahl { raum: SetId::Any };
     }
 
     fn show_input(&mut self, _: &InPin, ui: &mut Ui) {

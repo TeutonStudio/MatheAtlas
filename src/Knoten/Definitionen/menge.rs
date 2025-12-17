@@ -25,7 +25,7 @@ pub enum VordefMenge {
 }
 
 impl VordefMenge {
-    pub fn _to_set_id(self) -> SetId {
+    pub fn to_set_id(self) -> SetId {
         match self {
             VordefMenge::Leer => SetId::Leer,
             VordefMenge::Nat => SetId::Nat,
@@ -33,7 +33,7 @@ impl VordefMenge {
             VordefMenge::Rat => SetId::Rat,
             VordefMenge::Real => SetId::Real,
             VordefMenge::Komplex => SetId::Komplex,
-            VordefMenge::Logik => SetId::LogikWL,
+            VordefMenge::Logik => SetId::Logik,
         }
     }
         
@@ -94,7 +94,7 @@ impl Knoten for DefiniereMengeNode {
         OutputInfo {
             latex: self.selected.latex(),
             ty: PinType::Menge,
-            set_id: None
+            set_id: Some(self.selected.to_set_id())
         }
     }
 

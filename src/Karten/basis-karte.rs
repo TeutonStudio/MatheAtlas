@@ -81,20 +81,15 @@ fn update_node_inputs(
 fn pin_style_for(ty: &typen::PinType) -> PinInfo {
     match ty {
         typen::PinType::Element => PinInfo::circle(),
-
         typen::PinType::Menge => PinInfo::square(),
-
-        typen::PinType::Zahl => PinInfo::triangle(),
-
+        typen::PinType::Zahl { .. } => PinInfo::triangle(),
         typen::PinType::Logik => PinInfo::star(),
-
-        typen::PinType::Abbild { .. } => {
-            // Kein “Diamond” eingebaut, also z.B. Square + anderer Stroke
-            PinInfo::square()
-                .with_stroke(Stroke::new(2.0, Color32::WHITE))
-        }
+        typen::PinType::Abbild { .. } => PinInfo::square()
+            .with_stroke(Stroke::new(2.0, Color32::WHITE)),
+        _ => PinInfo::square(), // Vektor/Matrix/Tensor (und was du als nächstes erfindest)
     }
 }
+
 
 impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     fn draw_background(

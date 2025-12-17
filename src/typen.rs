@@ -2,6 +2,12 @@
 
 use std::fmt;
 
+#[path = "LaTeX/mod.rs"]
+mod LaTeX;
+
+use LaTeX::{logik,menge};
+use symbolica::domains::integer;
+
 /// Identität / Symbol für Mengen.
 /// Für den Anfang reichen die vordefinierten Ketten + Custom.
 /// "Any" ist die grobe "Universumsmenge", falls du nichts weißt.
@@ -9,12 +15,8 @@ use std::fmt;
 pub enum SetId {
     Any,
     Leer,
-    Nat,       // ℕ
-    Ganz,      // ℤ
-    Rat,       // ℚ
-    Real,      // ℝ
-    Komplex,   // ℂ
-    LogikWL,   // {wahr, falsch}
+    Logik,
+    Nat,Ganz,Rat,Real,Komplex, // Zahl
     Custom(String),
 }
 
@@ -22,30 +24,31 @@ impl SetId {
     pub fn latex(&self) -> String {
         match self {
             SetId::Any => r"\mathcal{U}".to_string(),
-            SetId::Leer => r"\emptyset".to_string(),
-            SetId::Nat => r"\mathbb{N}".to_string(),
-            SetId::Ganz => r"\mathbb{Z}".to_string(),
-            SetId::Rat => r"\mathbb{Q}".to_string(),
-            SetId::Real => r"\mathbb{R}".to_string(),
-            SetId::Komplex => r"\mathbb{C}".to_string(),
-            SetId::LogikWL => r"\{\mathrm{wahr},\mathrm{falsch}\}".to_string(),
+            SetId::Leer => menge::leer(),
+            SetId::Logik => menge::zustand(),
+            SetId::Nat => menge::zahlenraum("N"),
+            SetId::Ganz => menge::zahlenraum("Z"),
+            SetId::Rat => menge::zahlenraum("Q"),
+            SetId::Real => menge::zahlenraum("R"),
+            SetId::Komplex => menge::zahlenraum("C"),
             SetId::Custom(s) => s.clone(),
         }
     }
 
     /// Ob diese Menge "endlich" ist (für deine Dropdown-Element-UI).
     pub fn is_finite(&self) -> bool {
-        matches!(self, SetId::LogikWL)
+        matches!(self, SetId::Logik)
     }
 }
 
 /// Pin-Typen. Abbild ist parametrisiert über (Wertevorrat, Zielmenge).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum PinType {
-    Element,
-    Menge,
-    Zahl,
-    Logik,
+    Element,Menge,Logik,
+    Zahl { raum: SetId },
+    Vektor { grundraum: SetId, dimension: u32 },
+    Matrix { grundraum: SetId, breite: u32, höhe: u32 },
+    Tensor { grundraum: SetId, stufe: u32, dimensionen: Vec<u32> },
     Abbild { wertevorrat: SetId, zielmenge: SetId },
 }
 
@@ -54,14 +57,20 @@ impl fmt::Display for PinType {
         match self {
             PinType::Element => write!(f, "Element"),
             PinType::Menge => write!(f, "Menge"),
-            PinType::Zahl => write!(f, "Zahl"),
             PinType::Logik => write!(f, "Logik"),
-            PinType::Abbild { wertevorrat, zielmenge } => {
-                write!(f, "Abbild({} -> {})", wertevorrat.latex(), zielmenge.latex())
-            }
+            PinType::Zahl { raum } => write!(f, "Zahl({})", raum.latex()),
+            PinType::Vektor { grundraum, dimension } =>
+                write!(f, "Vektor({}^{} )", grundraum.latex(), dimension),
+            PinType::Matrix { grundraum, breite, höhe } =>
+                write!(f, "Matrix({}^{}x{})", grundraum.latex(), höhe, breite),
+            PinType::Tensor { grundraum, stufe, dimensionen } =>
+                write!(f, "Tensor({}, stufe {}, dim {:?})", grundraum.latex(), stufe, dimensionen),
+            PinType::Abbild { wertevorrat, zielmenge } =>
+                write!(f, "Abbild({} -> {})", wertevorrat.latex(), zielmenge.latex()),
         }
     }
 }
+
 
 /// Das, was entlang eines Wires “transportiert” wird.
 /// Vorläufig nur LaTeX + Typ + optional SetId (für Menge-Knoten).
@@ -135,7 +144,7 @@ pub fn is_superset(a: &SetId, b: &SetId) -> bool {
 ///
 /// Wichtig: Das ist KEINE echte Mitgliedschaftsprüfung (CAS kommt später),
 /// sondern nur eine grobe Typ-Zulässigkeit.
-pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
+/*pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
     match (set, ty) {
         (SetId::Any, _) => true,
 
@@ -144,15 +153,15 @@ pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
         (SetId::Nat | SetId::Ganz | SetId::Rat | SetId::Real | SetId::Komplex, PinType::Element) => true,
 
         // Logik-Menge enthält Logik (und damit Elemente)
-        (SetId::LogikWL, PinType::Logik) => true,
-        (SetId::LogikWL, PinType::Element) => true,
+        (SetId::Logik, PinType::Logik) => true,
+        (SetId::Logik, PinType::Element) => true,
 
         // Custom: ohne Semantik wissen wir's nicht -> nur Element als “kann man irgendwie interpretieren”
         (SetId::Custom(_), PinType::Element) => true,
 
         _ => false,
     }
-}
+}*/
 
 /// Kompatibilität: darf ein Output-Typ an einen Input-Typ?
 ///
@@ -166,19 +175,65 @@ pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
 ///
 /// Auto-Coercions (Element->SingletonMenge, Wert->StatischeAbbildung) passieren *außerhalb* hiervon.
 pub fn compatible(output: &PinType, input: &PinType) -> bool {
-    match input {
-        PinType::Element => true,
-        PinType::Logik => matches!(output, PinType::Logik),
-        PinType::Zahl => matches!(output, PinType::Zahl),
-        PinType::Menge => matches!(output, PinType::Menge),
-        PinType::Abbild { wertevorrat: w_in, zielmenge: z_in } => match output {
-            PinType::Abbild { wertevorrat: w_out, zielmenge: z_out } => {
-                is_superset(w_in, w_out) && is_superset(z_in, z_out)
-            }
+    // 1) Input Element: alles darf rein
+    if matches!(input, PinType::Element) {
+        return true;
+    }
+
+    // 2) Output ist ein Abbild: darf auch an Wert-Inputs, wenn Zielmenge passt
+    if let PinType::Abbild { zielmenge, .. } = output {
+        // "Elementtyp der Zielmenge stimmt mit Eingangstyp überein"
+        // (bei Zahl mit Raum: Zielmenge muss Obermenge des erwarteten Raums sein)
+        let abbild_passt_auf_wert_input = match input {
+            PinType::Logik => *zielmenge == SetId::Logik,
+            PinType::Zahl { raum } => is_superset(zielmenge, raum),
+            PinType::Element => true, // redundant wegen early return, aber korrekt
+            // solange du keine Semantik "Menge von Vektoren" usw hast: lieber nein als falsch-ja
             _ => false,
-        },
+        };
+
+        if abbild_passt_auf_wert_input {
+            return true;
+        }
+    }
+
+    // 3) Gleichartige Typen (mit Parametern exakt)
+    match (output, input) {
+        (PinType::Logik, PinType::Logik) => true,
+        (PinType::Menge, PinType::Menge) => true,
+
+        (PinType::Zahl { raum: ro }, PinType::Zahl { raum: ri }) => {
+            // Output-Zahl aus ro darf in ri, wenn ri ⊇ ro (Input akzeptiert Obermenge)
+            is_superset(ri, ro)
+        }
+
+        (PinType::Vektor { grundraum: go, dimension: do_ },
+         PinType::Vektor { grundraum: gi, dimension: di_ }) => {
+            do_ == di_ && is_superset(gi, go)
+        }
+
+        (PinType::Matrix { grundraum: go, breite: bo, höhe: ho },
+         PinType::Matrix { grundraum: gi, breite: bi, höhe: hi }) => {
+            bo == bi && ho == hi && is_superset(gi, go)
+        }
+
+        (PinType::Tensor { grundraum: go, stufe: so, dimensionen: dio },
+         PinType::Tensor { grundraum: gi, stufe: si, dimensionen: dii }) => {
+            so == si && dio == dii && is_superset(gi, go)
+        }
+
+        // 4) Abbild -> Abbild mit Superset-Regel (Input erwartet "gröber", Output darf spezieller sein)
+        (
+            PinType::Abbild { wertevorrat: w_out, zielmenge: z_out },
+            PinType::Abbild { wertevorrat: w_in, zielmenge: z_in }
+        ) => {
+            is_superset(w_in, w_out) && is_superset(z_in, z_out)
+        }
+
+        _ => false,
     }
 }
+
 
 /// Kleine Helper, falls du SetId als LaTeX direkt willst (ohne $...$ drumrum).
 pub fn latex_set(set: &SetId) -> String {

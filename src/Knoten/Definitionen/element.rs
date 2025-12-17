@@ -20,6 +20,7 @@ pub struct DefiniereElementNode {
     inputs_cache: Vec<Option<OutputInfo>>,
 
     editing: bool,
+    //menge: Option<SetId>,
     buffer: String,
     symbol: String,
 }
@@ -30,6 +31,7 @@ impl DefiniereElementNode {
             latex: LatexNode::new("Definiere Element", Box::new(DefineElemProvider)),
             inputs_cache: vec![],
             editing: false,
+            //menge: None,
             buffer: "x".into(),
             symbol: "x".into(),
         }
@@ -52,10 +54,41 @@ impl DefiniereElementNode {
 impl Knoten for DefiniereElementNode {
     fn name(&self) -> &str { "Definiere Element" }
     fn inputs(&self) -> usize { 1 }
-    fn outputs(&self) -> usize { 1 }
+    fn outputs(&self) -> usize { 
+        match self.current_set_id() {
+            None => return 1,
+            Some(set) => match set {
+                SetId::Any => return 1,
+                SetId::Logik => return 1,
+                SetId::Leer => return 0,
+                SetId::Nat  => return 1,
+                SetId::Ganz => return 1,
+                SetId::Rat => return 1,
+                SetId::Real => return 1,
+                SetId::Komplex => return 1,
+                _ => return 1,
+            },
+        }
+
+     }
 
     fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
-    fn output_type(&self, _o: usize) -> PinType { PinType::Element }
+    fn output_type(&self, _o: usize) -> PinType { 
+        match self.current_set_id() {
+            None => return PinType::Element,
+            Some(set) => match set {
+                SetId::Any => return PinType::Element,
+                SetId::Logik => return PinType::Logik,
+                SetId::Leer => return PinType::Element,
+                SetId::Nat  => return PinType::Zahl { raum: SetId::Nat },
+                SetId::Ganz => return PinType::Zahl { raum: SetId::Ganz },
+                SetId::Rat => return PinType::Zahl { raum: SetId::Rat },
+                SetId::Real => return PinType::Zahl { raum: SetId::Real },
+                SetId::Komplex => return PinType::Zahl { raum: SetId::Komplex },
+                _ => return PinType::Element,
+            },
+        }
+    }
 
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
         self.inputs_cache = inputs;
