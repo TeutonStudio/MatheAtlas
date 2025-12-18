@@ -1,8 +1,25 @@
 // Pfad: ../src/Karten/definitions-karte.rs
 
-use egui_snarl::{OutPin, InPin};
+use eframe::egui::Ui;
+use egui_snarl::{
+    InPin, OutPin, NodeId, Snarl,
+    ui::{SnarlViewer, SnarlPin, PinInfo},
+};
+
+use crate::{basis_knoten::Knoten, typen};
 
 pub struct DefinitionsKarte;
+
+fn pin_style_for(ty: &typen::PinType) -> PinInfo {
+    // Minimal, aber brauchbar. Wenn du willst, kopier deine echte Mapping-Logik hier rein.
+    match ty {
+        typen::PinType::Element => PinInfo::circle(),
+        typen::PinType::Menge => PinInfo::square(),
+        typen::PinType::Zahl { .. } => PinInfo::triangle(),
+        typen::PinType::Logik => PinInfo::star(),
+        _ => PinInfo::circle(),
+    }
+}
 
 impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
     fn connect(
@@ -23,6 +40,60 @@ impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
         // read-only: nix
     }
 
-    // die show_* Methoden musst du wie bei deinem normalen Viewer implementieren
-    // oder du re-uses deine existierende Anzeige-Logik, nur ohne Änderungen.
+    #[allow(refining_impl_trait)]
+    fn show_input(
+        &mut self,
+        pin: &InPin,
+        ui: &mut Ui,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) -> impl SnarlPin + 'static {
+        let node = &mut snarl[pin.id.node];
+        node.show_input(pin, ui);
+        pin_style_for(&node.input_type(pin.id.input))
+    }
+
+    #[allow(refining_impl_trait)]
+    fn show_output(
+        &mut self,
+        pin: &OutPin,
+        ui: &mut Ui,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) -> impl SnarlPin + 'static {
+        let node = &mut snarl[pin.id.node];
+        node.show_output(pin, ui);
+        pin_style_for(&node.output_type(pin.id.output))
+    }
+
+    fn show_header(
+        &mut self,
+        node_id: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        ui: &mut Ui,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) {
+        snarl[node_id].show_header(node_id, inputs, outputs, ui);
+    }
+
+    fn show_body(
+        &mut self,
+        node_id: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        ui: &mut Ui,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) {
+        snarl[node_id].show_body(node_id, inputs, outputs, ui);
+    }
+
+    fn show_footer(
+        &mut self,
+        node_id: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        ui: &mut Ui,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) {
+        snarl[node_id].show_footer(node_id, inputs, outputs, ui);
+    }
 }
