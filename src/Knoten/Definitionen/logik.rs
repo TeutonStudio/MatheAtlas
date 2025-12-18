@@ -91,7 +91,7 @@ impl LaTeXQuellBereitsteller for LügeQuelle {
 }
 
 impl KnotenInhalt for LügeNode {
-    fn show_input(&mut self, _: &InPin, _: &mut Ui) { unreachable!() }
+    fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) { self.latex.show_body(node, inputs, outputs, ui); }
