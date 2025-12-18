@@ -3,7 +3,7 @@
 use eframe::egui::{Ui};
 use egui_snarl::{InPin, OutPin, NodeId, Snarl, ui::{SnarlWidget, SnarlStyle}};
 
-use crate::definitions_karte::DefinitionsKarte;
+use crate::definitions_karte::{DefinitionsKarte, show_definitions_karte};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{Knoten,KnotenInhalt};
@@ -18,7 +18,6 @@ pub struct OperatorNode {
     //inputs_cache: Vec<Option<OutputInfo>>,
     show_def: bool,
     def_snarl: Snarl<Box<dyn Knoten>>,
-    def_viewer: DefinitionsKarte,
     // dynamische Pin-Anzahlen
 }
 
@@ -34,7 +33,6 @@ impl OperatorNode {
             out_count: 1,
             show_def: false,
             def_snarl: def_snarl,
-            def_viewer: DefinitionsKarte,
         }
     }
 
@@ -56,9 +54,7 @@ impl KnotenInhalt for OperatorNode {
                 .show(ui.ctx(), |ui| {
                     // komplett read-only: keine Interaktion
                     ui.add_enabled_ui(false, |ui| {
-                        SnarlWidget::new()
-                            .style(SnarlStyle::default())
-                            .show( &mut self.def_snarl,&mut self.def_viewer,ui);
+                        show_definitions_karte(&mut self.def_snarl,ui);
                     });
                 });
         }

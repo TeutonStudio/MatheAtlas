@@ -3,7 +3,7 @@
 use eframe::egui::Ui;
 use egui_snarl::{
     InPin, OutPin, NodeId, Snarl,
-    ui::{SnarlViewer, SnarlPin, PinInfo},
+    ui::{SnarlViewer, SnarlStyle, SnarlWidget, SnarlPin, PinInfo, PinPlacement::Edge},
 };
 
 use crate::{basis_knoten::Knoten, typen};
@@ -85,4 +85,16 @@ impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
     fn title(&mut self, node: &Box<dyn Knoten>) -> String { node.name().to_string() }
     fn inputs(&mut self, node: &Box<dyn Knoten>) -> usize { node.inputs() }
     fn outputs(&mut self, node: &Box<dyn Knoten>) -> usize { node.outputs() }
+}
+
+pub fn show_definitions_karte(
+    karte: &mut Snarl<Box<dyn Knoten>>,
+    ui: &mut Ui,
+) {
+    let mut style = SnarlStyle::new();
+    style.pin_placement = Some(Edge);
+    SnarlWidget::new()
+        //.id(Id::new("demo-snarl"))
+        .style(style)
+        .show( karte, &mut DefinitionsKarte, ui);
 }
