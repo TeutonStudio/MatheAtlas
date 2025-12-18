@@ -22,23 +22,8 @@ fn pin_style_for(ty: &typen::PinType) -> PinInfo {
 }
 
 impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
-    fn connect(
-        &mut self,
-        _from: &OutPin,
-        _to: &InPin,
-        _snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) {
-        // read-only: nix
-    }
-
-    fn disconnect(
-        &mut self,
-        _from: &OutPin,
-        _to: &InPin,
-        _snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) {
-        // read-only: nix
-    }
+    fn connect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
+    fn disconnect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
 
     #[allow(refining_impl_trait)]
     fn show_input(
@@ -96,4 +81,8 @@ impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
     ) {
         snarl[node_id].show_footer(node_id, inputs, outputs, ui);
     }
+
+    fn title(&mut self, node: &Box<dyn Knoten>) -> String { node.name().to_string() }
+    fn inputs(&mut self, node: &Box<dyn Knoten>) -> usize { node.inputs() }
+    fn outputs(&mut self, node: &Box<dyn Knoten>) -> usize { node.outputs() }
 }

@@ -2,7 +2,6 @@
 
 #[path = "typen.rs"]
 mod typen;
-
 #[path = "LaTeX/mod.rs"]
 mod LaTeX;
 
@@ -16,9 +15,8 @@ mod operator_knoten;
 
 #[path = "Karten/basis-karte.rs"]
 mod basis_karte;
-
-/*#[path = "Karten/definitions-karte.rs"]
-mod definitions_karte;*/
+#[path = "Karten/definitions-karte.rs"]
+mod definitions_karte;
 
 
 use basis_karte::{DemoKarte, show_demo_karte};

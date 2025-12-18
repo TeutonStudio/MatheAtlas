@@ -33,93 +33,6 @@ impl DemoKarte {
 
 pub struct DemoViewer;
 
-fn punkt_raster(
-    viewport: &Rect,
-    painter: &Painter,
-    style: &Style,
-    spacing: Vec2,
-    radius: f32,
-    farbe: Option<Color32>,
-) {
-    let min_x = (viewport.min.x / spacing.x).floor() as i32;
-    let max_x = (viewport.max.x / spacing.x).ceil() as i32;
-    let min_y = (viewport.min.y / spacing.y).floor() as i32;
-    let max_y = (viewport.max.y / spacing.y).ceil() as i32;
-
-    let mut dot_color = style.visuals.widgets.inactive.fg_stroke.color.gamma_multiply(0.25);
-    match farbe {
-        Some(farbe) => dot_color = farbe,
-        None => (),
-    }
-
-    for iy in min_y..=max_y {
-        let y = iy as f32 * spacing.y;
-        for ix in min_x..=max_x {
-            let x = ix as f32 * spacing.x;
-            painter.circle_filled(pos2(x, y), radius, dot_color);
-        }
-    }
-}
-
-fn update_node_inputs(
-    snarl: &mut Snarl<Box<dyn Knoten>>,
-    node_id: NodeId,
-) {
-    // 1) Zielnode Pin-Anzahl abfragen (oder max aus Connections, je nach Design)
-    let mut inputs: Vec<Option<typen::OutputInfo>> = vec![None; snarl[node_id].inputs()];
-
-    // 2) Alle Verbindungen durchgehen und die, die in node_id reingehen, einsammeln
-    for (from,to) in snarl.wires() {
-        // wire: { from: OutPinId, to: InPinId }
-        if to.node == node_id && to.input < inputs.len() {
-            inputs[to.input] = Some(snarl[from.node].output_info(from.output));
-        }
-    }
-
-    // 3) Node informieren
-    snarl[node_id].on_inputs_changed(inputs);
-}
-
-fn pin_style_for(ty: &typen::PinType) -> PinInfo {
-    match ty {
-        typen::PinType::Element => PinInfo::circle(),
-        typen::PinType::Menge => PinInfo::square(),
-        typen::PinType::Zahl { .. } => PinInfo::triangle(),
-        typen::PinType::Logik => PinInfo::star(),
-        typen::PinType::Abbild { .. } => PinInfo::square()
-            .with_stroke(Stroke::new(2.0, Color32::WHITE)),
-        _ => PinInfo::square(), // Vektor/Matrix/Tensor (und was du als nächstes erfindest)
-    }
-}
-
-
-fn propagate_dirty(snarl: &mut Snarl<Box<dyn Knoten>>) {
-    // 1) welche nodes sind dirty?
-    let mut dirty: HashSet<NodeId> = HashSet::new();
-    for (id, node) in snarl.nodes_ids_mut() {
-        if node.take_dirty() {
-            dirty.insert(id);
-        }
-    }
-    if dirty.is_empty() {
-        return;
-    }
-
-    // 2) welche nodes hängen downstream an dirty-outputs?
-    let mut affected: BTreeSet<NodeId> = BTreeSet::new();
-    for (from, to) in snarl.wires() {
-        if dirty.contains(&from.node) {
-            affected.insert(to.node);
-        }
-    }
-
-    // 3) Inputs bei den betroffenen Nodes neu einsammeln
-    for node_id in affected {
-        update_node_inputs(snarl, node_id);
-    }
-}
-
-
 impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     fn draw_background(
         &mut self,
@@ -258,4 +171,90 @@ pub fn show_demo_karte(
         .style(style)
         .show(&mut karte.snarl, &mut DemoViewer, ui);
     propagate_dirty(&mut karte.snarl);
+}
+
+fn punkt_raster(
+    viewport: &Rect,
+    painter: &Painter,
+    style: &Style,
+    spacing: Vec2,
+    radius: f32,
+    farbe: Option<Color32>,
+) {
+    let min_x = (viewport.min.x / spacing.x).floor() as i32;
+    let max_x = (viewport.max.x / spacing.x).ceil() as i32;
+    let min_y = (viewport.min.y / spacing.y).floor() as i32;
+    let max_y = (viewport.max.y / spacing.y).ceil() as i32;
+
+    let mut dot_color = style.visuals.widgets.inactive.fg_stroke.color.gamma_multiply(0.25);
+    match farbe {
+        Some(farbe) => dot_color = farbe,
+        None => (),
+    }
+
+    for iy in min_y..=max_y {
+        let y = iy as f32 * spacing.y;
+        for ix in min_x..=max_x {
+            let x = ix as f32 * spacing.x;
+            painter.circle_filled(pos2(x, y), radius, dot_color);
+        }
+    }
+}
+
+fn update_node_inputs(
+    snarl: &mut Snarl<Box<dyn Knoten>>,
+    node_id: NodeId,
+) {
+    // 1) Zielnode Pin-Anzahl abfragen (oder max aus Connections, je nach Design)
+    let mut inputs: Vec<Option<typen::OutputInfo>> = vec![None; snarl[node_id].inputs()];
+
+    // 2) Alle Verbindungen durchgehen und die, die in node_id reingehen, einsammeln
+    for (from,to) in snarl.wires() {
+        // wire: { from: OutPinId, to: InPinId }
+        if to.node == node_id && to.input < inputs.len() {
+            inputs[to.input] = Some(snarl[from.node].output_info(from.output));
+        }
+    }
+
+    // 3) Node informieren
+    snarl[node_id].on_inputs_changed(inputs);
+}
+
+fn pin_style_for(ty: &typen::PinType) -> PinInfo {
+    match ty {
+        typen::PinType::Element => PinInfo::circle(),
+        typen::PinType::Menge => PinInfo::square(),
+        typen::PinType::Zahl { .. } => PinInfo::triangle(),
+        typen::PinType::Logik => PinInfo::star(),
+        typen::PinType::Abbild { .. } => PinInfo::square()
+            .with_stroke(Stroke::new(2.0, Color32::WHITE)),
+        _ => PinInfo::square(), // Vektor/Matrix/Tensor (und was du als nächstes erfindest)
+    }
+}
+
+
+fn propagate_dirty(snarl: &mut Snarl<Box<dyn Knoten>>) {
+    // 1) welche nodes sind dirty?
+    let mut dirty: HashSet<NodeId> = HashSet::new();
+    for (id, node) in snarl.nodes_ids_mut() {
+        if node.take_dirty() {
+            dirty.insert(id);
+        }
+    }
+    if dirty.is_empty() {
+        return;
+    }
+
+    // 2) welche nodes hängen downstream an dirty-outputs?
+    let mut affected: BTreeSet<NodeId> = BTreeSet::new();
+    for (from, to) in snarl.wires() {
+        if dirty.contains(&from.node) {
+            affected.insert(to.node);
+        }
+    }
+
+    // 3) Inputs bei den betroffenen Nodes neu einsammeln
+    for node_id in affected {
+        update_node_inputs(snarl, node_id);
+    }
 }
