@@ -21,11 +21,11 @@ use karte_kontext::{zeige_karten_kontext};
 use knoten_kontext::{zeige_knoten_kontext};
 use verbindung_kontext::{zeige_verbindung_kontext};
 
-pub struct DemoKarte {
+pub struct BasisKarte {
     pub snarl: Snarl<Box<dyn Knoten>>,
 }
 
-impl DemoKarte {
+impl BasisKarte {
     pub fn new() -> Self {
         Self {
             snarl: Snarl::new(),
@@ -37,9 +37,9 @@ impl DemoKarte {
    SnarlViewer
 --------------------------*/
 
-pub struct DemoViewer;
+pub struct BasisViewer;
 
-impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
+impl SnarlViewer<Box<dyn Knoten>> for BasisViewer {
     fn draw_background(
         &mut self,
         _background: Option<&BackgroundPattern>,
@@ -156,7 +156,7 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
 --------------------------*/
 
 pub fn show_demo_karte(
-    karte: &mut DemoKarte,
+    karte: &mut BasisKarte,
     ui: &mut Ui,
 ) {
     let mut style = SnarlStyle::new();
@@ -164,7 +164,7 @@ pub fn show_demo_karte(
     SnarlWidget::new()
         .id(Id::new("demo-snarl"))
         .style(style)
-        .show(&mut karte.snarl, &mut DemoViewer, ui);
+        .show(&mut karte.snarl, &mut BasisViewer, ui);
     propagate_dirty(&mut karte.snarl);
 }
 

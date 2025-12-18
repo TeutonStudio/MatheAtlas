@@ -19,7 +19,7 @@ mod basis_karte;
 mod definitions_karte;
 
 
-use basis_karte::{DemoKarte, show_demo_karte};
+use basis_karte::{BasisKarte, show_demo_karte};
 use eframe::{
     egui::{Context,CentralPanel},
     Frame,
@@ -34,13 +34,13 @@ fn erhalte_titel() -> String {
 }
 
 struct Anwendung {
-    karte: DemoKarte,
+    karte: BasisKarte,
 }
 
 impl Anwendung {
     fn new() -> Self {
         Self {
-            karte: DemoKarte::new(),
+            karte: BasisKarte::new(),
         }
     }
 }
