@@ -37,6 +37,8 @@ impl OperatorNode {
             def_viewer: DefinitionsKarte,
         }
     }
+
+    pub fn name(&self) -> &str { return self.latex.name() }
 }
 
 impl KnotenInhalt for OperatorNode {

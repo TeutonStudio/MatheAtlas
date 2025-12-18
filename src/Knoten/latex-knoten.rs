@@ -44,6 +44,8 @@ impl LatexNode {
             out_pin_sections: vec![LaTeXQuelle::new()],
         }
     }
+
+    pub fn name(&self) -> &str { return &self.name }
 }
 
 impl KnotenInhalt for LatexNode {

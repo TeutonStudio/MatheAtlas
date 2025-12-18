@@ -10,6 +10,7 @@ use crate::typen::{OutputInfo, PinType};
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
 use crate::latex_knoten::{LatexNode};
+use crate::operator_knoten::{OperatorNode};
 
 #[derive(Clone, Copy, Debug)]
 pub enum MengenOp {
@@ -93,8 +94,8 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
 --------------------------*/
 
 pub struct MengenOperatorNode {
-    op: MengenOp,
-    latex: LatexNode,
+    op: OperatorNode,
+    //latex: LatexNode,
     inputs_cache: Vec<Option<OutputInfo>>,
     //show_def: bool,
     //def_snarl: egui_snarl::Snarl<Box<dyn Knoten>>,
@@ -104,8 +105,8 @@ pub struct MengenOperatorNode {
 impl MengenOperatorNode {
     pub fn new(op: MengenOp) -> Self {
         Self {
-            op,
-            latex: LatexNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
+            op: OperatorNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
+            //latex: LatexNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
             inputs_cache: vec![],
             //show_def: false,
             //def_snarl: egui_snarl::Snarl::new("Mengen", Box::new(MengenProvider { op }))
@@ -115,14 +116,7 @@ impl MengenOperatorNode {
 }
 
 impl KnotenStruktur for MengenOperatorNode {
-    fn name(&self) -> &str {
-        match self.op {
-            MengenOp::Vereinigung => "Vereinigung (∪)",
-            MengenOp::Schnitt => "Schnitt (∩)",
-            MengenOp::Differenz => "Differenz (\\)",
-        }
-    }
-
+    fn name(&self) -> &str { &self.op.name() }
     fn inputs(&self) -> usize { 2 }
     fn outputs(&self) -> usize { 1 }
 
@@ -140,35 +134,16 @@ impl KnotenStruktur for MengenOperatorNode {
     }
 }
 impl KnotenInhalt for MengenOperatorNode {
-    fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
-    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
+    fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
+    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.op.show_output(pin, ui); }
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
         
     }
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        self.latex.show_header(node, inputs, outputs, ui);
+        self.op.show_header(node, inputs, outputs, ui);
     }
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         if ui.small_button("zeige Definition").clicked() { /*self.show_def = true*/ };
-        /*if self.show_def {
-            let title = format!("Definition: {}", self.name());
-
-            egui::Window::new(title)
-                .open(&mut self.show_def)
-                .resizable(true)
-                .vscroll(false)
-                .show(ui.ctx(), |ui| {
-                    ui.label("Unveränderliche Definition (read-only)");
-
-                    ui.add_enabled_ui(false, |ui| {
-                        // Komplett deaktiviert: keine Interaktion (auch kein Drag/Connect)
-                        SnarlWidget::new(&mut self.def_snarl)
-                            .style(SnarlStyle::default())
-                            .show(ui, &mut self.def_viewer);
-                    });
-                });
-        }*/
-        //self.latex.show_footer(node, inputs, outputs, ui);
     }
 }
 impl Knoten for MengenOperatorNode {
