@@ -5,7 +5,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 use tiny_skia::Pixmap;
-use eframe::egui::{ColorImage, Image, TextureHandle, TextureOptions, Ui, Context, vec2};
+use eframe::egui::{ColorImage, Image, TextureHandle, TextureOptions, Ui, Context, Sense, vec2};
 use crate::typen::{OutputInfo};
 use usvg::{Options as UsvgOptions};
 use mathjax::MathJax;
@@ -95,20 +95,33 @@ impl LaTeXQuelle {
     }
 
     pub fn show(&mut self, ui: &mut Ui) {
-        let raster_scale = ui.ctx().pixels_per_point() * 3.0;
-
-        self.render_section_if_needed(ui.ctx(), raster_scale);
-
-        if let Some(tex) = &self.texture {
-            // Optional: EXAKT zeichnen, damit egui nicht nochmal skaliert (schärfer).
-            let size_points = vec2(
-                self.pixel_size[0] as f32 / raster_scale,
-                self.pixel_size[1] as f32 / raster_scale,
-            );
-            ui.add(Image::new(tex).fit_to_exact_size(size_points));
+        if let Some(image) = self.erhalte_image(ui.ctx()) {
+            ui.add(image);
         } else {
             ui.label("…");
         }
+    }
+
+    pub fn show_clickable(&mut self, ui: &mut Ui) -> bool {
+        if let Some(image) = self.erhalte_image(ui.ctx()) {
+            let resp = ui.add(image.sense(Sense::click()) );
+
+            resp.clicked()
+        } else {
+            ui.add(eframe::egui::Label::new("…").sense(Sense::click())).clicked()
+        }
+    }
+
+    fn erhalte_image(&mut self, ctx: &Context) -> Option<Image> {
+        let raster_scale = ctx.pixels_per_point() * 3.0;
+        self.render_section_if_needed(ctx, raster_scale);
+        let size_points = vec2(
+            self.pixel_size[0] as f32 / raster_scale,
+            self.pixel_size[1] as f32 / raster_scale,
+        );
+        if let Some(tex) = &self.texture {
+            return Some(Image::new(tex).fit_to_exact_size(size_points));
+        } else { return None }
     }
 
     fn tex_to_svg_with_mathjax(tex: &str) -> Result<String, String> {
