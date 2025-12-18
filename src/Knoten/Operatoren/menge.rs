@@ -85,8 +85,8 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
     fn footer(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(String::new()) }
     fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$x$".into()) }
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    /*fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }*/
 }
 
 /* -------------------------
@@ -173,8 +173,8 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     }
 
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{out}$".into()) }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    /*fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
+    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }*/
 }
 
 /* -------------------------
