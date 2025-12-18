@@ -191,6 +191,10 @@ impl Knoten for DefiniereElementNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
 
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        
+    }
+
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
 

@@ -118,6 +118,10 @@ impl Knoten for DefiniereMengeNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
 
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        
+    }
+
     fn take_dirty(&mut self) -> bool { std::mem::take(&mut self.dirty) }
     fn as_any(&mut self) -> &mut dyn Any { self }
 }

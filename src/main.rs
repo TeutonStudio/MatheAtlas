@@ -25,6 +25,11 @@ use eframe::{
     App,
 };
 
+fn erhalte_titel() -> String {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+    return format!("Mathematik Atlas ({})", VERSION);
+}
+
 struct Anwendung {
     karte: DemoKarte,
 }
@@ -48,7 +53,7 @@ impl App for Anwendung {
 
 fn main() -> Result<()> {
     eframe::run_native(
-        "Mathe-Atlas (0.0.1)",
+        &erhalte_titel(),
         NativeOptions::default(),
         Box::new(|_| Ok(Box::new(Anwendung::new()))),
     )

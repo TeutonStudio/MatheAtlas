@@ -3,7 +3,7 @@
 use std::any::Any;
 
 use eframe::egui::Ui;
-use egui_snarl::{InPin, OutPin};
+use egui_snarl::{NodeId, InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType};
 
@@ -65,6 +65,9 @@ impl Knoten for SingletonMengeNode {
         
     }
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        
+    }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
     fn as_any(&mut self) -> &mut dyn Any { self }
@@ -135,7 +138,13 @@ impl Knoten for MengenOperatorNode {
         
     }
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
+        self.latex.show_header(node, inputs, outputs, ui);
+    }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        if ui.small_button("zeige Definition").clicked() {
+            
+        }
+        //self.latex.show_footer(node, inputs, outputs, ui);
     }
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
@@ -229,10 +238,13 @@ impl Knoten for RelationsOperatorNode {
 
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
+    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
         
     }
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        
+    }
+    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
     fn as_any(&mut self) -> &mut dyn Any { self }

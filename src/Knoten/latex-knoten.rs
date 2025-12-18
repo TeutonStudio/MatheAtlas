@@ -294,31 +294,16 @@ impl LatexNode {
 }
 
 impl Knoten for LatexNode {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn inputs(&self) -> usize {
-        self.in_count
-    }
-
-    fn outputs(&self) -> usize {
-        self.out_count
-    }
-
-    fn input_type(&self, _i: usize) -> PinType {
-        return PinType::Element;
-    }
-
+    fn name(&self) -> &str { return &self.name }
+    fn inputs(&self) -> usize { return self.in_count }
+    fn outputs(&self) -> usize { return self.out_count }
+    fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
     fn output_type(&self, _o: usize) -> PinType {
         return PinType::Zahl { raum: crate::typen::SetId::Any };
     }
 
     fn output_info(&self, _output: usize) -> OutputInfo {
-        // Für LaTeX-Knoten: z.B. Body als “Text-Info” weiterreichen.
-        // Du kannst später z.B. echtes LaTeX weiterreichen.
-        OutputInfo { latex: r"\LaTeX".to_string(), ty: PinType::Element, set_id: None }
-        //OutputInfo { text: self.body.src.clone() }
+        return OutputInfo { latex: r"\LaTeX".to_string(), ty: PinType::Element, set_id: None }
     }
 
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
@@ -404,7 +389,6 @@ impl Knoten for LatexNode {
         } else {
             ui.label("…");
         }
-        
     }
 
     fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
@@ -421,7 +405,22 @@ impl Knoten for LatexNode {
         } else {
             ui.label("…");
         }
-        
+    }
+
+    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+        let raster_scale = ui.ctx().pixels_per_point();
+        LatexNode::render_section_if_needed(&mut self.footer, ui.ctx(), raster_scale);
+
+        if let Some(tex) = &self.footer.texture {
+            // Optional: EXAKT zeichnen, damit egui nicht nochmal skaliert (schärfer).
+            let size_points = vec2(
+                self.footer.pixel_size[0] as f32 / raster_scale,
+                self.footer.pixel_size[1] as f32 / raster_scale,
+            );
+            ui.add(Image::new(tex).fit_to_exact_size(size_points));
+        } else {
+            ui.label("…");
+        }
     }
 
     fn as_any(&mut self) -> &mut dyn std::any::Any {
