@@ -54,10 +54,10 @@ impl KnotenDaten for WahrNode {
 }
 impl KnotenStruktur for WahrNode {
     fn name(&self) -> &str { "Wahr" }
-    fn inputs(&self) -> usize { 0 }
-    fn outputs(&self) -> usize { 1 }
+    fn inputs(&self) -> usize { self.latex.provider.in_pins() }
+    fn outputs(&self) -> usize { self.latex.provider.out_pins() }
 
-    fn input_type(&self, _i: usize) -> PinType { PinType::Element }
+    fn input_type(&self, _i: usize) -> PinType { PinType::Logik }
     fn output_type(&self, _o: usize) -> PinType { PinType::Logik }
 }
 impl Knoten for WahrNode {
@@ -106,10 +106,10 @@ impl KnotenDaten for LügeNode {
 }
 impl KnotenStruktur for LügeNode {
     fn name(&self) -> &str { "Lüge" }
-    fn inputs(&self) -> usize { 0 }
-    fn outputs(&self) -> usize { 1 }
+    fn inputs(&self) -> usize { self.latex.provider.in_pins() }
+    fn outputs(&self) -> usize { self.latex.provider.out_pins() }
 
-    fn input_type(&self, _i: usize) -> PinType { PinType::Element }
+    fn input_type(&self, _i: usize) -> PinType { PinType::Logik }
     fn output_type(&self, _o: usize) -> PinType { PinType::Logik }
 }
 impl Knoten for LügeNode {
