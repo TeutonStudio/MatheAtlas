@@ -14,33 +14,10 @@ use egui_snarl::{InPin, OutPin, NodeId};
 
 use usvg::{Options as UsvgOptions};
 use tiny_skia::Pixmap;
+use mathjax::MathJax;
 
 use crate::typen::{PinType,OutputInfo};
 use crate::basis_knoten::{Knoten};
-
-
-fn show_section_at(
-    section: &mut LatexSection,
-    ui: &mut Ui,
-    supersample: f32,
-) {
-    let ppp = ui.ctx().pixels_per_point();
-    let raster_scale = ppp * supersample;
-
-    LatexNode::render_section_if_needed(section, ui.ctx(), raster_scale);
-
-    if let Some(tex) = &section.texture {
-        // Optional: EXAKT zeichnen, damit egui nicht nochmal skaliert (schärfer).
-        let size_points = vec2(
-            section.pixel_size[0] as f32 / raster_scale,
-            section.pixel_size[1] as f32 / raster_scale,
-        );
-        ui.add(Image::new(tex).fit_to_exact_size(size_points));
-    } else {
-        ui.label("…");
-    }
-}
-
 
 
 /// Trait: Die Anwendung liefert hiermit LaTeX-Strings basierend auf Inputs.
@@ -60,7 +37,7 @@ pub trait LatexSourceProvider: Send + Sync {
 /// Ein Bereich (Title/Body/Footer/Pinlabel) als gerenderte Grafik mit Cache.
 struct LatexSection {
     src: String,
-    src_hash: u64,
+    src_hash: u64, // TODO braucht es diesen, da new_src =?= src
 
     svg: Option<String>,
     last_raster_scale: f32,
@@ -69,6 +46,12 @@ struct LatexSection {
 
     error: Option<String>,
     last_logged_error_hash: u64,
+}
+
+fn erhalte_hash(str: &String) -> u64 {
+    let mut h = DefaultHasher::new();
+    str.hash(&mut h);
+    return h.finish();
 }
 
 impl LatexSection {
@@ -85,24 +68,6 @@ impl LatexSection {
         }
     }
 
-    fn set_src(&mut self, new_src: String) -> bool {
-        let mut h = DefaultHasher::new();
-        new_src.hash(&mut h);
-        let new_hash = h.finish();
-
-        let changed = new_hash != self.src_hash;
-        if changed {
-            self.src = new_src;
-            self.src_hash = new_hash;
-            self.svg = None;
-            self.texture = None;
-            self.error = None;
-            self.last_raster_scale = -1.0;
-            self.last_logged_error_hash = 0;
-        }
-        changed
-    }
-
     fn clear(&mut self) {
         self.src.clear();
         self.src_hash = 0;
@@ -113,17 +78,32 @@ impl LatexSection {
         self.last_logged_error_hash = 0;
     }   
 
+    fn set_src(&mut self, new_src: String) -> bool {
+        let new_hash = erhalte_hash(&new_src);
+        if new_hash != self.src_hash {
+            self.src = new_src;
+            self.src_hash = new_hash;
+            self.svg = None;
+            self.texture = None;
+            self.error = None;
+            self.last_raster_scale = -1.0;
+            self.last_logged_error_hash = 0;
+            return true;
+        }
+        return false;
+    }
+
     fn set_src_opt(&mut self, new_src: Option<String>) -> bool {
         match new_src {
             None => {
-                let changed = self.src_hash != 0 || !self.src.is_empty() || self.svg.is_some() || self.texture.is_some();
-                if changed {
+                if self.src_hash != 0 || !self.src.is_empty() || self.svg.is_some() || self.texture.is_some() {
                     self.clear();
                     self.last_logged_error_hash = 0;
+                    return true;
                 }
-                changed
+                return false;
             }
-            Some(src) => { self.set_src(src) }
+            Some(src) => { return self.set_src(src) }
         }
     }
 }
@@ -171,20 +151,12 @@ impl LatexNode {
     }
     
     fn tex_to_svg_with_mathjax(tex: &str) -> Result<String, String> {
-        use mathjax::MathJax;
-
-        let expression = r#"y=\frac{1}{x}"#;
         let renderer = MathJax::new().unwrap();
         let result = renderer.render(tex).unwrap();
-        let svg_string = result.into_raw(); // This is a `<svg></svg>` element.
+        let svg_string = result.into_raw();
         return Ok(svg_string);
     }
     fn render_latex_src_to_svg(fragment: &str) -> Result<String, String> {
-        // WICHTIG:
-        // MathJax erwartet TeX-MATH, kein LaTeX-Dokument.
-        // Also fragment sollte sowas sein wie: r"\frac{a}{b}" oder "x^2+1"
-        // Wenn du bisher "$...$" lieferst: geht meistens auch, aber besser ohne $.
-        let display = true; // oder heuristisch: enthält \begin{aligned} etc.
         Self::tex_to_svg_with_mathjax(fragment)
     }
 

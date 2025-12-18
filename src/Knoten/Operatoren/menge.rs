@@ -95,6 +95,9 @@ pub struct MengenOperatorNode {
     op: MengenOp,
     latex: LatexNode,
     inputs_cache: Vec<Option<OutputInfo>>,
+    show_def: bool,
+    //def_snarl: egui_snarl::Snarl<Box<dyn Knoten>>,
+    //def_viewer: DefinitionsKarte,
 }
 
 impl MengenOperatorNode {
@@ -103,6 +106,9 @@ impl MengenOperatorNode {
             op,
             latex: LatexNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
             inputs_cache: vec![],
+            show_def: false,
+            //def_snarl: egui_snarl::Snarl::new("Mengen", Box::new(MengenProvider { op }))
+            //def_viewer: DefinitionsKarte,
         }
     }
 }
@@ -141,18 +147,24 @@ impl Knoten for MengenOperatorNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        if ui.small_button("zeige Definition").clicked() { // TODO
-            Window::new("Definition")
-                .default_width(320.0)
-                .default_height(480.0)
-                .open(&mut true)
-                .resizable([true, false])
-                .scroll(false)
-                /*.constrain_to(ui.available_rect_before_wrap())*/
-                /*.show(ui, |ui| {
-                    use crate::View as _;
-                    self.ui(ui);
-                });*/;
+        if ui.small_button("zeige Definition").clicked() { self.show_def = true };
+        if self.show_def {
+        let title = format!("Definition: {}", self.name());
+
+        egui::Window::new(title)
+            .open(&mut self.show_def)
+            .resizable(true)
+            .vscroll(false)
+            .show(ui.ctx(), |ui| {
+                ui.label("Unveränderliche Definition (read-only)");
+
+                ui.add_enabled_ui(false, |ui| {
+                    // Komplett deaktiviert: keine Interaktion (auch kein Drag/Connect)
+                    SnarlWidget::new(&mut self.def_snarl)
+                        .style(SnarlStyle::default())
+                        .show(ui, &mut self.def_viewer);
+                });
+            });
         }
         //self.latex.show_footer(node, inputs, outputs, ui);
     }

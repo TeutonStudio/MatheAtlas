@@ -7,7 +7,8 @@ use egui_snarl::{
 };
 
 use std::collections::{BTreeSet, HashSet};
-use crate::{basis_knoten::Knoten, typen};
+use crate::typen;
+use crate::basis_knoten::Knoten;
 
 #[path = "../Kontext/karte.rs"]
 mod karte_kontext;
@@ -222,14 +223,15 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
             typen::compatible(&out_ty, &in_ty) && !selbst
         }; if !ok { return }
         
-        let mut remove: Vec<(OutPinId, InPinId)> = Vec::new();
+        /*let mut remove: Vec<(OutPinId, InPinId)> = Vec::new();
         for (von,nach) in snarl.wires() {
             if to.id == nach && from.id != von { remove.push((von, nach)) }
-        }
-        for (von, nach) in remove {
-            snarl.disconnect(von, nach);
-        }
-
+            }
+            for (von, nach) in remove {
+                snarl.disconnect(von, nach);
+                }*/
+                
+        snarl.drop_inputs(to.id);
         snarl.connect(from.id, to.id);
         update_node_inputs(snarl, node_id);
     }
