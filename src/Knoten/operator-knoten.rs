@@ -43,7 +43,8 @@ impl KnotenInhalt for OperatorNode {
     }
 
     fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        self.show_header(node, inputs, outputs, ui);
+        self.latex.title.show_clickable(ui);
+        // self.show_header(node, inputs, outputs, ui);
     }
 
     fn show_body(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui,) {

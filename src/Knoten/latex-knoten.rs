@@ -23,12 +23,12 @@ pub struct LatexNode {
     provider: Box<dyn LaTeXQuellBereitsteller>,
     inputs: Vec<OutputInfo>,
     
-    title: LaTeXQuelle,
-    body: LaTeXQuelle,
-    footer: LaTeXQuelle,
+    pub title: LaTeXQuelle,
+    pub body: LaTeXQuelle,
+    pub footer: LaTeXQuelle,
 
-    in_pin_sections: Vec<LaTeXQuelle>,
-    out_pin_sections: Vec<LaTeXQuelle>,
+    pub in_pin_sections: Vec<LaTeXQuelle>,
+    pub out_pin_sections: Vec<LaTeXQuelle>,
 }
 
 impl LatexNode {
