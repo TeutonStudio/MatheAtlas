@@ -17,6 +17,7 @@ pub enum MengenOp {
     Vereinigung,
     Schnitt,
     Differenz,
+    Potenz,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -85,8 +86,8 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
     fn footer(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(String::new()) }
     fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$x$".into()) }
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    fn in_pins(&self) -> usize { 1 }
+    fn out_pins(&self) -> usize { 1 }
 }
 
 /* -------------------------
@@ -96,7 +97,7 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
 pub struct MengenOperatorNode {
     op: OperatorNode,
     //latex: LatexNode,
-    inputs_cache: Vec<Option<OutputInfo>>,
+    //inputs_cache: Vec<Option<OutputInfo>>,
     //show_def: bool,
     //def_snarl: egui_snarl::Snarl<Box<dyn Knoten>>,
     //def_viewer: DefinitionsKarte,
@@ -106,17 +107,22 @@ impl MengenOperatorNode {
     pub fn new(op: MengenOp) -> Self {
         Self { // TODO herausfinden, wieso nach erzeugung nur ... überall steht
             op: OperatorNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
-            inputs_cache: vec![],
+            // inputs_cache: vec![],
         }
     }
 }
 
+impl KnotenStruktur for MengenOperatorNode {
+    fn name(&self) -> &str { &self.op.name() }
+    fn inputs(&self) -> usize { self.op.latex.provider.in_pins() }
+    fn outputs(&self) -> usize { self.op.latex.provider.out_pins() }
+
+    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
+    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
+}
+
 impl KnotenDaten for MengenOperatorNode {
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        //self.latex.on_inputs_changed(present);
-    }
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) { self.op.latex.on_inputs_changed(inputs) }
     fn output_info(&self, _o: usize) -> OutputInfo {
         OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
     }
@@ -125,19 +131,11 @@ impl KnotenDaten for MengenOperatorNode {
     }
 }
 
-impl KnotenStruktur for MengenOperatorNode {
-    fn name(&self) -> &str { &self.op.name() }
-    fn inputs(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
-    fn outputs(&self) -> usize { 1 }
-
-    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
-    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
-}
 impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.op.show_output(pin, ui); }
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
-        
+        self.op.show_body(node, inputs, outputs, ui);
     }
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         self.op.show_header(node, inputs, outputs, ui);
@@ -154,9 +152,10 @@ struct MengenProvider { op: MengenOp }
 impl LaTeXQuellBereitsteller for MengenProvider {
     fn title(&self, _: &[OutputInfo]) -> Option<String> {
         match self.op {
-            MengenOp::Vereinigung => Some(r"\textbf{Vereinigung}".into()),
-            MengenOp::Schnitt => Some(r"\textbf{Schnitt}".into()),
-            MengenOp::Differenz => Some(r"\textbf{Differenz}".into()),
+            MengenOp::Vereinigung => Some(r"\textbf{Vereinigungsmenge}".into()),
+            MengenOp::Schnitt => Some(r"\textbf{Schnittmenge}".into()),
+            MengenOp::Differenz => Some(r"\textbf{Differenzmenge}".into()),
+            MengenOp::Potenz => Some(r"\textbf{Potenzmenge}".into()),
         }
     }
 
@@ -164,21 +163,22 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         let a = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("A");
         let b = inputs.get(1).map(|i| i.latex.as_str()).unwrap_or("B");
         match self.op {
-            MengenOp::Vereinigung => Some(format!(r"$\left({a}\right)\cup\left({b}\right)$")),
-            MengenOp::Schnitt => Some(format!(r"$\left({a}\right)\cap\left({b}\right)$")),
-            MengenOp::Differenz => Some(format!(r"$\left({a}\right)\setminus\left({b}\right)$")),
+            MengenOp::Vereinigung => Some(format!(r"\left({a}\right)\cup\left({b}\right)")),
+            MengenOp::Schnitt => Some(format!(r"\left({a}\right)\cap\left({b}\right)")),
+            MengenOp::Differenz => Some(format!(r"\left({a}\right)\setminus\left({b}\right)")),
+            MengenOp::Potenz => Some(format!(r""))
         }
     }
 
-    fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }
+    fn footer(&self, _: &[OutputInfo]) -> Option<String> { None }
 
     fn in_pin_label(&self, idx: usize, _: &[OutputInfo]) -> Option<String> {
-        if idx == 0 { Some(r"$A$".into()) } else { Some(r"$B$".into()) }
+        if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) }
     }
-
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{out}$".into()) }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { None }
+    
+    fn in_pins(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
+    fn out_pins(&self) -> usize { 1 }
 }
 
 /* -------------------------

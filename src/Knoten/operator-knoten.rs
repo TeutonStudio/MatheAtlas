@@ -12,9 +12,9 @@ use crate::latex_knoten::{LatexNode};
 
 pub struct OperatorNode {
     name: String,
-    latex: LatexNode,
-    in_count: usize,
-    out_count: usize,
+    pub latex: LatexNode,
+    // in_count: usize,
+    // out_count: usize,
     //inputs_cache: Vec<Option<OutputInfo>>,
     show_def: bool,
     def_snarl: Snarl<Box<dyn Knoten>>,
@@ -29,8 +29,8 @@ impl OperatorNode {
         Self {
             name: name.clone(),
             latex: LatexNode::new(name, latex_provider),
-            in_count: 1,
-            out_count: 1,
+            // in_count: 1,
+            // out_count: 1,
             show_def: false,
             def_snarl: def_snarl,
         }

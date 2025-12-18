@@ -5,8 +5,8 @@ use egui_snarl::{InPin, OutPin, NodeId};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 
-use crate::typen::{OutputInfo};
-use crate::basis_knoten::{KnotenInhalt};
+use crate::typen::{OutputInfo,PinType};
+use crate::basis_knoten::{KnotenDaten, KnotenInhalt};
 
 
 /// Trait: Die Anwendung liefert hiermit LaTeX-Strings basierend auf Inputs.
@@ -32,14 +32,16 @@ pub struct LatexNode {
 
 impl LatexNode {
     pub fn new(name: impl Into<String>, provider: Box<dyn LaTeXQuellBereitsteller>) -> Self {
-        Self {
+        let mut ausgabe = Self {
             name: name.into(), provider,
             title: LaTeXQuelle::new(),
             body: LaTeXQuelle::new(),
             footer: LaTeXQuelle::new(),
             in_pin_sections: vec![LaTeXQuelle::new()],
             out_pin_sections: vec![LaTeXQuelle::new()],
-        }
+        };
+        ausgabe.on_inputs_changed(Vec::new());
+        return ausgabe
     }
 
     pub fn name(&self) -> &str { return &self.name }
@@ -51,7 +53,26 @@ impl KnotenInhalt for LatexNode {
     fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) { self.title.show(ui) }
     fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) { self.body.show(ui) }
     fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) { self.footer.show(ui) }
+}
 
+impl KnotenDaten for LatexNode {
+    fn output_info(&self, output: usize) -> OutputInfo {
+        return OutputInfo::new("",PinType::Element);
+    }
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
+        let present: Vec<OutputInfo> = inputs.into_iter().flatten().collect();
+
+        self.title.set_src_opt(self.provider.title(&present));
+        self.body.set_src_opt(self.provider.body(&present));
+        self.footer.set_src_opt(self.provider.footer(&present));
+
+        for (pin_index, pin) in self.in_pin_sections.iter_mut().enumerate() {
+            pin.set_src_opt(self.provider.in_pin_label(pin_index, &present));
+        }
+        for (pin_index, pin) in self.out_pin_sections.iter_mut().enumerate() {
+            pin.set_src_opt(self.provider.out_pin_label(pin_index, &present));
+        }
+    }
 }
 
 fn zeige_anschluss(
@@ -59,11 +80,7 @@ fn zeige_anschluss(
     pin: AnyPin<'_>,
     ui: &mut Ui
 ) {
-    if let Some(quelle) = erhalte_sektion(pin_sektionen, pin) {
-        quelle.show(ui);
-    } else {
-        ui.label("...");
-    }
+    if let Some(quelle) = erhalte_sektion(pin_sektionen, pin) { quelle.show(ui) } else { ui.label("..."); }
 }
 
 enum AnyPin<'a> {

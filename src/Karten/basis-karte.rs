@@ -133,7 +133,6 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<Box<dyn Knoten>>) {
         let node_id = to.id.node;
-
         let ok = {
             let from_id = from.id.node;
             let selbst = node_id == from_id;
@@ -142,23 +141,13 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
             typen::compatible(&out_ty, &in_ty) && !selbst
         }; if !ok { return }
         
-        /*let mut remove: Vec<(OutPinId, InPinId)> = Vec::new();
-        for (von,nach) in snarl.wires() {
-            if to.id == nach && from.id != von { remove.push((von, nach)) }
-            }
-            for (von, nach) in remove {
-                snarl.disconnect(von, nach);
-                }*/
-                
         snarl.drop_inputs(to.id);
         snarl.connect(from.id, to.id);
         update_node_inputs(snarl, node_id);
     }
-
     fn disconnect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<Box<dyn Knoten>>) {
-        let node_id = to.id.node;
         snarl.disconnect(from.id,to.id);
-        update_node_inputs(snarl, node_id);
+        update_node_inputs(snarl, to.id.node);
     }
 }
 

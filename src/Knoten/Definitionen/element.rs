@@ -248,7 +248,7 @@ impl LaTeXQuellBereitsteller for DefineElemProvider {
         }
     }
 
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    fn in_pins(&self) -> usize { 1 }
+    fn out_pins(&self) -> usize { 1 }
 }
 

@@ -18,8 +18,8 @@ pub trait LaTeXQuellBereitsteller: Send + Sync {
     fn in_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
     fn out_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
 
-    fn in_pins(&self, inputs: &[OutputInfo]) -> usize;
-    fn out_pins(&self, inputs: &[OutputInfo]) -> usize;
+    fn in_pins(&self) -> usize;
+    fn out_pins(&self) -> usize;
 }
 
 fn erhalte_hash(str: &String) -> u64 {
@@ -80,7 +80,7 @@ impl LaTeXQuelle {
         return false;
     }
 
-    fn set_src_opt(&mut self, new_src: Option<String>) -> bool {
+    pub fn set_src_opt(&mut self, new_src: Option<String>) -> bool {
         match new_src {
             None => {
                 if self.src_hash != 0 || !self.src.is_empty() || self.svg.is_some() || self.texture.is_some() {

@@ -190,14 +190,14 @@ impl LaTeXQuellBereitsteller for LogikProvider {
         Some(r"$\mathrm{out}$".into())
     }
 
-    fn in_pins(&self, _inputs: &[OutputInfo]) -> usize {
+    fn in_pins(&self) -> usize {
         match self.op {
             LogikOp::Negation => 1,
             _ => 2,
         }
     }
 
-    fn out_pins(&self, _inputs: &[OutputInfo]) -> usize {
+    fn out_pins(&self) -> usize {
         1
     }
 }
