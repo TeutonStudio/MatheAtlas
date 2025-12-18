@@ -2,7 +2,7 @@
 
 use std::any::Any;
 
-use eframe::egui::Ui;
+use eframe::egui::{Ui,Window};
 use egui_snarl::{NodeId, InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType};
@@ -141,8 +141,18 @@ impl Knoten for MengenOperatorNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        if ui.small_button("zeige Definition").clicked() {
-            
+        if ui.small_button("zeige Definition").clicked() { // TODO
+            Window::new("Definition")
+                .default_width(320.0)
+                .default_height(480.0)
+                .open(&mut true)
+                .resizable([true, false])
+                .scroll(false)
+                /*.constrain_to(ui.available_rect_before_wrap())*/
+                /*.show(ui, |ui| {
+                    use crate::View as _;
+                    self.ui(ui);
+                });*/;
         }
         //self.latex.show_footer(node, inputs, outputs, ui);
     }

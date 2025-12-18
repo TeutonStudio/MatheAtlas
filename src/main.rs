@@ -15,6 +15,9 @@ mod latex_knoten;
 #[path = "Karten/basis-karte.rs"]
 mod basis_karte;
 
+/*#[path = "Karten/definitions-karte.rs"]
+mod definitions_karte;*/
+
 
 use basis_karte::{DemoKarte, show_demo_karte};
 use eframe::{
