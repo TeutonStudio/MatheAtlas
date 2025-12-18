@@ -143,7 +143,7 @@ impl KnotenInhalt for MengenOperatorNode {
         self.op.show_header(node, inputs, outputs, ui);
     }
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        if ui.small_button("zeige Definition").clicked() { /*self.show_def = true*/ };
+        self.op.show_footer(node, inputs, outputs, ui);
     }
 }
 impl Knoten for MengenOperatorNode {
