@@ -2,88 +2,116 @@
 
 use std::any::Any;
 
-use crate::egui::Ui;
+use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin};
 
-use crate::typen::{OutputInfo, PinType};
+use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
+use crate::typen::{OutputInfo, PinType, SetId};
 
-use crate::basis_knoten::Knoten;
-use crate::latex_knoten::{LatexNode, LatexSourceProvider};
+use crate::basis_knoten::{Knoten, KnotenInhalt, KnotenDaten, KnotenStruktur};
+use crate::latex_knoten::{LatexNode};
 
 pub struct WahrNode {
-    latex: LatexNode,
-}
-pub struct FalschNode {
-    latex: LatexNode,
+    latex: LatexNode
 }
 
 impl WahrNode {
-    pub fn new() -> Self {
-        Self { latex: LatexNode::new("Wahr", Box::new(WahrProvider)) }
-    }
-}
-impl FalschNode {
-    pub fn new() -> Self {
-        Self { latex: LatexNode::new("Falsch", Box::new(FalschProvider)) }
+    pub fn new(eingang: bool, ausgang: bool) -> Self {
+        Self { latex: LatexNode::new("Wahr", Box::new(WahrQuelle::new(eingang,ausgang))) }
     }
 }
 
-impl Knoten for WahrNode {
+struct WahrQuelle {
+    eingang: bool,
+    ausgang: bool,
+}
+impl WahrQuelle {
+    pub fn new(eingang: bool, ausgang: bool) -> Self { Self { eingang, ausgang } }
+}
+impl LaTeXQuellBereitsteller for WahrQuelle {
+    fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
+    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{wahr}$".into()) }
+    // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
+    // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
+    // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
+    fn in_pins(&self) -> usize { if self.eingang { 1 } else { 0 } }
+    fn out_pins(&self) -> usize { if self.ausgang { 1 } else { 0 } }
+}
+
+impl KnotenInhalt for WahrNode {
+    fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
+    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) { self.latex.show_body(node, inputs, outputs, ui); }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+}
+impl KnotenDaten for WahrNode {
+    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
+
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        OutputInfo { latex: r"$\mathrm{wahr}$".into(), ty: PinType::Logik, set_id: Some(SetId::Logik) }
+    }
+}
+impl KnotenStruktur for WahrNode {
     fn name(&self) -> &str { "Wahr" }
     fn inputs(&self) -> usize { 0 }
     fn outputs(&self) -> usize { 1 }
 
     fn input_type(&self, _i: usize) -> PinType { PinType::Element }
     fn output_type(&self, _o: usize) -> PinType { PinType::Logik }
+}
+impl Knoten for WahrNode {
+    fn as_any(&mut self) -> &mut dyn Any { self }
+}
+pub struct LügeNode {
+    latex: LatexNode
+}
 
+impl LügeNode {
+    pub fn new(eingang: bool, ausgang: bool) -> Self {
+        Self { latex: LatexNode::new("Lüge", Box::new(LügeQuelle::new(eingang,ausgang))) }
+    }
+}
+
+struct LügeQuelle {
+    eingang: bool,
+    ausgang: bool,
+}
+impl LügeQuelle {
+    pub fn new(eingang: bool, ausgang: bool) -> Self { LügeQuelle { eingang, ausgang } }
+}
+impl LaTeXQuellBereitsteller for LügeQuelle {
+    fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
+    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{lüge}$".into()) }
+    // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
+    // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
+    // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
+    fn in_pins(&self) -> usize { if self.eingang { 1 } else { 0 } }
+    fn out_pins(&self) -> usize { if self.ausgang { 1 } else { 0 } }
+}
+
+impl KnotenInhalt for LügeNode {
+    fn show_input(&mut self, _: &InPin, _: &mut Ui) { unreachable!() }
+    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) { self.latex.show_body(node, inputs, outputs, ui); }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+}
+impl KnotenDaten for LügeNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
 
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"$\mathrm{wahr}$".into(), ty: PinType::Logik }
+        OutputInfo { latex: r"$\mathrm{lüge}$".into(), ty: PinType::Logik, set_id: Some(SetId::Logik) }
     }
-
-    fn show_input(&mut self, _: &InPin, _: &mut Ui) { unreachable!() }
-    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
-    fn as_any(&mut self) -> &mut dyn Any { self }
 }
-
-impl Knoten for FalschNode {
-    fn name(&self) -> &str { "Falsch" }
+impl KnotenStruktur for LügeNode {
+    fn name(&self) -> &str { "Lüge" }
     fn inputs(&self) -> usize { 0 }
     fn outputs(&self) -> usize { 1 }
 
     fn input_type(&self, _i: usize) -> PinType { PinType::Element }
     fn output_type(&self, _o: usize) -> PinType { PinType::Logik }
-
-    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"$\mathrm{falsch}$".into(), ty: PinType::Logik }
-    }
-
-    fn show_input(&mut self, _: &InPin, _: &mut Ui) { unreachable!() }
-    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
+}
+impl Knoten for LügeNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
-}
-
-struct WahrProvider;
-impl LatexSourceProvider for WahrProvider {
-    fn title(&self, _: &[OutputInfo]) -> String { r"\textbf{Logik}".into() }
-    fn body(&self, _: &[OutputInfo]) -> String { r"$\mathrm{wahr}$".into() }
-    fn footer(&self, _: &[OutputInfo]) -> String { String::new() }
-    fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> String { String::new() }
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> String { r"$\mathrm{wahr}$".into() }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 0 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-}
-
-struct FalschProvider;
-impl LatexSourceProvider for FalschProvider {
-    fn title(&self, _: &[OutputInfo]) -> String { r"\textbf{Logik}".into() }
-    fn body(&self, _: &[OutputInfo]) -> String { r"$\mathrm{falsch}$".into() }
-    fn footer(&self, _: &[OutputInfo]) -> String { String::new() }
-    fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> String { String::new() }
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> String { r"$\mathrm{falsch}$".into() }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 0 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
 }

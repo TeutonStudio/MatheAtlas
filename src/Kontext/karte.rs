@@ -7,10 +7,13 @@ use crate::basis_knoten::{Knoten};
 
 #[path = "../Knoten/Definitionen/element.rs"]
 mod element_definition;
+#[path = "../Knoten/Definitionen/logik.rs"]
+mod logik_definition;
 #[path = "../Knoten/Definitionen/menge.rs"]
 mod menge_definition;
 
 use element_definition::{DefiniereElementNode};
+use logik_definition::{WahrNode,LügeNode};
 use menge_definition::{DefiniereMengeNode};
 
 #[path = "../Knoten/Operatoren/logik.rs"]
@@ -71,6 +74,11 @@ pub fn zeige_karten_kontext(
         }
         if ui.button("Schnitt").clicked() {
             snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Schnitt)));
+            ui.close();
+        }
+        if ui.button("Test").clicked() {
+            snarl.insert_node(pos, Box::new(WahrNode::new(true,false)));
+            snarl.insert_node(pos, Box::new(LügeNode::new(true,false)));
             ui.close();
         }
     });

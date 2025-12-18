@@ -11,12 +11,12 @@ use usvg::{Options as UsvgOptions};
 use mathjax::MathJax;
 
 pub trait LaTeXQuellBereitsteller: Send + Sync {
-    fn title(&self, inputs: &[OutputInfo]) -> Option<String>;
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String>;
-    fn footer(&self, inputs: &[OutputInfo]) -> Option<String>;
+    fn title(&self, inputs: &[OutputInfo]) -> Option<String> { None }
+    fn body(&self, inputs: &[OutputInfo]) -> Option<String> { None }
+    fn footer(&self, inputs: &[OutputInfo]) -> Option<String> { None }
 
-    fn in_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
-    fn out_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
+    fn in_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String> { None }
+    fn out_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String> { None }
 
     fn in_pins(&self) -> usize;
     fn out_pins(&self) -> usize;
