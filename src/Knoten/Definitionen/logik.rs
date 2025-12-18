@@ -30,7 +30,7 @@ impl WahrQuelle {
 }
 impl LaTeXQuellBereitsteller for WahrQuelle {
     fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
-    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{wahr}$".into()) }
+    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::wahr()) }
     // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
     // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
     // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
@@ -82,7 +82,7 @@ impl LügeQuelle {
 }
 impl LaTeXQuellBereitsteller for LügeQuelle {
     fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
-    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{lüge}$".into()) }
+    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::lüge()) }
     // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
     // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
     // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
