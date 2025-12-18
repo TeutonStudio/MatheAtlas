@@ -21,7 +21,6 @@ pub struct LatexNode {
     name: String,
 
     provider: Box<dyn LaTeXQuellBereitsteller>,
-    inputs: Vec<OutputInfo>,
     
     pub title: LaTeXQuelle,
     pub body: LaTeXQuelle,
@@ -36,7 +35,6 @@ impl LatexNode {
         Self {
             name: name.into(),
             provider,
-            inputs: vec![],
             title: LaTeXQuelle::new(),
             body: LaTeXQuelle::new(),
             footer: LaTeXQuelle::new(),

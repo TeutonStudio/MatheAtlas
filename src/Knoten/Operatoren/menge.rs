@@ -104,20 +104,16 @@ pub struct MengenOperatorNode {
 
 impl MengenOperatorNode {
     pub fn new(op: MengenOp) -> Self {
-        Self {
+        Self { // TODO herausfinden, wieso nach erzeugung nur ... überall steht
             op: OperatorNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
-            //latex: LatexNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
             inputs_cache: vec![],
-            //show_def: false,
-            //def_snarl: egui_snarl::Snarl::new("Mengen", Box::new(MengenProvider { op }))
-            //def_viewer: DefinitionsKarte,
         }
     }
 }
 
 impl KnotenStruktur for MengenOperatorNode {
     fn name(&self) -> &str { &self.op.name() }
-    fn inputs(&self) -> usize { 2 }
+    fn inputs(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
     fn outputs(&self) -> usize { 1 }
 
     fn input_type(&self, _i: usize) -> PinType { PinType::Menge }

@@ -18,8 +18,8 @@ pub trait LaTeXQuellBereitsteller: Send + Sync {
     fn in_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
     fn out_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String>;
 
-    fn in_pins(&self, inputs: &[OutputInfo]) -> usize;
-    fn out_pins(&self, inputs: &[OutputInfo]) -> usize;
+    // fn in_pins(&self, inputs: &[OutputInfo]) -> usize;
+    // fn out_pins(&self, inputs: &[OutputInfo]) -> usize;
 }
 
 fn erhalte_hash(str: &String) -> u64 {

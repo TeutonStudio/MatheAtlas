@@ -12,8 +12,14 @@ use crate::basis_knoten::Knoten;
 
 #[path = "../Kontext/karte.rs"]
 mod karte_kontext;
+#[path = "../Kontext/knoten.rs"]
+mod knoten_kontext;
+#[path = "../Kontext/verbindung.rs"]
+mod verbindung_kontext;
 
 use karte_kontext::{zeige_karten_kontext};
+use knoten_kontext::{zeige_knoten_kontext};
+use verbindung_kontext::{zeige_verbindung_kontext};
 
 pub struct DemoKarte {
     pub snarl: Snarl<Box<dyn Knoten>>,
@@ -110,20 +116,20 @@ impl SnarlViewer<Box<dyn Knoten>> for DemoViewer {
     fn show_node_menu(
         &mut self,
         node: NodeId,
-        _: &[InPin],
-        _: &[OutPin],
+        inputs: &[InPin],
+        outputs: &[OutPin],
         ui: &mut Ui,
         snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) {
-        if ui.button("Duplizieren").clicked() { //TODO
-            //snarl.remove_node(node);
-            ui.close();
-        }
-        if ui.button("Entsorgen").clicked() {
-            snarl.remove_node(node);
-            ui.close();
-        }
-    }
+    ) { zeige_knoten_kontext(node,inputs,outputs,ui,snarl) }
+
+    fn has_dropped_wire_menu(&mut self, src_pins: egui_snarl::ui::AnyPins, snarl: &mut Snarl<Box<dyn Knoten>>) -> bool { return true }
+    fn show_dropped_wire_menu(
+        &mut self,
+        pos: Pos2,
+        ui: &mut Ui,
+        src_pins: egui_snarl::ui::AnyPins,
+        snarl: &mut Snarl<Box<dyn Knoten>>,
+    ) { zeige_verbindung_kontext(pos,ui,src_pins,snarl) }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<Box<dyn Knoten>>) {
         let node_id = to.id.node;
