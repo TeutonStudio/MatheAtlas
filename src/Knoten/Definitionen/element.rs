@@ -8,8 +8,9 @@ use egui_snarl::{InPin, OutPin};
 use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
+use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{KnotenInhalt, KnotenStruktur, Knoten};
-use crate::latex_knoten::{LatexNode, LatexSourceProvider};
+use crate::latex_knoten::{LatexNode};
 
 
 /// Definiere Element:
@@ -203,7 +204,7 @@ impl Knoten for DefiniereElementNode {
 }
 
 struct DefineElemProvider;
-impl LatexSourceProvider for DefineElemProvider {
+impl LaTeXQuellBereitsteller for DefineElemProvider {
     fn title(&self, inputs: &[OutputInfo]) -> Option<String> {
         Some(r"\textbf{Element}".to_string())
         /*if let Some(set) = inputs.get(0) {

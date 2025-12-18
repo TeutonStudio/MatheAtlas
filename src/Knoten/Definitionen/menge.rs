@@ -8,9 +8,9 @@ use egui_snarl::{InPin, OutPin};
 use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
-
+use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
-use crate::latex_knoten::{LatexNode, LatexSourceProvider};
+use crate::latex_knoten::{LatexNode};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum VordefMenge {
@@ -131,7 +131,7 @@ impl Knoten for DefiniereMengeNode {
 }
 
 struct DefineSetProvider;
-impl LatexSourceProvider for DefineSetProvider {
+impl LaTeXQuellBereitsteller for DefineSetProvider {
     fn title(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(r"\textbf{ZFC Menge}".into()) }
     fn body(&self, _: &[OutputInfo]) -> Option<String> { None }
     fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }

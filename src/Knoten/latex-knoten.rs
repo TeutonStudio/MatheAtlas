@@ -54,13 +54,13 @@ impl KnotenInhalt for LatexNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) {
         if let Some(section) = self.in_pin_sections.get_mut(pin.id.input) {
             section.show(ui);
-        } else { ui.label("?") }
+        } else { ui.label("?"); }
     }
 
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) {
         if let Some(section) = self.out_pin_sections.get_mut(pin.id.output) {
             section.show(ui);
-        } else { ui.label("?") }
+        } else { ui.label("?"); }
     }
 
     fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) { self.body.show(ui) }

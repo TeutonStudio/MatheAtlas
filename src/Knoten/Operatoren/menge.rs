@@ -7,8 +7,9 @@ use egui_snarl::{NodeId, InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType};
 
+use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
-use crate::latex_knoten::{LatexNode, LatexSourceProvider};
+use crate::latex_knoten::{LatexNode};
 
 #[derive(Clone, Copy, Debug)]
 pub enum MengenOp {
@@ -74,7 +75,7 @@ impl SingletonMengeNode {
 }*/
 
 struct SingletonProvider;
-impl LatexSourceProvider for SingletonProvider {
+impl LaTeXQuellBereitsteller for SingletonProvider {
     fn title(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Singleton}".into()) }
     fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
         let x = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("x");
@@ -148,8 +149,8 @@ impl KnotenInhalt for MengenOperatorNode {
         self.latex.show_header(node, inputs, outputs, ui);
     }
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        if ui.small_button("zeige Definition").clicked() { self.show_def = true };
-        if self.show_def {
+        if ui.small_button("zeige Definition").clicked() { /*self.show_def = true*/ };
+        /*if self.show_def {
             let title = format!("Definition: {}", self.name());
 
             egui::Window::new(title)
@@ -166,7 +167,7 @@ impl KnotenInhalt for MengenOperatorNode {
                             .show(ui, &mut self.def_viewer);
                     });
                 });
-        }
+        }*/
         //self.latex.show_footer(node, inputs, outputs, ui);
     }
 }
@@ -175,7 +176,7 @@ impl Knoten for MengenOperatorNode {
 }
 
 struct MengenProvider { op: MengenOp }
-impl LatexSourceProvider for MengenProvider {
+impl LaTeXQuellBereitsteller for MengenProvider {
     fn title(&self, _: &[OutputInfo]) -> Option<String> {
         match self.op {
             MengenOp::Vereinigung => Some(r"\textbf{Vereinigung}".into()),
@@ -208,7 +209,7 @@ impl LatexSourceProvider for MengenProvider {
 /* -------------------------
    Relationen (⊆, ⊇, ∈, =)
 --------------------------*/
-
+/*
 pub struct RelationsOperatorNode {
     op: RelOp,
     latex: LatexNode,
@@ -223,7 +224,7 @@ impl RelationsOperatorNode {
             inputs_cache: vec![],
         }
     }
-}
+}*/
 
 /*impl Knoten for RelationsOperatorNode {
     fn name(&self) -> &str {

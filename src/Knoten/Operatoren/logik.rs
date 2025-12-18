@@ -7,8 +7,9 @@ use egui_snarl::{InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType, SetId};
 
+use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
-use crate::latex_knoten::{LatexNode, LatexSourceProvider};
+use crate::latex_knoten::{LatexNode};
 
 #[derive(Clone, Copy, Debug)]
 pub enum LogikOp {
@@ -147,7 +148,7 @@ struct LogikProvider {
     op: LogikOp,
 }
 
-impl LatexSourceProvider for LogikProvider {
+impl LaTeXQuellBereitsteller for LogikProvider {
     fn title(&self, _inputs: &[OutputInfo]) -> Option<String> {
         match self.op {
             LogikOp::Negation => Some(r"\textbf{Negation}".into()),
