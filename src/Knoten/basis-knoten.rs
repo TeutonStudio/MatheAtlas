@@ -1,14 +1,14 @@
 // Pfad: ../src/Knoten/basis-knoten.rs
 
-use eframe::egui::{DragValue, Ui};
+use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin, NodeId};
 use std::any::Any;
 
-use crate::typen::{PinType,OutputInfo,SetId};
+use crate::typen::{PinType,OutputInfo};
 
 
 /// Gemeinsames Interface für ALLE Knoten
-pub trait Knoten: Any + KnotenStruktur + KnotenInhalt {
+pub trait Knoten: Any + KnotenStruktur + KnotenDaten + KnotenInhalt {
     fn as_any(&mut self) -> &mut dyn Any;
 }
 
@@ -20,6 +20,12 @@ pub trait KnotenInhalt {
     fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui);
 }
 
+pub trait KnotenDaten {
+    fn output_info(&self, output: usize) -> OutputInfo;
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>);
+    fn take_dirty(&mut self) -> bool { false }
+}
+
 pub trait KnotenStruktur {
     fn name(&self) -> &str;
 
@@ -27,9 +33,5 @@ pub trait KnotenStruktur {
     fn outputs(&self) -> usize;
 
     fn input_type(&self, _i: usize) -> PinType;
-    
-    fn output_info(&self, output: usize) -> OutputInfo;
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>);
-    fn take_dirty(&mut self) -> bool { false }
     fn output_type(&self, _o: usize) -> PinType;
 }

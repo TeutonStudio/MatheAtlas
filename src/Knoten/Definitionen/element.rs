@@ -9,7 +9,7 @@ use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
-use crate::basis_knoten::{KnotenInhalt, KnotenStruktur, Knoten};
+use crate::basis_knoten::{KnotenInhalt, KnotenStruktur, KnotenDaten, Knoten};
 use crate::latex_knoten::{LatexNode};
 
 
@@ -143,6 +143,37 @@ impl KnotenInhalt for DefiniereElementNode {
         
     }
 }
+
+impl KnotenDaten for DefiniereElementNode {
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
+        self.inputs_cache = inputs;
+
+        let mut present = Vec::new();
+        for opt in &self.inputs_cache {
+            if opt.is_some() {
+                present.push(opt.clone());
+            }
+        }
+
+        // self.latex.on_inputs_changed(present);
+    }
+
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        let menge_ltx = self.current_set_latex();
+        let obj_ltx = self.element_object_latex();
+
+        OutputInfo {
+            latex: logik::element(obj_ltx, menge_ltx),
+            ty: self.output_type(0),
+            set_id: None,
+        }
+    }
+
+    fn take_dirty(&mut self) -> bool {
+        false
+    }
+}
+
 impl KnotenStruktur for DefiniereElementNode {
     fn name(&self) -> &str { "Definiere Element" }
     fn inputs(&self) -> usize { 1 }
@@ -172,31 +203,6 @@ impl KnotenStruktur for DefiniereElementNode {
             }
         }
     }
-
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-
-        let mut present = Vec::new();
-        for opt in &self.inputs_cache {
-            if opt.is_some() {
-                present.push(opt.clone());
-            }
-        }
-
-        // self.latex.on_inputs_changed(present);
-    }
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        let menge_ltx = self.current_set_latex();
-        let obj_ltx = self.element_object_latex();
-
-        OutputInfo {
-            latex: logik::element(obj_ltx, menge_ltx),
-            ty: self.output_type(0),
-            set_id: None,
-        }
-    }
-
 }
 
 impl Knoten for DefiniereElementNode {

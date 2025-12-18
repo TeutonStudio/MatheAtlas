@@ -8,7 +8,7 @@ use egui_snarl::{InPin, OutPin};
 use crate::typen::{OutputInfo, PinType, SetId};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
-use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
 
 #[derive(Clone, Copy, Debug)]
@@ -66,6 +66,29 @@ impl LogikOperatorNode {
     }
 }
 
+impl KnotenDaten for LogikOperatorNode {
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
+        self.inputs_cache = inputs;
+        self.recompute_types();
+
+        // LatexNode erwartet "Inputs" ohne Option? In deinem LatexNode-Entwurf waren Vec<OutputInfo>.
+        // Wir geben nur verbundene rein, und Provider kann fehlende behandeln.
+        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
+        // self.latex.on_inputs_changed(present);
+    }
+
+    fn output_info(&self, _output: usize) -> OutputInfo {
+        OutputInfo {
+            latex: r"\LaTeX".to_string(), // self.latex.current_body_latex(), // muss LatexNode liefern (oder du passt das an)
+            ty: self.out_ty.clone(),
+            set_id: None
+        }
+    }
+    fn take_dirty(&mut self) -> bool {
+        false
+    }
+}
+
 impl KnotenStruktur for LogikOperatorNode {
     fn name(&self) -> &str {
         match self.op {
@@ -95,24 +118,6 @@ impl KnotenStruktur for LogikOperatorNode {
 
     fn output_type(&self, _output: usize) -> PinType {
         self.out_ty.clone()
-    }
-
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-        self.recompute_types();
-
-        // LatexNode erwartet "Inputs" ohne Option? In deinem LatexNode-Entwurf waren Vec<OutputInfo>.
-        // Wir geben nur verbundene rein, und Provider kann fehlende behandeln.
-        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        // self.latex.on_inputs_changed(present);
-    }
-
-    fn output_info(&self, _output: usize) -> OutputInfo {
-        OutputInfo {
-            latex: r"\LaTeX".to_string(), // self.latex.current_body_latex(), // muss LatexNode liefern (oder du passt das an)
-            ty: self.out_ty.clone(),
-            set_id: None
-        }
     }
 }
 impl KnotenInhalt for LogikOperatorNode {

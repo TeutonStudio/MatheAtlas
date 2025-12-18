@@ -9,7 +9,7 @@ use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
-use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,14 +105,8 @@ impl KnotenInhalt for DefiniereMengeNode {
         
     }
 }
-impl KnotenStruktur for DefiniereMengeNode {
-    fn name(&self) -> &str { "Definiere Menge" }
-    fn inputs(&self) -> usize { 0 }
-    fn outputs(&self) -> usize { 1 }
 
-    fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
-    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
-
+impl KnotenDaten for DefiniereMengeNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) { /*self.on_inputs_changed(vec![])*/ }
 
     fn output_info(&self, _o: usize) -> OutputInfo {
@@ -123,9 +117,18 @@ impl KnotenStruktur for DefiniereMengeNode {
         }
     }
 
-
     fn take_dirty(&mut self) -> bool { std::mem::take(&mut self.dirty) }
 }
+
+impl KnotenStruktur for DefiniereMengeNode {
+    fn name(&self) -> &str { "Definiere Menge" }
+    fn inputs(&self) -> usize { 0 }
+    fn outputs(&self) -> usize { 1 }
+
+    fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
+    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
+}
+
 impl Knoten for DefiniereMengeNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }

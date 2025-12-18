@@ -8,7 +8,7 @@ use egui_snarl::{NodeId, InPin, OutPin};
 use crate::typen::{OutputInfo, PinType};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
-use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
 use crate::operator_knoten::{OperatorNode};
 
@@ -85,8 +85,8 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
     fn footer(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(String::new()) }
     fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$x$".into()) }
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
-    /*fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }*/
+    fn in_pins(&self, _: &[OutputInfo]) -> usize { 1 }
+    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
 }
 
 /* -------------------------
@@ -111,6 +111,20 @@ impl MengenOperatorNode {
     }
 }
 
+impl KnotenDaten for MengenOperatorNode {
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
+        self.inputs_cache = inputs;
+        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
+        //self.latex.on_inputs_changed(present);
+    }
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
+    }
+    fn take_dirty(&mut self) -> bool {
+        false
+    }
+}
+
 impl KnotenStruktur for MengenOperatorNode {
     fn name(&self) -> &str { &self.op.name() }
     fn inputs(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
@@ -118,16 +132,6 @@ impl KnotenStruktur for MengenOperatorNode {
 
     fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
     fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
-
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        //self.latex.on_inputs_changed(present);
-    }
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
-    }
 }
 impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
@@ -173,8 +177,8 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     }
 
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{out}$".into()) }
-    /*fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }*/
+    fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
+    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
 }
 
 /* -------------------------

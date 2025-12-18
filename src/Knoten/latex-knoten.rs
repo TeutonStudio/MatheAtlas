@@ -20,7 +20,7 @@ use crate::basis_knoten::{KnotenInhalt};
 pub struct LatexNode {
     name: String,
 
-    provider: Box<dyn LaTeXQuellBereitsteller>,
+    pub provider: Box<dyn LaTeXQuellBereitsteller>,
     
     pub title: LaTeXQuelle,
     pub body: LaTeXQuelle,
@@ -33,8 +33,7 @@ pub struct LatexNode {
 impl LatexNode {
     pub fn new(name: impl Into<String>, provider: Box<dyn LaTeXQuellBereitsteller>) -> Self {
         Self {
-            name: name.into(),
-            provider,
+            name: name.into(), provider,
             title: LaTeXQuelle::new(),
             body: LaTeXQuelle::new(),
             footer: LaTeXQuelle::new(),
