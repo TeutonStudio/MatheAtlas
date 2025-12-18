@@ -7,7 +7,7 @@ use egui_snarl::{NodeId, InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType};
 
-use crate::basis_knoten::Knoten;
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
 
 #[derive(Clone, Copy, Debug)]
@@ -40,7 +40,7 @@ impl SingletonMengeNode {
     }
 }
 
-impl Knoten for SingletonMengeNode {
+/*impl Knoten for SingletonMengeNode {
     fn name(&self) -> &str { "Singleton-Menge {x}" }
     fn inputs(&self) -> usize { 1 }
     fn outputs(&self) -> usize { 1 }
@@ -71,7 +71,7 @@ impl Knoten for SingletonMengeNode {
         
     }
     fn as_any(&mut self) -> &mut dyn Any { self }
-}
+}*/
 
 struct SingletonProvider;
 impl LatexSourceProvider for SingletonProvider {
@@ -95,7 +95,7 @@ pub struct MengenOperatorNode {
     op: MengenOp,
     latex: LatexNode,
     inputs_cache: Vec<Option<OutputInfo>>,
-    show_def: bool,
+    //show_def: bool,
     //def_snarl: egui_snarl::Snarl<Box<dyn Knoten>>,
     //def_viewer: DefinitionsKarte,
 }
@@ -106,14 +106,14 @@ impl MengenOperatorNode {
             op,
             latex: LatexNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
             inputs_cache: vec![],
-            show_def: false,
+            //show_def: false,
             //def_snarl: egui_snarl::Snarl::new("Mengen", Box::new(MengenProvider { op }))
             //def_viewer: DefinitionsKarte,
         }
     }
 }
 
-impl Knoten for MengenOperatorNode {
+impl KnotenStruktur for MengenOperatorNode {
     fn name(&self) -> &str {
         match self.op {
             MengenOp::Vereinigung => "Vereinigung (∪)",
@@ -131,13 +131,14 @@ impl Knoten for MengenOperatorNode {
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
         self.inputs_cache = inputs;
         let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        self.latex.on_inputs_changed(present);
+        //self.latex.on_inputs_changed(present);
     }
 
     fn output_info(&self, _o: usize) -> OutputInfo {
         OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
     }
-
+}
+impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
@@ -149,25 +150,27 @@ impl Knoten for MengenOperatorNode {
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         if ui.small_button("zeige Definition").clicked() { self.show_def = true };
         if self.show_def {
-        let title = format!("Definition: {}", self.name());
+            let title = format!("Definition: {}", self.name());
 
-        egui::Window::new(title)
-            .open(&mut self.show_def)
-            .resizable(true)
-            .vscroll(false)
-            .show(ui.ctx(), |ui| {
-                ui.label("Unveränderliche Definition (read-only)");
+            egui::Window::new(title)
+                .open(&mut self.show_def)
+                .resizable(true)
+                .vscroll(false)
+                .show(ui.ctx(), |ui| {
+                    ui.label("Unveränderliche Definition (read-only)");
 
-                ui.add_enabled_ui(false, |ui| {
-                    // Komplett deaktiviert: keine Interaktion (auch kein Drag/Connect)
-                    SnarlWidget::new(&mut self.def_snarl)
-                        .style(SnarlStyle::default())
-                        .show(ui, &mut self.def_viewer);
+                    ui.add_enabled_ui(false, |ui| {
+                        // Komplett deaktiviert: keine Interaktion (auch kein Drag/Connect)
+                        SnarlWidget::new(&mut self.def_snarl)
+                            .style(SnarlStyle::default())
+                            .show(ui, &mut self.def_viewer);
+                    });
                 });
-            });
         }
         //self.latex.show_footer(node, inputs, outputs, ui);
     }
+}
+impl Knoten for MengenOperatorNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
 
@@ -222,7 +225,7 @@ impl RelationsOperatorNode {
     }
 }
 
-impl Knoten for RelationsOperatorNode {
+/*impl Knoten for RelationsOperatorNode {
     fn name(&self) -> &str {
         match self.op {
             RelOp::Teilmenge => "Teilmenge (⊆)",
@@ -306,4 +309,4 @@ impl LatexSourceProvider for RelProvider {
     fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{out}$".into()) }
     fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
     fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-}
+}*/

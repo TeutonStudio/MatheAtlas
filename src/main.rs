@@ -10,6 +10,8 @@ mod LaTeX;
 mod basis_knoten;
 #[path = "Knoten/latex-knoten.rs"]
 mod latex_knoten;
+#[path = "Knoten/operator-knoten.rs"]
+mod operator_knoten;
 
 
 #[path = "Karten/basis-karte.rs"]

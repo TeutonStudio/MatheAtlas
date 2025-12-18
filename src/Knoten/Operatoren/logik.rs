@@ -7,7 +7,7 @@ use egui_snarl::{InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType, SetId};
 
-use crate::basis_knoten::{Knoten};
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
 
 #[derive(Clone, Copy, Debug)]
@@ -65,7 +65,7 @@ impl LogikOperatorNode {
     }
 }
 
-impl Knoten for LogikOperatorNode {
+impl KnotenStruktur for LogikOperatorNode {
     fn name(&self) -> &str {
         match self.op {
             LogikOp::Negation => "Negation (¬)",
@@ -103,7 +103,7 @@ impl Knoten for LogikOperatorNode {
         // LatexNode erwartet "Inputs" ohne Option? In deinem LatexNode-Entwurf waren Vec<OutputInfo>.
         // Wir geben nur verbundene rein, und Provider kann fehlende behandeln.
         let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        self.latex.on_inputs_changed(present);
+        // self.latex.on_inputs_changed(present);
     }
 
     fn output_info(&self, _output: usize) -> OutputInfo {
@@ -113,7 +113,8 @@ impl Knoten for LogikOperatorNode {
             set_id: None
         }
     }
-
+}
+impl KnotenInhalt for LogikOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) {
         self.latex.show_input(pin, ui);
     }
@@ -125,7 +126,7 @@ impl Knoten for LogikOperatorNode {
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
         
     }
-    
+
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
@@ -133,10 +134,9 @@ impl Knoten for LogikOperatorNode {
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
-
-    fn as_any(&mut self) -> &mut dyn Any {
-        self
-    }
+}
+impl Knoten for LogikOperatorNode {
+    fn as_any(&mut self) -> &mut dyn Any { self }
 }
 
 /* -------------------------

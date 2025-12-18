@@ -8,7 +8,7 @@ use egui_snarl::{InPin, OutPin};
 use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
-use crate::basis_knoten::Knoten;
+use crate::basis_knoten::{KnotenInhalt, KnotenStruktur, Knoten};
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
 
 
@@ -72,66 +72,13 @@ impl DefiniereElementNode {
     }
 }
 
-impl Knoten for DefiniereElementNode {
-    fn name(&self) -> &str { "Definiere Element" }
-    fn inputs(&self) -> usize { 1 }
-
-    fn outputs(&self) -> usize {
-        match self.current_set_id() {
-            Some(SetId::Leer) => 0,
-            _ => 1,
-        }
-    }
-
-    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
-
-    fn output_type(&self, _o: usize) -> PinType {
-        match self.current_set_id() {
-            None => PinType::Element,
-            Some(set) => match set {
-                SetId::Any => PinType::Element,
-                SetId::Logik => PinType::Logik,
-                SetId::Leer => PinType::Element, // wird eh outputs()=0
-                SetId::Nat  => PinType::Zahl { raum: SetId::Nat },
-                SetId::Ganz => PinType::Zahl { raum: SetId::Ganz },
-                SetId::Rat  => PinType::Zahl { raum: SetId::Rat },
-                SetId::Real => PinType::Zahl { raum: SetId::Real },
-                SetId::Komplex => PinType::Zahl { raum: SetId::Komplex },
-                _ => PinType::Element,
-            }
-        }
-    }
-
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-
-        let mut present = Vec::new();
-        for opt in &self.inputs_cache {
-            if opt.is_some() {
-                present.push(opt.clone());
-            }
-        }
-
-        self.latex.on_inputs_changed(present);
-    }
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        let menge_ltx = self.current_set_latex();
-        let obj_ltx = self.element_object_latex();
-
-        OutputInfo {
-            latex: logik::element(obj_ltx, menge_ltx),
-            ty: self.output_type(0),
-            set_id: None,
-        }
-    }
-
+impl KnotenInhalt for DefiniereElementNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) {
         self.latex.show_input(pin, ui);
     }
 
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) {
-        self.latex.on_inputs_changed(vec![Some(self.output_info(0))]);
+        self.on_inputs_changed(vec![Some(self.output_info(0))]);
         self.latex.show_output(pin, ui);
     }
 
@@ -194,7 +141,64 @@ impl Knoten for DefiniereElementNode {
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
+}
+impl KnotenStruktur for DefiniereElementNode {
+    fn name(&self) -> &str { "Definiere Element" }
+    fn inputs(&self) -> usize { 1 }
 
+    fn outputs(&self) -> usize {
+        match self.current_set_id() {
+            Some(SetId::Leer) => 0,
+            _ => 1,
+        }
+    }
+
+    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
+
+    fn output_type(&self, _o: usize) -> PinType {
+        match self.current_set_id() {
+            None => PinType::Element,
+            Some(set) => match set {
+                SetId::Any => PinType::Element,
+                SetId::Logik => PinType::Logik,
+                SetId::Leer => PinType::Element, // wird eh outputs()=0
+                SetId::Nat  => PinType::Zahl { raum: SetId::Nat },
+                SetId::Ganz => PinType::Zahl { raum: SetId::Ganz },
+                SetId::Rat  => PinType::Zahl { raum: SetId::Rat },
+                SetId::Real => PinType::Zahl { raum: SetId::Real },
+                SetId::Komplex => PinType::Zahl { raum: SetId::Komplex },
+                _ => PinType::Element,
+            }
+        }
+    }
+
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
+        self.inputs_cache = inputs;
+
+        let mut present = Vec::new();
+        for opt in &self.inputs_cache {
+            if opt.is_some() {
+                present.push(opt.clone());
+            }
+        }
+
+        // self.latex.on_inputs_changed(present);
+    }
+
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        let menge_ltx = self.current_set_latex();
+        let obj_ltx = self.element_object_latex();
+
+        OutputInfo {
+            latex: logik::element(obj_ltx, menge_ltx),
+            ty: self.output_type(0),
+            set_id: None,
+        }
+    }
+
+}
+
+impl Knoten for DefiniereElementNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
 

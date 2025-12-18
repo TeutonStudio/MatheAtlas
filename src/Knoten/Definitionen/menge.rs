@@ -9,7 +9,7 @@ use crate::typen::{OutputInfo, PinType, SetId};
 use crate::LaTeX::{logik,menge};
 
 
-use crate::basis_knoten::Knoten;
+use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,Knoten};
 use crate::latex_knoten::{LatexNode, LatexSourceProvider};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -64,28 +64,11 @@ impl DefiniereMengeNode {
     }
 }
 
-impl Knoten for DefiniereMengeNode {
-    fn name(&self) -> &str { "Definiere Menge" }
-    fn inputs(&self) -> usize { 0 }
-    fn outputs(&self) -> usize { 1 }
-
-    fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
-    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
-
-    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) { self.latex.on_inputs_changed(vec![]) }
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo {
-            latex: self.selected.latex(),
-            ty: PinType::Menge,
-            set_id: Some(self.selected.to_set_id())
-        }
-    }
-
+impl KnotenInhalt for DefiniereMengeNode {
     fn show_input(&mut self, _: &InPin, _: &mut Ui) { unreachable!() }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) {
         // Anzeige als LaTeX
-        self.latex.on_inputs_changed(vec![Some(self.output_info(0))]);
+        self.on_inputs_changed(vec![Some(self.output_info(0))]);
         self.latex.show_output(pin, ui);
     }
 
@@ -121,8 +104,29 @@ impl Knoten for DefiniereMengeNode {
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         
     }
+}
+impl KnotenStruktur for DefiniereMengeNode {
+    fn name(&self) -> &str { "Definiere Menge" }
+    fn inputs(&self) -> usize { 0 }
+    fn outputs(&self) -> usize { 1 }
+
+    fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
+    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
+
+    fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) { /*self.on_inputs_changed(vec![])*/ }
+
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        OutputInfo {
+            latex: self.selected.latex(),
+            ty: PinType::Menge,
+            set_id: Some(self.selected.to_set_id())
+        }
+    }
+
 
     fn take_dirty(&mut self) -> bool { std::mem::take(&mut self.dirty) }
+}
+impl Knoten for DefiniereMengeNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
 
