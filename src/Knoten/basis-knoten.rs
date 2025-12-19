@@ -23,7 +23,7 @@ pub trait KnotenInhalt {
 pub trait KnotenDaten {
     fn output_info(&self, output: usize) -> OutputInfo;
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>);
-    fn take_dirty(&mut self) -> bool { false }
+    fn take_dirty(&mut self) -> bool { return false }
 }
 
 pub trait KnotenStruktur {
