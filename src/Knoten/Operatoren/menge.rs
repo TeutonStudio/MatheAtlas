@@ -2,9 +2,10 @@
 
 use std::any::Any;
 
-use eframe::egui::{Ui,Window};
-use egui_snarl::{NodeId, InPin, OutPin};
+use eframe::egui::{Ui,Window,pos2};
+use egui_snarl::{NodeId, InPin, OutPin, Snarl};
 
+use crate::basis_karte::karte_kontext::logik_definition::WahrNode;
 use crate::typen::{OutputInfo, PinType};
 
 use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
@@ -105,8 +106,13 @@ pub struct MengenOperatorNode {
 
 impl MengenOperatorNode {
     pub fn new(op: MengenOp) -> Self {
-        Self { // TODO herausfinden, wieso nach erzeugung nur ... überall steht
-            op: OperatorNode::new(format!("Mengen:{op:?}"), Box::new(MengenProvider { op })),
+        let provider = Box::new(MengenProvider { op });
+        let snarl = provider.definitions_snarl();
+        Self { // TODO herausfinden, wieso nach erzeugung nur ... überall steht (temporär repariert, durch on_inputs_changed im LatexNode impl)
+            op: OperatorNode::new(
+                format!("Mengen:{op:?}"), 
+                provider, snarl,
+            ),
             // inputs_cache: vec![],
         }
     }
@@ -134,13 +140,13 @@ impl KnotenDaten for MengenOperatorNode {
 impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.op.show_output(pin, ui); }
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
+    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
         self.op.show_body(node, inputs, outputs, ui);
     }
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         self.op.show_header(node, inputs, outputs, ui);
     }
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
+    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
         self.op.show_footer(node, inputs, outputs, ui);
     }
 }
@@ -149,6 +155,27 @@ impl Knoten for MengenOperatorNode {
 }
 
 struct MengenProvider { op: MengenOp }
+impl MengenProvider {
+    fn definitions_snarl(&self) -> Snarl<Box<dyn Knoten>> {
+        let mut snarl: Snarl<Box<dyn Knoten>> = Snarl::new();
+        // TODO fülle snarl mit definitionsknoten, abhängig von self.op und evtl. verbundenen knoten
+        match self.op {
+            MengenOp::Vereinigung => {
+                snarl.insert_node(pos2(0.0,0.0), Box::new(WahrNode::new(true, false)));
+            },
+            MengenOp::Schnitt => {
+
+            },
+            MengenOp::Differenz => {
+
+            },
+            MengenOp::Potenz => {
+
+            },
+        }
+        snarl
+    }
+}
 impl LaTeXQuellBereitsteller for MengenProvider {
     fn title(&self, _: &[OutputInfo]) -> Option<String> {
         match self.op {

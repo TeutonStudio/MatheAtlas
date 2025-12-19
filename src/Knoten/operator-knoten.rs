@@ -22,17 +22,18 @@ pub struct OperatorNode {
 }
 
 impl OperatorNode {
-    pub fn new(name: impl Into<String>, latex_provider: Box<dyn LaTeXQuellBereitsteller>) -> Self {
+    pub fn new(
+        name: impl Into<String>, 
+        latex_provider: Box<dyn LaTeXQuellBereitsteller>,
+        def_snarl: Snarl<Box<dyn Knoten>>,
+    ) -> Self {
         let name = name.into();
-        let def_snarl: Snarl<Box<dyn Knoten>> = Snarl::new();
  
         Self {
             name: name.clone(),
             latex: LatexNode::new(name, latex_provider),
-            // in_count: 1,
-            // out_count: 1,
             show_def: false,
-            def_snarl: def_snarl,
+            def_snarl,
         }
     }
 
