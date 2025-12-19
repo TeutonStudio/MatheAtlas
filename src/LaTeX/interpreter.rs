@@ -11,12 +11,12 @@ use usvg::{Options as UsvgOptions};
 use mathjax::MathJax;
 
 pub trait LaTeXQuellBereitsteller: Send + Sync {
-    fn title(&self, inputs: &[OutputInfo]) -> Option<String> { None }
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> { None }
-    fn footer(&self, inputs: &[OutputInfo]) -> Option<String> { None }
+    fn title(&self, inputs: &[&OutputInfo]) -> Option<String> { None }
+    fn body(&self, inputs: &[&OutputInfo]) -> Option<String> { None }
+    fn footer(&self, inputs: &[&OutputInfo]) -> Option<String> { None }
 
-    fn in_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String> { None }
-    fn out_pin_label(&self, pin_index: usize, inputs: &[OutputInfo]) -> Option<String> { None }
+    fn in_pin_label(&self, pin_index: usize, inputs: &[&OutputInfo]) -> Option<String> { None }
+    fn out_pin_label(&self, pin_index: usize, inputs: &[&OutputInfo]) -> Option<String> { None }
 
     fn in_pins(&self) -> usize;
     fn out_pins(&self) -> usize;
@@ -37,6 +37,7 @@ pub struct LaTeXQuelle {
     texture: Option<TextureHandle>,
     pixel_size: [usize; 2],
 
+    pub klickbar: bool,
     error: Option<String>,
     last_logged_error_hash: u64,
 }
@@ -50,6 +51,7 @@ impl LaTeXQuelle {
             last_raster_scale: -1.0,
             texture: None,
             pixel_size: [1, 1],
+            klickbar: false,
             error: None,
             last_logged_error_hash: 0,
         }
@@ -94,12 +96,17 @@ impl LaTeXQuelle {
         }
     }
 
-    pub fn show(&mut self, ui: &mut Ui) {
+    pub fn show(&mut self, ui: &mut Ui) -> bool {
+        if self.klickbar { self.show_clickable(ui) } else { self.show_unclickable(ui) }
+    }
+
+    pub fn show_unclickable(&mut self, ui: &mut Ui) -> bool {
         if let Some(image) = self.erhalte_image(ui.ctx()) {
             ui.add(image);
         } else {
             ui.label("…");
         }
+        return false
     }
 
     pub fn show_clickable(&mut self, ui: &mut Ui) -> bool {

@@ -15,9 +15,9 @@ pub trait Knoten: Any + KnotenStruktur + KnotenDaten + KnotenInhalt {
 pub trait KnotenInhalt {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui);
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui);
-    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,);
-    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui);
-    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui);
+    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) -> bool;
+    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool;
+    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool;
 }
 
 pub trait KnotenDaten {

@@ -29,8 +29,8 @@ impl WahrQuelle {
     pub fn new(eingang: bool, ausgang: bool) -> Self { Self { eingang, ausgang } }
 }
 impl LaTeXQuellBereitsteller for WahrQuelle {
-    fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
-    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::wahr()) }
+    fn title(&self, _: &[&OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
+    fn body(&self, _: &[&OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::wahr()) }
     // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
     // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
     // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
@@ -41,9 +41,9 @@ impl LaTeXQuellBereitsteller for WahrQuelle {
 impl KnotenInhalt for WahrNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) { self.latex.show_body(node, inputs, outputs, ui); }
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) -> bool { return false }
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) -> bool{ return self.latex.show_body(node, inputs, outputs, ui) }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) -> bool { return false }
 }
 impl KnotenDaten for WahrNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
@@ -81,8 +81,8 @@ impl LügeQuelle {
     pub fn new(eingang: bool, ausgang: bool) -> Self { LügeQuelle { eingang, ausgang } }
 }
 impl LaTeXQuellBereitsteller for LügeQuelle {
-    fn title(&self, _: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
-    fn body(&self, _: &[OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::lüge()) }
+    fn title(&self, _: &[&OutputInfo]) -> Option<String> { Some(r"\textbf{Logik}".into()) }
+    fn body(&self, _: &[&OutputInfo]) -> Option<String> { Some(crate::LaTeX::logik::lüge()) }
     // fn footer(&self, _: &[OutputInfo]) -> Option<String> {  }
     // fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
     // fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> {  }
@@ -93,9 +93,9 @@ impl LaTeXQuellBereitsteller for LügeQuelle {
 impl KnotenInhalt for LügeNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) { self.latex.show_body(node, inputs, outputs, ui); }
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) {  }
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) -> bool { return false }
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut eframe::egui::Ui,) -> bool { return self.latex.show_body(node, inputs, outputs, ui); }
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut eframe::egui::Ui) -> bool { return false }
 }
 impl KnotenDaten for LügeNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}

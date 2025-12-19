@@ -89,11 +89,11 @@ impl KnotenInhalt for DefiniereElementNode {
         _inputs: &[InPin],
         _outputs: &[OutPin],
         ui: &mut Ui,
-    ) {
+    ) -> bool {
         // Leere Menge: keine Outputs, also nur Hinweis (optional)
         if matches!(self.current_set_id(), Some(SetId::Leer)) {
             ui.label("∅ hat keine Elemente.");
-            return;
+            return false
         }
 
         // Endliche Menge -> Dropdown
@@ -115,7 +115,6 @@ impl KnotenInhalt for DefiniereElementNode {
 
             // Bei endlicher Menge kein Editing-Modus nötig
             self.editing = false;
-            return;
         }
 
         // Unendliche/unklare Menge -> Edit-Feld (wie gehabt)
@@ -133,14 +132,15 @@ impl KnotenInhalt for DefiniereElementNode {
                 }
             }
         });
+        return false
     }
 
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin], ui: &mut Ui) {
-        self.latex.show_header(node, inputs, outputs, ui);
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin], ui: &mut Ui) -> bool {
+        return self.latex.show_header(node, inputs, outputs, ui)
     }
 
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return false
     }
 }
 
@@ -211,7 +211,7 @@ impl Knoten for DefiniereElementNode {
 
 struct DefineElemProvider;
 impl LaTeXQuellBereitsteller for DefineElemProvider {
-    fn title(&self, inputs: &[OutputInfo]) -> Option<String> {
+    fn title(&self, inputs: &[&OutputInfo]) -> Option<String> {
         Some(r"\textbf{Element}".to_string())
         /*if let Some(set) = inputs.get(0) {
             Some(format!(r"\textbf{{Element in}} {}", set.latex))
@@ -220,18 +220,18 @@ impl LaTeXQuellBereitsteller for DefineElemProvider {
         }*/
     }
 
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
+    fn body(&self, inputs: &[&OutputInfo]) -> Option<String> {
         Some(inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| r"x".into()))
     }
 
-    fn footer(&self, _: &[OutputInfo]) -> Option<String> {
+    fn footer(&self, _: &[&OutputInfo]) -> Option<String> {
         Some(String::new())
     }
 
     // Input-Label:
     // - unverbunden -> ∅
     // - verbunden   -> nichts
-    fn in_pin_label(&self, _: usize, inputs: &[OutputInfo]) -> Option<String> {
+    fn in_pin_label(&self, _: usize, inputs: &[&OutputInfo]) -> Option<String> {
         None
         /*if inputs.is_empty() {
             Some(menge::leer())
@@ -240,7 +240,7 @@ impl LaTeXQuellBereitsteller for DefineElemProvider {
         }*/
     }
 
-    fn out_pin_label(&self, _: usize, outputs: &[OutputInfo]) -> Option<String> {
+    fn out_pin_label(&self, _: usize, outputs: &[&OutputInfo]) -> Option<String> {
         if let Some(set) = outputs.get(0) {
             Some(set.latex.clone())
         } else {

@@ -8,8 +8,6 @@ use egui_snarl::{
 
 use crate::{basis_knoten::Knoten, typen};
 
-pub struct DefinitionsKarte;
-
 fn pin_style_for(ty: &typen::PinType) -> PinInfo {
     // Minimal, aber brauchbar. Wenn du willst, kopier deine echte Mapping-Logik hier rein.
     match ty {
@@ -21,9 +19,11 @@ fn pin_style_for(ty: &typen::PinType) -> PinInfo {
     }
 }
 
+pub struct DefinitionsKarte;
+
 impl SnarlViewer<Box<dyn Knoten>> for DefinitionsKarte {
-    fn connect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
-    fn disconnect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
+    // fn connect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
+    // fn disconnect(&mut self,_from: &OutPin,_to: &InPin,_snarl: &mut Snarl<Box<dyn Knoten>>) {}
 
     #[allow(refining_impl_trait)]
     fn show_input(

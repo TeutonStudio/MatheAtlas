@@ -79,14 +79,14 @@ impl SingletonMengeNode {
 
 struct SingletonProvider;
 impl LaTeXQuellBereitsteller for SingletonProvider {
-    fn title(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(r"\textbf{Singleton}".into()) }
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
+    fn title(&self, _inputs: &[&OutputInfo]) -> Option<String> { Some(r"\textbf{Singleton}".into()) }
+    fn body(&self, inputs: &[&OutputInfo]) -> Option<String> {
         let x = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("x");
         Some(format!(r"$\{{{x}\}}$"))
     }
-    fn footer(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(String::new()) }
-    fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$x$".into()) }
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
+    fn footer(&self, _inputs: &[&OutputInfo]) -> Option<String> { Some(String::new()) }
+    fn in_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { Some(r"$x$".into()) }
+    fn out_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
     fn in_pins(&self) -> usize { 1 }
     fn out_pins(&self) -> usize { 1 }
 }
@@ -140,14 +140,14 @@ impl KnotenDaten for MengenOperatorNode {
 impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.op.show_output(pin, ui); }
-    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
-        self.op.show_body(node, inputs, outputs, ui);
+    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) -> bool {
+        return self.op.show_body(node, inputs, outputs, ui)
     }
-    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        self.op.show_header(node, inputs, outputs, ui);
+    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return self.op.show_header(node, inputs, outputs, ui)
     }
-    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        self.op.show_footer(node, inputs, outputs, ui);
+    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return self.op.show_footer(node, inputs, outputs, ui)
     }
 }
 impl Knoten for MengenOperatorNode {
@@ -177,7 +177,7 @@ impl MengenProvider {
     }
 }
 impl LaTeXQuellBereitsteller for MengenProvider {
-    fn title(&self, _: &[OutputInfo]) -> Option<String> {
+    fn title(&self, _: &[&OutputInfo]) -> Option<String> {
         match self.op {
             MengenOp::Vereinigung => Some(r"\textbf{Vereinigungsmenge}".into()),
             MengenOp::Schnitt => Some(r"\textbf{Schnittmenge}".into()),
@@ -186,7 +186,7 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         }
     }
 
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
+    fn body(&self, inputs: &[&OutputInfo]) -> Option<String> {
         let a = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("A");
         let b = inputs.get(1).map(|i| i.latex.as_str()).unwrap_or("B");
         match self.op {
@@ -197,12 +197,12 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         }
     }
 
-    fn footer(&self, _: &[OutputInfo]) -> Option<String> { None }
+    fn footer(&self, _: &[&OutputInfo]) -> Option<String> { None }
 
-    fn in_pin_label(&self, idx: usize, _: &[OutputInfo]) -> Option<String> {
+    fn in_pin_label(&self, idx: usize, _: &[&OutputInfo]) -> Option<String> {
         if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) }
     }
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { None }
+    fn out_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { None }
     
     fn in_pins(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
     fn out_pins(&self) -> usize { 1 }

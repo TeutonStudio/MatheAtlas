@@ -129,16 +129,16 @@ impl KnotenInhalt for LogikOperatorNode {
         self.latex.show_output(pin, ui);
     }
 
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
-        
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) -> bool {
+        return false
     }
 
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return false
     }
 
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return false
     }
 }
 impl Knoten for LogikOperatorNode {
@@ -154,7 +154,7 @@ struct LogikProvider {
 }
 
 impl LaTeXQuellBereitsteller for LogikProvider {
-    fn title(&self, _inputs: &[OutputInfo]) -> Option<String> {
+    fn title(&self, _inputs: &[&OutputInfo]) -> Option<String> {
         match self.op {
             LogikOp::Negation => Some(r"\textbf{Negation}".into()),
             LogikOp::Konjunktion => Some(r"\textbf{Konjunktion}".into()),
@@ -163,7 +163,7 @@ impl LaTeXQuellBereitsteller for LogikProvider {
         }
     }
 
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
+    fn body(&self, inputs: &[&OutputInfo]) -> Option<String> {
         let a = inputs.get(0).map(|x| x.latex.as_str()).unwrap_or(r"\,\cdot\,");
         let b = inputs.get(1).map(|x| x.latex.as_str()).unwrap_or(r"\,\cdot\,");
 
@@ -175,18 +175,18 @@ impl LaTeXQuellBereitsteller for LogikProvider {
         }
     }
 
-    fn footer(&self, _inputs: &[OutputInfo]) -> Option<String> {
+    fn footer(&self, _inputs: &[&OutputInfo]) -> Option<String> {
         Some(String::new())
     }
 
-    fn in_pin_label(&self, pin_index: usize, _inputs: &[OutputInfo]) -> Option<String> {
+    fn in_pin_label(&self, pin_index: usize, _inputs: &[&OutputInfo]) -> Option<String> {
         match self.op {
             LogikOp::Negation => if pin_index == 0 { Some(r"$P$".into()) } else { Some(r"$?$".into()) },
             _ => if pin_index == 0 { Some(r"$P$".into()) } else { Some(r"$Q$".into()) },
         }
     }
 
-    fn out_pin_label(&self, _pin_index: usize, _inputs: &[OutputInfo]) -> Option<String> {
+    fn out_pin_label(&self, _pin_index: usize, _inputs: &[&OutputInfo]) -> Option<String> {
         Some(r"$\mathrm{out}$".into())
     }
 

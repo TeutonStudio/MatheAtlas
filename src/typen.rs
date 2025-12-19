@@ -51,9 +51,6 @@ impl SetId {
 pub enum PinType {
     Element,Menge,Logik,
     Zahl { raum: SetId },
-    /*Vektor { grundraum: SetId, dimension: u32 },
-    Matrix { grundraum: SetId, breite: u32, höhe: u32 },
-    Tensor { grundraum: SetId, stufe: u32, dimensionen: Vec<u32> },*/
     Abbild { wertevorrat: SetId, zielmenge: SetId },
 }
 
@@ -64,12 +61,6 @@ impl fmt::Display for PinType {
             PinType::Menge => write!(f, "Menge"),
             PinType::Logik => write!(f, "Logik"),
             PinType::Zahl { raum } => write!(f, "Zahl({})", raum.latex()),
-            /*PinType::Vektor { grundraum, dimension } =>
-                write!(f, "Vektor({}^{} )", grundraum.latex(), dimension),
-            PinType::Matrix { grundraum, breite, höhe } =>
-                write!(f, "Matrix({}^{}x{})", grundraum.latex(), höhe, breite),
-            PinType::Tensor { grundraum, stufe, dimensionen } =>
-                write!(f, "Tensor({}, stufe {}, dim {:?})", grundraum.latex(), stufe, dimensionen),*/
             PinType::Abbild { wertevorrat, zielmenge } =>
                 write!(f, "Abbild({} -> {})", wertevorrat.latex(), zielmenge.latex()),
         }
@@ -79,13 +70,10 @@ impl fmt::Display for PinType {
 
 /// Das, was entlang eines Wires “transportiert” wird.
 /// Vorläufig nur LaTeX + Typ + optional SetId (für Menge-Knoten).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OutputInfo {
     pub latex: String,
     pub ty: PinType,
-
-    /// Falls die Ausgabe eine definierte Menge ist (ℕ, ℤ, … oder Custom),
-    /// kannst du hier die Identität speichern. Das macht Superset/Abbild-Regeln möglich.
     pub set_id: Option<SetId>,
 }
 

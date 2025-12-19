@@ -83,7 +83,7 @@ impl SnarlViewer<Box<dyn Knoten>> for BasisViewer {
         outputs: &[OutPin],
         ui: &mut Ui,
         snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) { snarl[node].show_header(node, inputs, outputs, ui) }
+    ) { snarl[node].show_header(node, inputs, outputs, ui); }
     fn has_body(&mut self, _node: &Box<dyn Knoten>) -> bool { return true }
     fn show_body(
         &mut self,
@@ -92,7 +92,7 @@ impl SnarlViewer<Box<dyn Knoten>> for BasisViewer {
         outputs: &[OutPin],
         ui: &mut Ui,
         snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) { snarl[node].show_body(node, inputs, outputs, ui) }
+    ) { snarl[node].show_body(node, inputs, outputs, ui); }
     fn has_footer(&mut self, node: &Box<dyn Knoten>) -> bool { return true }
     fn show_footer(
         &mut self,
@@ -101,7 +101,7 @@ impl SnarlViewer<Box<dyn Knoten>> for BasisViewer {
         outputs: &[OutPin],
         ui: &mut Ui,
         snarl: &mut Snarl<Box<dyn Knoten>>,
-    ) { snarl[node].show_footer(node, inputs, outputs, ui) }
+    ) { snarl[node].show_footer(node, inputs, outputs, ui); }
 
 
     fn has_graph_menu(&mut self, _: Pos2, _: &mut Snarl<Box<dyn Knoten>>) -> bool { return true }

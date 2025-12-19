@@ -72,7 +72,7 @@ impl KnotenInhalt for DefiniereMengeNode {
         self.latex.show_output(pin, ui);
     }
 
-    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
+    fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) -> bool {
         let mut changed = false;
         // UI: Dropdown
         ComboBox::from_id_salt(("define_set", node))
@@ -94,15 +94,16 @@ impl KnotenInhalt for DefiniereMengeNode {
             });
         
         if changed { self.dirty = true }
+        return false
 
     }
 
-    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        self.latex.show_header(node, inputs, outputs, ui);
+    fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return self.latex.show_header(node, inputs, outputs, ui)
     }
 
-    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
+    fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
+        return false
     }
 }
 
@@ -135,15 +136,15 @@ impl Knoten for DefiniereMengeNode {
 
 struct DefineSetProvider;
 impl LaTeXQuellBereitsteller for DefineSetProvider {
-    fn title(&self, _inputs: &[OutputInfo]) -> Option<String> { Some(r"\textbf{ZFC Menge}".into()) }
-    fn body(&self, _: &[OutputInfo]) -> Option<String> { None }
-    fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }
-    fn in_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { None }
-    fn out_pin_label(&self, _: usize, inputs: &[OutputInfo]) -> Option<String> { Some(erhalte_mengenlatex(inputs)) }
+    fn title(&self, _inputs: &[&OutputInfo]) -> Option<String> { Some(r"\textbf{ZFC Menge}".into()) }
+    fn body(&self, _: &[&OutputInfo]) -> Option<String> { None }
+    fn footer(&self, _: &[&OutputInfo]) -> Option<String> { Some(String::new()) }
+    fn in_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { None }
+    fn out_pin_label(&self, _: usize, inputs: &[&OutputInfo]) -> Option<String> { Some(erhalte_mengenlatex(inputs)) }
     fn in_pins(&self) -> usize { 0 }
     fn out_pins(&self) -> usize { 1 }
 }
 
-fn erhalte_mengenlatex(inputs: &[OutputInfo]) -> String { 
+fn erhalte_mengenlatex(inputs: &[&OutputInfo]) -> String { 
     return inputs.get(0).map(|i| i.latex.clone()).unwrap_or_else(|| menge::leer()) 
 }
