@@ -7,7 +7,10 @@ use egui_snarl::{InPin, OutPin};
 
 use crate::typen::{OutputInfo, PinType, SetId};
 
-use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
+use crate::LaTeX::{
+    interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller},
+    logik,
+};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
 
@@ -17,6 +20,7 @@ pub enum LogikOp {
     Konjunktion,
     Disjunktion,
     Implikation,
+    Äquivalenzrelation,
 }
 
 pub struct LogikOperatorNode {
@@ -96,6 +100,7 @@ impl KnotenStruktur for LogikOperatorNode {
             LogikOp::Konjunktion => "Konjunktion (∧)",
             LogikOp::Disjunktion => "Disjunktion (∨)",
             LogikOp::Implikation => "Implikation (→)",
+            LogikOp::Äquivalenzrelation => "Äquivalenzrelation (↔)",
         }
     }
 
@@ -160,6 +165,7 @@ impl LaTeXQuellBereitsteller for LogikProvider {
             LogikOp::Konjunktion => Some(r"\textbf{Konjunktion}".into()),
             LogikOp::Disjunktion => Some(r"\textbf{Disjunktion}".into()),
             LogikOp::Implikation => Some(r"\textbf{Implikation}".into()),
+            LogikOp::Äquivalenzrelation => Some(r"\textbf{Äquivalenzrelation}".into()),
         }
     }
 
@@ -172,6 +178,7 @@ impl LaTeXQuellBereitsteller for LogikProvider {
             LogikOp::Konjunktion => Some(format!(r"$\left({a}\right)\land\left({b}\right)$")),
             LogikOp::Disjunktion => Some(format!(r"$\left({a}\right)\lor\left({b}\right)$")),
             LogikOp::Implikation => Some(format!(r"$\left({a}\right)\rightarrow\left({b}\right)$")),
+            LogikOp::Äquivalenzrelation => Some(format!(r"$\left({a}\right)\leftrightarrow\left({b}\right)$")),
         }
     }
 

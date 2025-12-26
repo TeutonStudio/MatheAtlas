@@ -2,6 +2,32 @@
 
 use crate::LaTeX::logik::element;
 
+fn _klammern(links: &str, inhalt: impl AsRef<str>, rechts: &str) -> String {
+    let mut ausgabe = String::new();
+    ausgabe.push_str(r"\left");
+    ausgabe.push_str(links);
+    ausgabe.push_str(inhalt.as_ref());
+    ausgabe.push_str(r"\right");
+    ausgabe.push_str(rechts);
+    return ausgabe;
+}
+
+pub fn runde_klammern(inhalt: impl AsRef<str>) -> String {
+    return _klammern("( ", inhalt, ") ");
+}
+
+pub fn eckige_klammern(inhalt: impl AsRef<str>) -> String {
+    return _klammern("[ ", inhalt, "] ");
+}
+
+pub fn geschweifte_klammern(inhalt: impl AsRef<str>) -> String {
+    return _klammern("{ ", inhalt, "} ");
+}
+
+pub fn winkel_klammern(inhalt: impl AsRef<str>) -> String {
+    return _klammern(r"\langle ", inhalt, r"\rangle ");
+}
+
 pub fn index(argument: impl AsRef<str>,index: impl AsRef<str>) -> String {
     let mut ausgabe = String::new();
     ausgabe.push_str(argument.as_ref());
