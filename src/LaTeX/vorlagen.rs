@@ -2,6 +2,14 @@
 
 use crate::LaTeX::logik::element;
 
+pub fn umlaut(eingabe: impl AsRef<str>) -> String {
+    let mut ausgabe = String::new();
+    ausgabe.push_str(r"\ddot{");
+    ausgabe.push_str(eingabe.as_ref());
+    ausgabe.push_str(r"}");
+    return ausgabe;
+}
+
 fn _klammern(links: &str, inhalt: impl AsRef<str>, rechts: &str) -> String {
     let mut ausgabe = String::new();
     ausgabe.push_str(r"\left");

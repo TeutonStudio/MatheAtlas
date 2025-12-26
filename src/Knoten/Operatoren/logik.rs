@@ -9,7 +9,7 @@ use crate::typen::{OutputInfo, PinType, SetId};
 
 use crate::LaTeX::{
     interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller},
-    logik,
+    vorlagen,logik,
 };
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
@@ -134,7 +134,7 @@ impl KnotenInhalt for LogikOperatorNode {
     }
 
     fn show_body(&mut self, node: egui_snarl::NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) -> bool {
-        return false
+        return self.latex.show_body(node, inputs, outputs, ui)
     }
 
     fn show_footer(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
@@ -164,7 +164,7 @@ impl LaTeXQuellBereitsteller for LogikProvider {
             LogikOp::Konjunktion => Some(r"\textbf{Konjunktion}".into()),
             LogikOp::Disjunktion => Some(r"\textbf{Disjunktion}".into()),
             LogikOp::Implikation => Some(r"\textbf{Implikation}".into()),
-            LogikOp::Äquivalenzrelation => Some(r"\textbf{Äquivalenzrelation}".into()),
+            LogikOp::Äquivalenzrelation => Some((vorlagen::umlaut(r"\textbf{A}")+r"\textbf{quivalenzrelation}").into()),
         }
     }
 
