@@ -54,12 +54,24 @@ pub fn zeige_karten_kontext(
             snarl.insert_node(pos2, Box::new(DefiniereElementNode::new()));
             ui.close();
         }
+        if ui.button("nicht").clicked() {
+            snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Negation)));
+            ui.close();
+        }
         if ui.button("und").clicked() {
             snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Konjunktion)));
             ui.close();
         }
         if ui.button("oder").clicked() {
             snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Disjunktion)));
+            ui.close();
+        }
+        if ui.button("dann").clicked() {
+            snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Implikation)));
+            ui.close();
+        }
+        if ui.button("gleich").clicked() {
+            snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Äquivalenzrelation)));
             ui.close();
         }
 

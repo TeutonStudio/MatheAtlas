@@ -12,6 +12,15 @@ fn _klammern(links: &str, inhalt: impl AsRef<str>, rechts: &str) -> String {
     return ausgabe;
 }
 
+pub fn _operator(objekt1: impl AsRef<str>, objekt2: impl AsRef<str>, operation: &str) -> String {
+    let mut ausgabe = String::new();
+    ausgabe.push_str(objekt1.as_ref());
+    ausgabe.push_str(operation);
+    ausgabe.push_str(" ");
+    ausgabe.push_str(objekt2.as_ref());
+    return ausgabe;
+}
+
 pub fn runde_klammern(inhalt: impl AsRef<str>) -> String {
     return _klammern("( ", inhalt, ") ");
 }

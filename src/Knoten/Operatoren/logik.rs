@@ -26,9 +26,7 @@ pub enum LogikOp {
 pub struct LogikOperatorNode {
     op: LogikOp,
     latex: LatexNode,
-    // Inputs vom Graph (propagiert)
     inputs_cache: Vec<Option<OutputInfo>>,
-    // Output-Typ dynamisch: Logik oder Abbild(E->Logik)
     out_ty: PinType,
 }
 
@@ -125,6 +123,7 @@ impl KnotenStruktur for LogikOperatorNode {
         self.out_ty.clone()
     }
 }
+
 impl KnotenInhalt for LogikOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) {
         self.latex.show_input(pin, ui);
@@ -143,7 +142,7 @@ impl KnotenInhalt for LogikOperatorNode {
     }
 
     fn show_header(&mut self, node: egui_snarl::NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) -> bool {
-        return false
+        return self.latex.show_header(node, inputs, outputs, ui)
     }
 }
 impl Knoten for LogikOperatorNode {
@@ -174,11 +173,11 @@ impl LaTeXQuellBereitsteller for LogikProvider {
         let b = inputs.get(1).map(|x| x.latex.as_str()).unwrap_or(r"\,\cdot\,");
 
         match self.op {
-            LogikOp::Negation => Some(format!(r"$\neg\left({a}\right)$")),
-            LogikOp::Konjunktion => Some(format!(r"$\left({a}\right)\land\left({b}\right)$")),
-            LogikOp::Disjunktion => Some(format!(r"$\left({a}\right)\lor\left({b}\right)$")),
-            LogikOp::Implikation => Some(format!(r"$\left({a}\right)\rightarrow\left({b}\right)$")),
-            LogikOp::Äquivalenzrelation => Some(format!(r"$\left({a}\right)\leftrightarrow\left({b}\right)$")),
+            LogikOp::Negation => Some(logik::negation(a)),
+            LogikOp::Konjunktion => Some(logik::konjunktion(a, b)),
+            LogikOp::Disjunktion => Some(logik::disjunktion(a, b)),
+            LogikOp::Implikation => Some(logik::implikation(a, b)),
+            LogikOp::Äquivalenzrelation => Some(logik::äquivalenzrelation(a, b)),
         }
     }
 
