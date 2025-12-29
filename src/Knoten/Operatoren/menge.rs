@@ -21,14 +21,6 @@ pub enum MengenOp {
     Potenz,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum RelOp {
-    Teilmenge,   // ⊆
-    Obermenge,   // ⊇
-    ElementVon,  // ∈
-    Gleichheit,  // =
-}
-
 /// Auto-Coercion Node: Element -> {Element}
 pub struct SingletonMengeNode {
     latex: LatexNode,
@@ -118,25 +110,6 @@ impl MengenOperatorNode {
     }
 }
 
-impl KnotenStruktur for MengenOperatorNode {
-    fn name(&self) -> &str { &self.op.name() }
-    fn inputs(&self) -> usize { self.op.latex.provider.in_pins() }
-    fn outputs(&self) -> usize { self.op.latex.provider.out_pins() }
-
-    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
-    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
-}
-
-impl KnotenDaten for MengenOperatorNode {
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) { self.op.latex.on_inputs_changed(inputs) }
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
-    }
-    fn take_dirty(&mut self) -> bool {
-        false
-    }
-}
-
 impl KnotenInhalt for MengenOperatorNode {
     fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.op.show_input(pin, ui); }
     fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.op.show_output(pin, ui); }
@@ -150,6 +123,24 @@ impl KnotenInhalt for MengenOperatorNode {
         return self.op.show_footer(node, inputs, outputs, ui)
     }
 }
+impl KnotenDaten for MengenOperatorNode {
+    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) { self.op.latex.on_inputs_changed(inputs) }
+    fn output_info(&self, _o: usize) -> OutputInfo {
+        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
+    }
+    fn take_dirty(&mut self) -> bool {
+        false
+    }
+}
+impl KnotenStruktur for MengenOperatorNode {
+    fn name(&self) -> &str { &self.op.name() }
+    fn inputs(&self) -> usize { self.op.latex.provider.in_pins() }
+    fn outputs(&self) -> usize { self.op.latex.provider.out_pins() }
+
+    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
+    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
+}
+
 impl Knoten for MengenOperatorNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
@@ -207,109 +198,3 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     fn in_pins(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
     fn out_pins(&self) -> usize { 1 }
 }
-
-/* -------------------------
-   Relationen (⊆, ⊇, ∈, =)
---------------------------*/
-/*
-pub struct RelationsOperatorNode {
-    op: RelOp,
-    latex: LatexNode,
-    inputs_cache: Vec<Option<OutputInfo>>,
-}
-
-impl RelationsOperatorNode {
-    pub fn new(op: RelOp) -> Self {
-        Self {
-            op,
-            latex: LatexNode::new(format!("Rel:{op:?}"), Box::new(RelProvider { op })),
-            inputs_cache: vec![],
-        }
-    }
-}*/
-
-/*impl Knoten for RelationsOperatorNode {
-    fn name(&self) -> &str {
-        match self.op {
-            RelOp::Teilmenge => "Teilmenge (⊆)",
-            RelOp::Obermenge => "Obermenge (⊇)",
-            RelOp::ElementVon => "Element (∈)",
-            RelOp::Gleichheit => "Gleichheit (=)",
-        }
-    }
-
-    fn inputs(&self) -> usize { 2 }
-    fn outputs(&self) -> usize { 1 }
-
-    fn input_type(&self, i: usize) -> PinType {
-        match self.op {
-            RelOp::Teilmenge | RelOp::Obermenge => PinType::Menge,
-            RelOp::ElementVon => if i == 0 { PinType::Element } else { PinType::Menge },
-            RelOp::Gleichheit => PinType::Element,
-        }
-    }
-
-    fn output_type(&self, _o: usize) -> PinType {
-        // Du wolltest später ggf. Abbild(Args->Logik). Für jetzt: Logik, CAS kommt später.
-        PinType::Logik
-    }
-
-    fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
-        self.inputs_cache = inputs;
-        let present = self.inputs_cache.iter().filter_map(|x| Some(x.clone())).collect::<Vec<_>>();
-        self.latex.on_inputs_changed(present);
-    }
-
-    fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Logik, set_id: None }
-    }
-
-    fn show_input(&mut self, pin: &InPin, ui: &mut Ui) { self.latex.show_input(pin, ui); }
-    fn show_output(&mut self, pin: &OutPin, ui: &mut Ui) { self.latex.show_output(pin, ui); }
-    fn show_body(&mut self, node: NodeId, inputs: &[InPin],outputs: &[OutPin],ui: &mut Ui,) {
-        
-    }
-    fn show_header(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
-    }
-    fn show_footer(&mut self, node: NodeId, inputs: &[InPin], outputs: &[OutPin],ui: &mut Ui) {
-        
-    }
-    fn as_any(&mut self) -> &mut dyn Any { self }
-}
-
-struct RelProvider { op: RelOp }
-impl LatexSourceProvider for RelProvider {
-    fn title(&self, _: &[OutputInfo]) -> Option<String> {
-        match self.op {
-            RelOp::Teilmenge => Some(r"\textbf{Teilmenge}".into()),
-            RelOp::Obermenge => Some(r"\textbf{Obermenge}".into()),
-            RelOp::ElementVon => Some(r"\textbf{Element}".into()),
-            RelOp::Gleichheit => Some(r"\textbf{Gleichheit}".into()),
-        }
-    }
-
-    fn body(&self, inputs: &[OutputInfo]) -> Option<String> {
-        let a = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("x");
-        let b = inputs.get(1).map(|i| i.latex.as_str()).unwrap_or("A");
-        match self.op {
-            RelOp::Teilmenge => Some(format!(r"$\left({a}\right)\subseteq\left({b}\right)$")),
-            RelOp::Obermenge => Some(format!(r"$\left({a}\right)\supseteq\left({b}\right)$")),
-            RelOp::ElementVon => Some(format!(r"$\left({a}\right)\in\left({b}\right)$")),
-            RelOp::Gleichheit => Some(format!(r"$\left({a}\right)=\left({b}\right)$")),
-        }
-    }
-
-    fn footer(&self, _: &[OutputInfo]) -> Option<String> { Some(String::new()) }
-
-    fn in_pin_label(&self, idx: usize, _: &[OutputInfo]) -> Option<String> {
-        match self.op {
-            RelOp::ElementVon => if idx == 0 { Some(r"$x$".into()) } else { Some(r"$A$".into()) },
-            _ => if idx == 0 { Some(r"$A$".into()) } else { Some(r"$B$".into()) },
-        }
-    }
-
-    fn out_pin_label(&self, _: usize, _: &[OutputInfo]) -> Option<String> { Some(r"$\mathrm{out}$".into()) }
-    fn in_pins(&self, _: &[OutputInfo]) -> usize { 2 }
-    fn out_pins(&self, _: &[OutputInfo]) -> usize { 1 }
-}*/
