@@ -11,10 +11,13 @@ mod element_definition;
 mod logik_definition;
 #[path = "../Knoten/Definitionen/menge.rs"]
 mod menge_definition;
+#[path = "../Knoten/Definitionen/abbild.rs"]
+mod abbild_definition;
 
 use element_definition::{DefiniereElementNode};
 use logik_definition::{WahrNode,LügeNode};
 use menge_definition::{DefiniereMengeNode};
+use abbild_definition::{DefiniereAbbildNode};
 
 #[path = "../Knoten/Operatoren/logik.rs"]
 mod logik_operatoren;
@@ -85,44 +88,8 @@ pub fn zeige_karten_kontext(
                     snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Äquivalenzrelation)));
                     ui.close();
                 }
-            }), None::<fn(&mut Ui, &mut Snarl<Box<dyn Knoten>>)>);
-        /*ui.label(RichText::new("Logik").size(10.0));
-        if ui.button("zustand").clicked() {
-            let pos2 = pos + vec2(0.0, 35.0);
-
-            let menge_id = snarl.insert_node(pos,  Box::new(DefiniereMengeNode::new()));
-            let elem_id  = snarl.insert_node(pos2, Box::new(DefiniereElementNode::new()));
-
-            // Menge -> Element
-            snarl.connect(
-                OutPinId { node: menge_id, output: 0 },
-                InPinId  { node: elem_id,  input: 0  },
-            );
-
-            ui.close();
-        }
-        zeige_sub_karten_kontext("Operatoren", ui, |ui| {
-            if ui.button("nicht").clicked() {
-                snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Negation)));
-                ui.close();
-            }
-            if ui.button("und").clicked() {
-                snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Konjunktion)));
-                ui.close();
-            }
-            if ui.button("oder").clicked() {
-                snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Disjunktion)));
-                ui.close();
-            }
-            if ui.button("dann").clicked() {
-                snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Implikation)));
-                ui.close();
-            }
-            if ui.button("gleich").clicked() {
-                snarl.insert_node(pos, Box::new(LogikOperatorNode::new(LogikOp::Äquivalenzrelation)));
-                ui.close();
-            }
-        });*/
+            }), None::<fn(&mut Ui, &mut Snarl<Box<dyn Knoten>>)>
+        );
 
         zeige_kategorien_kontext(
             "Mengen",
@@ -152,40 +119,31 @@ pub fn zeige_karten_kontext(
             }),
         );
 
-/*
-        ui.label(RichText::new("Mengen").size(10.0));
-        if ui.button("Legacy").clicked() {
-            snarl.insert_node(pos, Box::new(DefiniereMengeNode::new()));
-            ui.close();
-        }
-        zeige_sub_karten_kontext("Operatoren", ui, |ui| {
-            if ui.button("vereinigung").clicked() {
-                snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Vereinigung)));
-                ui.close();
-            }
-            if ui.button("schnitt").clicked() {
-                snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Schnitt)));
-                ui.close();
-            }
-        });
-        zeige_sub_karten_kontext("Relation", ui, |ui| {
-            if ui.button("element").clicked() {
-                snarl.insert_node(pos, Box::new(MengenRelationNode::new(menge_relationen::RelOp::ElementVon)));
-                ui.close();
-            }
-
-            if ui.button("gleich").clicked() {
-                snarl.insert_node(pos, Box::new(MengenRelationNode::new(menge_relationen::RelOp::Gleichheit)));
-                ui.close();
-            }
-        });
-
-
-        if ui.button("Test").clicked() {
-            snarl.insert_node(pos, Box::new(WahrNode::new(true,false)));
-            snarl.insert_node(pos, Box::new(LügeNode::new(true,false)));
-            ui.close();
-        }*/
+        zeige_kategorien_kontext("Abbild", ui, snarl, 
+            Some(|snarl: &mut Snarl<Box<dyn Knoten>>| {
+                snarl.insert_node(pos, Box::new(DefiniereAbbildNode::new()));
+            }),
+            Some(|ui: &mut Ui,snarl: &mut Snarl<Box<dyn Knoten>>| {
+                if ui.button("vereinigung").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Vereinigung)));
+                    ui.close();
+                }
+                if ui.button("schnitt").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Schnitt)));
+                    ui.close();
+                }
+            }),
+            Some(|ui: &mut Ui,snarl: &mut Snarl<Box<dyn Knoten>>| {
+                if ui.button("element").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenRelationNode::new(menge_relationen::RelOp::ElementVon)));
+                    ui.close();
+                }
+                if ui.button("gleich").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenRelationNode::new(menge_relationen::RelOp::Gleichheit)));
+                    ui.close();
+                }
+            }),
+        );
     });
 }
 
