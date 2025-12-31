@@ -16,7 +16,7 @@ mod abbild_definition;
 
 use element_definition::{DefiniereElementNode};
 use logik_definition::{WahrNode,LügeNode};
-use menge_definition::{DefiniereMengeNode};
+use menge_definition::{DefiniereMengeNode, VordefMenge};
 use abbild_definition::{DefiniereAbbildNode};
 
 #[path = "../Knoten/Operatoren/logik.rs"]
@@ -58,7 +58,10 @@ pub fn zeige_karten_kontext(
 
         zeige_kategorien_kontext("Logik", ui, snarl, 
             Some(|snarl: &mut Snarl<Box<dyn Knoten>>| {
-                let menge_id = snarl.insert_node(pos - vec2(0.0, 35.0),  Box::new(DefiniereMengeNode::new()));
+                let menge_id = snarl.insert_node(
+                    pos - vec2(0.0, 35.0),
+                    Box::new(DefiniereMengeNode::new_with_selected(VordefMenge::Logik)),
+                );
                 let elem_id  = snarl.insert_node(pos + vec2(0.0, 35.0), Box::new(DefiniereElementNode::new()));
 
                 // Menge -> Element

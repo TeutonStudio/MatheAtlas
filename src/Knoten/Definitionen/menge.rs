@@ -56,8 +56,12 @@ pub struct DefiniereMengeNode {
 
 impl DefiniereMengeNode {
     pub fn new() -> Self {
+        Self::new_with_selected(VordefMenge::Leer)
+    }
+
+    pub fn new_with_selected(selected: VordefMenge) -> Self {
         Self {
-            selected: VordefMenge::Leer,
+            selected,
             latex: LatexNode::new("Definiere Menge", Box::new(DefineSetProvider)),
             dirty: true,
         }

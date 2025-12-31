@@ -85,7 +85,7 @@ impl KnotenInhalt for DefiniereElementNode {
 
     fn show_body(
         &mut self,
-        _node: egui_snarl::NodeId,
+        node: egui_snarl::NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
         ui: &mut Ui,
@@ -96,8 +96,27 @@ impl KnotenInhalt for DefiniereElementNode {
             return false
         }
 
+        if matches!(self.current_set_id(), Some(SetId::Logik)) {
+            let logik_wahr = logik::wahr();
+            let logik_luege = logik::lüge();
+            if self.symbol != logik_wahr && self.symbol != logik_luege {
+                self.symbol = logik_wahr.clone();
+            }
+            let selected_label = if self.symbol == logik_luege { "Lüge" } else { "Wahr" };
+            ComboBox::from_id_salt(("logik_element_select", node))
+                .selected_text(selected_label)
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut self.symbol, logik_wahr.clone(), "Wahr");
+                    ui.selectable_value(&mut self.symbol, logik_luege.clone(), "Lüge");
+                });
+            self.editing = false;
+            return false
+        }
+        
         // Endliche Menge -> Dropdown
         if let Some(elems) = self.finite_elements() {
+            let logik_wahr = logik::wahr();
+            let logik_luege = logik::lüge();
             // Wenn die aktuelle Auswahl nicht drin ist, setze auf erstes Element
             if !elems.iter().any(|e| e == &self.symbol) {
                 if let Some(first) = elems.first() {
@@ -105,16 +124,28 @@ impl KnotenInhalt for DefiniereElementNode {
                 }
             }
 
-            ComboBox::from_id_salt("finite_element_select")
+            ComboBox::from_id_salt(("finite_element_select", node))
                 .selected_text(self.symbol.clone())
                 .show_ui(ui, |ui| {
                     for e in elems {
-                        ui.selectable_value(&mut self.symbol, e.clone(), e);
+                        let label = if self.current_set_id() == Some(SetId::Logik) {
+                            if e == logik_wahr {
+                                "Wahr".to_string()
+                            } else if e == logik_luege {
+                                "Lüge".to_string()
+                            } else {
+                                e.clone()
+                            }
+                        } else {
+                            e.clone()
+                        };
+                        ui.selectable_value(&mut self.symbol, e.clone(), label);
                     }
                 });
 
             // Bei endlicher Menge kein Editing-Modus nötig
             self.editing = false;
+            return false
         }
 
         // Unendliche/unklare Menge -> Edit-Feld (wie gehabt)
@@ -251,4 +282,3 @@ impl LaTeXQuellBereitsteller for DefineElemProvider {
     fn in_pins(&self) -> usize { 1 }
     fn out_pins(&self) -> usize { 1 }
 }
-
