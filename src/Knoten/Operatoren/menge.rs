@@ -1,6 +1,6 @@
 // Pfad: ../src/Operatoren/menge.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::{Ui,Window,pos2};
 use egui_snarl::{NodeId, InPin, OutPin, Snarl};
@@ -18,7 +18,7 @@ use crate::operator_knoten::{OperatorNode};
 
 #[derive(Clone, Copy, Debug)]
 pub enum MengenOp {
-    Einzel,
+    // Einzel,
     Vereinigung,
     Schnitt,
     Differenz,
@@ -103,7 +103,7 @@ pub struct MengenOperatorNode {
 
 impl MengenOperatorNode {
     pub fn new(op: MengenOp) -> Self {
-        let provider = Box::new(MengenProvider { op });
+        let provider = Rc::new(MengenProvider { op });
         let snarl = provider.definitions_snarl();
         Self { // TODO herausfinden, wieso nach erzeugung nur ... überall steht (temporär repariert, durch on_inputs_changed im LatexNode impl)
             op: OperatorNode::new(
@@ -157,9 +157,7 @@ impl MengenProvider {
         let mut snarl: Snarl<Box<dyn Knoten>> = Snarl::new();
         // TODO fülle snarl mit definitionsknoten, abhängig von self.op und evtl. verbundenen knoten
         match self.op {
-            MengenOp::Einzel => {
-
-            }
+            // MengenOp::Einzel => {}
             MengenOp::Vereinigung => {
                 snarl.insert_node(pos2(0.0,0.0), Box::new(WahrNode::new(true, false)));
             },
@@ -182,7 +180,7 @@ impl MengenProvider {
 impl LaTeXQuellBereitsteller for MengenProvider {
     fn title(&self, _: &[&OutputInfo]) -> Option<String> {
         match self.op {
-            MengenOp::Einzel => Some(r"\textbf{Einzelmenge}".into()),
+            // MengenOp::Einzel => Some(r"\textbf{Einzelmenge}".into()),
             MengenOp::Vereinigung => Some(r"\textbf{Vereinigungsmenge}".into()),
             MengenOp::Schnitt => Some(r"\textbf{Schnittmenge}".into()),
             MengenOp::Differenz => Some(r"\textbf{Differenzmenge}".into()),
@@ -195,7 +193,7 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         let a = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("A");
         let b = inputs.get(1).map(|i| i.latex.as_str()).unwrap_or("B");
         match self.op {
-            MengenOp::Einzel => Some(format!(r"\left\{{{a}\right\}}")),
+            // MengenOp::Einzel => Some(format!(r"\left\{{{a}\right\}}")),
             MengenOp::Vereinigung => Some(format!(r"\left({a}\right)\cup\left({b}\right)")),
             MengenOp::Schnitt => Some(format!(r"\left({a}\right)\cap\left({b}\right)")),
             MengenOp::Differenz => Some(format!(r"\left({a}\right)\setminus\left({b}\right)")),
@@ -211,7 +209,7 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     }
     fn out_pin_label(&self, idx: usize, _: &[&OutputInfo]) -> Option<String> { 
         match self.op {
-            MengenOp::Einzel => Some(menge_von(&[&"x"])),
+            // MengenOp::Einzel => Some(menge_von(&[&"x"])),
             MengenOp::Vereinigung => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
             MengenOp::Schnitt => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
             MengenOp::Differenz => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
@@ -222,7 +220,7 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     
     fn in_pins(&self) -> usize { 
         match self.op {
-            MengenOp::Einzel => 1,
+            // MengenOp::Einzel => 1,
             MengenOp::Vereinigung => 2,
             MengenOp::Schnitt => 2,
             MengenOp::Differenz => 2,
@@ -234,7 +232,7 @@ impl LaTeXQuellBereitsteller for MengenProvider {
 
     fn input_type(&self, _i: usize) -> PinType { 
         match self.op {
-            MengenOp::Einzel => PinType::Element,
+            // MengenOp::Einzel => PinType::Element,
             MengenOp::Vereinigung => PinType::Menge { elem: Box::new(PinType::Element), set: None },
             MengenOp::Schnitt => PinType::Menge { elem: Box::new(PinType::Element), set: None },
             MengenOp::Differenz => PinType::Menge { elem: Box::new(PinType::Element), set: None },

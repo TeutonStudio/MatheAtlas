@@ -1,5 +1,6 @@
 // Pfad: ../src/Knoten/operator-knoten.rs
 
+use std::rc::Rc;
 use eframe::egui::{Ui, Window, Vec2};
 use egui_snarl::{InPin, OutPin, NodeId, Snarl, ui::{SnarlWidget, SnarlStyle}};
 
@@ -25,7 +26,7 @@ pub struct OperatorNode {
 impl OperatorNode {
     pub fn new(
         name: impl Into<String>, 
-        latex_provider: Box<dyn LaTeXQuellBereitsteller>,
+        latex_provider: Rc<dyn LaTeXQuellBereitsteller>,
         def_snarl: Snarl<Box<dyn Knoten>>,
     ) -> Self {
         let name = name.into();

@@ -1,6 +1,6 @@
 // Pfad: ../src/Operatoren/logik.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin};
@@ -32,7 +32,7 @@ pub struct LogikOperatorNode {
 
 impl LogikOperatorNode {
     pub fn new(op: LogikOp) -> Self {
-        let provider = Box::new(LogikProvider { op });
+        let provider = Rc::new(LogikProvider { op });
         Self {
             op,
             latex: LatexNode::new(format!("Logik:{op:?}"), provider),

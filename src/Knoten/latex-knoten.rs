@@ -1,5 +1,6 @@
 // Pfad: ../src/Knoten/latex-knoten.rs
 
+use std::rc::Rc;
 use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin, NodeId};
 
@@ -20,7 +21,7 @@ use crate::basis_knoten::{KnotenDaten, KnotenInhalt};
 pub struct LatexNode {
     name: String,
 
-    pub provider: Box<dyn LaTeXQuellBereitsteller>,
+    pub provider: Rc<dyn LaTeXQuellBereitsteller>,
     
     title: LaTeXQuelle,
     body: LaTeXQuelle,
@@ -33,7 +34,7 @@ pub struct LatexNode {
 }
 
 impl LatexNode {
-    pub fn new(name: impl Into<String>, provider: Box<dyn LaTeXQuellBereitsteller>) -> Self {
+    pub fn new(name: impl Into<String>, provider: Rc<dyn LaTeXQuellBereitsteller>) -> Self {
         let mut ausgabe = Self {
             name: name.into(), provider,
             title: LaTeXQuelle::new(),

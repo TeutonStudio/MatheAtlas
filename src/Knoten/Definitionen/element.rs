@@ -1,6 +1,6 @@
 // Pfad: ../src/Definitionen/abbild.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::{Ui,Color32, ComboBox};
 use egui_snarl::{InPin, OutPin};
@@ -30,7 +30,7 @@ pub struct DefiniereElementNode {
 impl DefiniereElementNode {
     pub fn new() -> Self { 
         Self { 
-            latex: LatexNode::new("Definiere Element", Box::new(DefineElemProvider)), 
+            latex: LatexNode::new("Definiere Element", Rc::new(DefineElemProvider)), 
             inputs_cache: vec![], 
             editing: false, 
             //menge: None, 

@@ -1,6 +1,6 @@
 // Pfad: ../src/Definitionen/abbild.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin};
@@ -28,7 +28,7 @@ pub struct DefiniereAbbildNode {
 impl DefiniereAbbildNode {
     pub fn new() -> Self {
         Self {
-            latex: LatexNode::new("Definiere Abbild", Box::new(DefineMapProvider)),
+            latex: LatexNode::new("Definiere Abbild", Rc::new(DefineMapProvider)),
             inputs_cache: vec![],
             w: SetId::Any,
             z: SetId::Any,

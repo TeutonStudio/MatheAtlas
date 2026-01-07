@@ -1,6 +1,6 @@
 // Pfad: src/Knoten/Relationen/menge.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::{Ui,Window,pos2};
 use egui_snarl::{NodeId, InPin, OutPin, Snarl};
@@ -36,7 +36,7 @@ impl MengenRelationNode {
     pub fn new(op: RelOp) -> Self {
         Self {
             op,
-            latex: LatexNode::new(format!("Rel:{op:?}"), Box::new(RelProvider { op })),
+            latex: LatexNode::new(format!("Rel:{op:?}"), Rc::new(RelProvider { op })),
             inputs_cache: vec![],
         }
     }

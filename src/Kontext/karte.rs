@@ -16,7 +16,7 @@ mod abbild_definition;
 
 use element_definition::{DefiniereElementNode};
 use logik_definition::{WahrNode,LügeNode};
-use menge_definition::{DefiniereMengeNode, VordefMenge};
+use menge_definition::{DefiniereMengeNode, DefAuswahl};
 use abbild_definition::{DefiniereAbbildNode};
 
 #[path = "../Knoten/Operatoren/logik.rs"]
@@ -60,7 +60,7 @@ pub fn zeige_karten_kontext(
             Some(|snarl: &mut Snarl<Box<dyn Knoten>>| {
                 let menge_id = snarl.insert_node(
                     pos - vec2(0.0, 35.0),
-                    Box::new(DefiniereMengeNode::new_with_selected(VordefMenge::Logik)),
+                    Box::new(DefiniereMengeNode::new_with_selected(DefAuswahl::Logik)),
                 );
                 let elem_id  = snarl.insert_node(pos + vec2(0.0, 35.0), Box::new(DefiniereElementNode::new()));
 
@@ -101,10 +101,10 @@ pub fn zeige_karten_kontext(
                 snarl.insert_node(pos, Box::new(DefiniereMengeNode::new()));
             }),
             Some(|ui: &mut Ui,snarl: &mut Snarl<Box<dyn Knoten>>| {
-                if ui.button("einzel").clicked() {
+                /*if ui.button("einzel").clicked() {
                     snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Einzel)));
                     ui.close();
-                }
+                }*/
                 if ui.button("potenz").clicked() {
                     snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Potenz)));
                     ui.close();

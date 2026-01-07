@@ -1,6 +1,6 @@
 // Pfad: ../src/Definitionen/logik.rs
 
-use std::any::Any;
+use std::{any::Any, rc::Rc};
 
 use eframe::egui::Ui;
 use egui_snarl::{InPin, OutPin};
@@ -17,7 +17,7 @@ pub struct WahrNode {
 
 impl WahrNode {
     pub fn new(eingang: bool, ausgang: bool) -> Self {
-        Self { latex: LatexNode::new("Wahr", Box::new(WahrQuelle::new(eingang,ausgang))) }
+        Self { latex: LatexNode::new("Wahr", Rc::new(WahrQuelle::new(eingang,ausgang))) }
     }
 }
 
@@ -69,7 +69,7 @@ pub struct LügeNode {
 
 impl LügeNode {
     pub fn new(eingang: bool, ausgang: bool) -> Self {
-        Self { latex: LatexNode::new("Lüge", Box::new(LügeQuelle::new(eingang,ausgang))) }
+        Self { latex: LatexNode::new("Lüge", Rc::new(LügeQuelle::new(eingang,ausgang))) }
     }
 }
 
