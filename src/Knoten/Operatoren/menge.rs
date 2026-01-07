@@ -8,17 +8,22 @@ use egui_snarl::{NodeId, InPin, OutPin, Snarl};
 use crate::basis_karte::karte_kontext::logik_definition::WahrNode;
 use crate::typen::{OutputInfo, PinType};
 
-use crate::LaTeX::interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller};
+use crate::LaTeX::{
+    interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller},
+    menge::{menge_von,potenzmenge},
+};
 use crate::basis_knoten::{KnotenStruktur,KnotenInhalt,KnotenDaten,Knoten};
 use crate::latex_knoten::{LatexNode};
 use crate::operator_knoten::{OperatorNode};
 
 #[derive(Clone, Copy, Debug)]
 pub enum MengenOp {
+    Einzel,
     Vereinigung,
     Schnitt,
     Differenz,
     Potenz,
+    Filter,
 }
 
 /// Auto-Coercion Node: Element -> {Element}
@@ -151,6 +156,9 @@ impl MengenProvider {
         let mut snarl: Snarl<Box<dyn Knoten>> = Snarl::new();
         // TODO fülle snarl mit definitionsknoten, abhängig von self.op und evtl. verbundenen knoten
         match self.op {
+            MengenOp::Einzel => {
+
+            }
             MengenOp::Vereinigung => {
                 snarl.insert_node(pos2(0.0,0.0), Box::new(WahrNode::new(true, false)));
             },
@@ -163,6 +171,9 @@ impl MengenProvider {
             MengenOp::Potenz => {
 
             },
+            MengenOp::Filter => {
+
+            },
         }
         snarl
     }
@@ -170,10 +181,12 @@ impl MengenProvider {
 impl LaTeXQuellBereitsteller for MengenProvider {
     fn title(&self, _: &[&OutputInfo]) -> Option<String> {
         match self.op {
+            MengenOp::Einzel => Some(r"\textbf{Einzelmenge}".into()),
             MengenOp::Vereinigung => Some(r"\textbf{Vereinigungsmenge}".into()),
             MengenOp::Schnitt => Some(r"\textbf{Schnittmenge}".into()),
             MengenOp::Differenz => Some(r"\textbf{Differenzmenge}".into()),
             MengenOp::Potenz => Some(r"\textbf{Potenzmenge}".into()),
+            MengenOp::Filter => Some(r"\textbf{Filtermenge}".into()),
         }
     }
 
@@ -181,10 +194,12 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         let a = inputs.get(0).map(|i| i.latex.as_str()).unwrap_or("A");
         let b = inputs.get(1).map(|i| i.latex.as_str()).unwrap_or("B");
         match self.op {
+            MengenOp::Einzel => Some(format!(r"\left\{{{a}\right\}}")),
             MengenOp::Vereinigung => Some(format!(r"\left({a}\right)\cup\left({b}\right)")),
             MengenOp::Schnitt => Some(format!(r"\left({a}\right)\cap\left({b}\right)")),
             MengenOp::Differenz => Some(format!(r"\left({a}\right)\setminus\left({b}\right)")),
-            MengenOp::Potenz => Some(format!(r""))
+            MengenOp::Potenz => Some(format!(r"")),
+            MengenOp::Filter => Some(format!(r"\left({a}\right)\setminus\left({b}\right)")),
         }
     }
 
@@ -193,8 +208,26 @@ impl LaTeXQuellBereitsteller for MengenProvider {
     fn in_pin_label(&self, idx: usize, _: &[&OutputInfo]) -> Option<String> {
         if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) }
     }
-    fn out_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { None }
+    fn out_pin_label(&self, idx: usize, _: &[&OutputInfo]) -> Option<String> { 
+        match self.op {
+            MengenOp::Einzel => Some(menge_von(&[&"x"])),
+            MengenOp::Vereinigung => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
+            MengenOp::Schnitt => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
+            MengenOp::Differenz => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
+            MengenOp::Potenz => if idx == 0 { Some(potenzmenge(&"x")) } else { None },
+            MengenOp::Filter => if idx == 0 { Some(r"A".into()) } else { Some(r"B".into()) },
+        } 
+    }
     
-    fn in_pins(&self) -> usize { 2 } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
+    fn in_pins(&self) -> usize { 
+        match self.op {
+            MengenOp::Einzel => 1,
+            MengenOp::Vereinigung => 2,
+            MengenOp::Schnitt => 2,
+            MengenOp::Differenz => 2,
+            MengenOp::Potenz => 1,
+            MengenOp::Filter => 2,
+        }
+    } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
     fn out_pins(&self) -> usize { 1 }
 }

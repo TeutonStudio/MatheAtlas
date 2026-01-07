@@ -101,12 +101,28 @@ pub fn zeige_karten_kontext(
                 snarl.insert_node(pos, Box::new(DefiniereMengeNode::new()));
             }),
             Some(|ui: &mut Ui,snarl: &mut Snarl<Box<dyn Knoten>>| {
+                if ui.button("einzel").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Einzel)));
+                    ui.close();
+                }
+                if ui.button("potenz").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Potenz)));
+                    ui.close();
+                }
                 if ui.button("vereinigung").clicked() {
                     snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Vereinigung)));
                     ui.close();
                 }
                 if ui.button("schnitt").clicked() {
                     snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Schnitt)));
+                    ui.close();
+                }
+                if ui.button("differenz").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Differenz)));
+                    ui.close();
+                }
+                if ui.button("filter").clicked() {
+                    snarl.insert_node(pos, Box::new(MengenOperatorNode::new(MengenOp::Filter)));
                     ui.close();
                 }
             }),

@@ -6,12 +6,26 @@ use crate::LaTeX::{
 };
 
 pub fn leer() -> String { return r"\emptyset ".to_string() }
-pub fn zustand() -> String { 
+pub fn menge_von(elemente: &[impl AsRef<str>]) -> String {
     let mut ausgabe = r"\{".to_string();
-    ausgabe.push_str(&wahr());
-    ausgabe.push_str(r",");
-    ausgabe.push_str(&lüge());
+    let inhalt = elemente
+        .iter()
+        .map(|e| e.as_ref())
+        .collect::<Vec<_>>()
+        .join(", ");
+    ausgabe.push_str(&inhalt);
     ausgabe.push_str(r"\}");
+    return ausgabe
+}
+pub fn zustand() -> String { 
+    return menge_von(&[&wahr(),&lüge()])
+}
+
+pub fn potenzmenge(menge: impl AsRef<str>) -> String {
+    let mut ausgabe = String::new();
+    ausgabe.push_str(r"\mathcal{P}(");
+    ausgabe.push_str(menge.as_ref());
+    ausgabe.push_str(")");
     return ausgabe
 }
 
