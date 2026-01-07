@@ -51,18 +51,18 @@ impl LogikOperatorNode {
         // Für Abbild brauchen wir konkrete Sets. Wenn Inputs Abbild sind:
         // - wir nehmen (konservativ) den "kleineren" Wertevorrat, "kleinere" Zielmenge? (für Logik-Zielmenge egal)
         // Minimal: wenn mindestens ein Input Abbild ist -> Output Abbild, sonst Logik.
-        let mut any_domain: Option<Option<SetId>> = None;
+        let mut any_domain: Option<Box<PinType>> = None;
 
         // let mut any_map = None::<(SetId, SetId)>;
         for info in self.inputs_cache.iter().flatten() {
             if let PinType::Abbild { wertevorrat, .. } = &info.ty {
-                any_domain = Some(wertevorrat.clone());
+                // TODO any_domain = Some(wertevorrat.clone());
                 break;
             }
         }
 
         self.out_ty = if let Some(w) = any_domain {
-            PinType::Abbild { wertevorrat: w, zielmenge: Some(SetId::Logik) }
+            PinType::Abbild { wertevorrat: Some(w), zielmenge: Some(Box::new(PinType::Logik)) }
         } else {
             PinType::Logik
         };
@@ -81,9 +81,11 @@ impl KnotenDaten for LogikOperatorNode {
     }
 
     fn output_info(&self, _output: usize) -> OutputInfo {
-        OutputInfo {
+        return OutputInfo {
             latex: r"\LaTeX".to_string(), // self.latex.current_body_latex(), // muss LatexNode liefern (oder du passt das an)
             ty: self.out_ty.clone(),
+            value: None,
+            set: None,
             set_id: None
         }
     }

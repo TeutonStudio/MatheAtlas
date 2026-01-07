@@ -115,9 +115,11 @@ impl KnotenDaten for DefiniereMengeNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) { /*self.on_inputs_changed(vec![])*/ }
 
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo {
+        return OutputInfo {
             latex: self.selected.latex(),
-            ty: PinType::Menge,
+            ty: PinType::Menge { elem: Box::new(PinType::Element), set: None},
+            value: None,
+            set: None,
             set_id: Some(self.selected.to_set_id())
         }
     }
@@ -131,7 +133,7 @@ impl KnotenStruktur for DefiniereMengeNode {
     fn outputs(&self) -> usize { 1 }
 
     fn input_type(&self, _i: usize) -> PinType { return PinType::Element }
-    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge }
+    fn output_type(&self, _o: usize) -> PinType { return PinType::Menge { elem: Box::new(self.input_type(0)), set: None} }
 }
 
 impl Knoten for DefiniereMengeNode {

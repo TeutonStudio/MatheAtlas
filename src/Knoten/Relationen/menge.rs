@@ -57,7 +57,7 @@ impl KnotenInhalt for MengenRelationNode {
 }
 impl KnotenDaten for MengenRelationNode {
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Logik, set_id: None }
+        return OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Logik, value: None, set: None, set_id: None }
     }
 
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
@@ -81,8 +81,8 @@ impl KnotenStruktur for MengenRelationNode {
 
     fn input_type(&self, i: usize) -> PinType {
         match self.op {
-            RelOp::Teilmenge | RelOp::Obermenge => PinType::Menge,
-            RelOp::ElementVon => if i == 0 { PinType::Element } else { PinType::Menge },
+            RelOp::Teilmenge | RelOp::Obermenge => PinType::Menge { elem: Box::new(PinType::Element), set: None },
+            RelOp::ElementVon => if i == 0 { PinType::Element } else { PinType::Menge { elem: Box::new(PinType::Element), set: None } },
             RelOp::Gleichheit => PinType::Element,
         }
     }

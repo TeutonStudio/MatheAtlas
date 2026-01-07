@@ -49,7 +49,7 @@ impl KnotenDaten for WahrNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
 
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"$\mathrm{wahr}$".into(), ty: PinType::Logik, set_id: Some(SetId::Logik) }
+        return OutputInfo { latex: r"$\mathrm{wahr}$".into(), ty: PinType::Logik, value: None, set: None, set_id: Some(SetId::Logik) }
     }
 }
 impl KnotenStruktur for WahrNode {
@@ -101,7 +101,7 @@ impl KnotenDaten for LügeNode {
     fn on_inputs_changed(&mut self, _inputs: Vec<Option<OutputInfo>>) {}
 
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"$\mathrm{lüge}$".into(), ty: PinType::Logik, set_id: Some(SetId::Logik) }
+        return OutputInfo { latex: r"$\mathrm{lüge}$".into(), ty: PinType::Logik, value: None, set: None, set_id: Some(SetId::Logik) }
     }
 }
 impl KnotenStruktur for LügeNode {

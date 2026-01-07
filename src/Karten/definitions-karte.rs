@@ -12,7 +12,7 @@ fn pin_style_for(ty: &typen::PinType) -> PinInfo {
     // Minimal, aber brauchbar. Wenn du willst, kopier deine echte Mapping-Logik hier rein.
     match ty {
         typen::PinType::Element => PinInfo::circle(),
-        typen::PinType::Menge => PinInfo::square(),
+        typen::PinType::Menge { elem, set } => PinInfo::square(),
         typen::PinType::Zahl { .. } => PinInfo::triangle(),
         typen::PinType::Logik => PinInfo::star(),
         _ => PinInfo::circle(),

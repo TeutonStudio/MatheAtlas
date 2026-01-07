@@ -218,7 +218,9 @@ fn update_node_inputs(
 fn pin_style_for(ty: &typen::PinType) -> PinInfo {
     match ty {
         typen::PinType::Element => PinInfo::circle(),
-        typen::PinType::Menge => PinInfo::square(),
+        typen::PinType::Menge {elem, set} => {
+            PinInfo::square() // TODO Mengeninhalt style mit MengenKlammern drumrum
+        },
         typen::PinType::Zahl { .. } => PinInfo::triangle(),
         typen::PinType::Logik => PinInfo::star(),
         typen::PinType::Abbild { .. } => PinInfo::square()

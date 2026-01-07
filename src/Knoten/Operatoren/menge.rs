@@ -131,7 +131,7 @@ impl KnotenInhalt for MengenOperatorNode {
 impl KnotenDaten for MengenOperatorNode {
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) { self.op.latex.on_inputs_changed(inputs) }
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge, set_id: None }
+        return OutputInfo { latex: r"\LaTeX".to_string() /*self.latex.current_body_latex()*/, ty: PinType::Menge { elem: Box::new(self.input_type(0)), set: None }, value: None, set: None, set_id: None }
     }
     fn take_dirty(&mut self) -> bool {
         false
@@ -234,19 +234,19 @@ impl LaTeXQuellBereitsteller for MengenProvider {
 
     fn input_type(&self, _i: usize) -> PinType { 
         match self.op {
-            MengenOp::Einzel => PinType::Menge,
-            MengenOp::Vereinigung => PinType::Menge,
-            MengenOp::Schnitt => PinType::Menge,
-            MengenOp::Differenz => PinType::Menge,
-            MengenOp::Potenz => PinType::Menge,
+            MengenOp::Einzel => PinType::Element,
+            MengenOp::Vereinigung => PinType::Menge { elem: Box::new(PinType::Element), set: None },
+            MengenOp::Schnitt => PinType::Menge { elem: Box::new(PinType::Element), set: None },
+            MengenOp::Differenz => PinType::Menge { elem: Box::new(PinType::Element), set: None },
+            MengenOp::Potenz => PinType::Menge { elem: Box::new(PinType::Element), set: None },
             MengenOp::Filter => {
                 match _i {
-                    0 => PinType::Menge,
-                    1 => PinType::Abbild { wertevorrat: None, zielmenge: Some(SetId::Logik) },
-                    _ => PinType::Menge,
+                    0 => PinType::Menge { elem: Box::new(PinType::Element), set: None },
+                    1 => PinType::Abbild { wertevorrat: None, zielmenge: Some(Box::new(PinType::Logik)) },
+                    _ => PinType::Menge { elem: Box::new(PinType::Element), set: None },
                 }
             },
         }
     }
-    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
+    fn output_type(&self, _o: usize) -> PinType { PinType::Menge { elem: Box::new(self.input_type(0)), set: None } }
 }

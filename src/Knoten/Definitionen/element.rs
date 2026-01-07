@@ -43,8 +43,8 @@ impl DefiniereElementNode {
         self.inputs_cache
             .get(0)
             .and_then(|x| x.as_ref())
-            .and_then(|info| match info.ty {
-                PinType::Menge => info.set_id(),
+            .and_then(|info| match &info.ty {
+                PinType::Menge { elem, set } => info.set_id(),
                 _ => None,
             })
     }
@@ -193,9 +193,11 @@ impl KnotenDaten for DefiniereElementNode {
         let menge_ltx = self.current_set_latex();
         let obj_ltx = self.element_object_latex();
 
-        OutputInfo {
+        return OutputInfo {
             latex: logik::element(obj_ltx, menge_ltx),
             ty: self.output_type(0),
+            value: None,
+            set: None,
             set_id: None,
         }
     }
@@ -216,7 +218,7 @@ impl KnotenStruktur for DefiniereElementNode {
         }
     }
 
-    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
+    fn input_type(&self, _i: usize) -> PinType { return PinType::Menge { elem: Box::new(PinType::Element), set: None } }
 
     fn output_type(&self, _o: usize) -> PinType {
         match self.current_set_id() {

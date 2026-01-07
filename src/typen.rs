@@ -1,19 +1,25 @@
 // Pfad: ../src/typen.rs
 
-use std::fmt;
+use std::{
+    collections::HashMap,
+    fmt,
+    hash::{Hash, Hasher},
+};
 
-use crate::LaTeX::{logik,menge};
-use symbolica::domains::integer;
+use crate::LaTeX::{logik, menge};
 
-/// Identität / Symbol für Mengen.
-/// Für den Anfang reichen die vordefinierten Ketten + Custom.
-/// "Any" ist die grobe "Universumsmenge", falls du nichts weißt.
+/// Identität / Symbol für primitive Mengen.
+/// "Any" ist grob die Universumsmenge (für "weiß ich nicht").
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SetId {
     Any,
     Leer,
     Logik,
-    Nat,Ganz,Rat,Real,Komplex, // Zahl
+    Nat,
+    Ganz,
+    Rat,
+    Real,
+    Komplex, // Zahl
     Custom(String),
 }
 
@@ -40,43 +46,166 @@ impl SetId {
         }
     }
 
-    /// Ob diese Menge "endlich" ist (für deine Dropdown-Element-UI).
     pub fn is_finite(&self) -> bool {
         matches!(self, SetId::Leer | SetId::Logik)
     }
 }
 
-/// Pin-Typen. Abbild ist parametrisiert über (Wertevorrat, Zielmenge).
+/* =========================================================
+   Mengen-Registry (Handles + Definitions-AST)
+========================================================= */
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SetHandle(pub u64);
+
+#[derive(Clone, Debug)]
+pub struct Set {
+    pub def: SetDef,
+    pub name: Option<String>, // gespeicherte Menge (alias/label)
+    pub props: SetPropsCache, // memoized Infos
+}
+
+#[derive(Clone, Debug)]
+pub enum SetDef {
+    Primitive(SetId),
+    Explicit(Vec<OutputInfo>),
+    Union(SetHandle, SetHandle),
+    Intersect(SetHandle, SetHandle),
+    Diff(SetHandle, SetHandle),
+    Power(SetHandle),
+    // Filter { base: SetHandle, pred: AbbildHandle }, // später
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CardinalityClass {
+    Finite,
+    CountablyInfinite,
+    Uncountable,
+    Unknown,
+}
+
+#[derive(Clone, Debug)]
+pub struct ElemTypeInfo {
+    /// Typ, den du nach außen behauptest (kompatibel/weiterverwendbar)
+    pub join: PinType,
+    /// Typ-Komponenten, die in der Menge vorkommen können (für Diff/Union-Tricks)
+    pub components: Vec<PinType>,
+}
+
+impl Default for ElemTypeInfo {
+    fn default() -> Self {
+        Self {
+            join: PinType::Element,
+            components: vec![PinType::Element],
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct SetPropsCache {
+    pub elem_type: Option<ElemTypeInfo>,
+    pub cardinality: Option<CardinalityClass>,
+    pub normalized_hash: Option<u64>, // für "vielleicht gleich" / Dedupe / Cache
+}
+
+pub struct SetRegistry {
+    sets: HashMap<SetHandle, Set>,
+    next_id: u64,
+}
+
+impl SetRegistry {
+    pub fn new() -> Self {
+        Self {
+            sets: HashMap::new(),
+            next_id: 1,
+        }
+    }
+
+    pub fn insert(&mut self, def: SetDef) -> SetHandle {
+        let h = SetHandle(self.next_id);
+        self.next_id += 1;
+        self.sets.insert(
+            h,
+            Set {
+                def,
+                name: None,
+                props: SetPropsCache::default(),
+            },
+        );
+        h
+    }
+
+    pub fn get(&self, h: SetHandle) -> Option<&Set> {
+        self.sets.get(&h)
+    }
+
+    pub fn get_mut(&mut self, h: SetHandle) -> Option<&mut Set> {
+        self.sets.get_mut(&h)
+    }
+}
+
+/* =========================================================
+   PinType / OutputInfo
+========================================================= */
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum PinType {
-    Element,Menge,Logik,
+    Element,
+    Logik,
+
+    /// Menge von Elementtyp `elem`. `set` ist optional, falls konkrete Set-Definition bekannt ist.
+    Menge { elem: Box<PinType>, set: Option<SetHandle> },
+
+    /// Zahl in einem Raum (ℕ ⊆ ℤ ⊆ ℚ ⊆ ℝ ⊆ ℂ)
     Zahl { raum: SetId },
-    Abbild { wertevorrat: Option<SetId>, zielmenge: Option<SetId> },
+
+    /// Abbildung: wertevorrat -> ziel
+    Abbild {
+        wertevorrat: Option<Box<PinType>>,
+        zielmenge: Option<Box<PinType>>,
+    },
 }
 
 impl fmt::Display for PinType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             PinType::Element => write!(f, "Element"),
-            PinType::Menge => write!(f, "Menge"),
             PinType::Logik => write!(f, "Logik"),
             PinType::Zahl { raum } => write!(f, "Zahl({})", raum.latex()),
+            PinType::Menge { elem, set } => match set {
+                Some(h) => write!(f, "Menge<{}>#{:?}", elem, h),
+                None => write!(f, "Menge<{}>", elem),
+            },
             PinType::Abbild { wertevorrat, zielmenge } => {
-                let w = wertevorrat.as_ref().map(|x| x.latex()).unwrap_or("?".into());
-                let z = zielmenge.as_ref().map(|x| x.latex()).unwrap_or("?".into());
+                let w = wertevorrat.as_ref().map(|x| format!("{x}")).unwrap_or("?".into());
+                let z = zielmenge.as_ref().map(|x| format!("{x}")).unwrap_or("?".into());
                 write!(f, "Abbild({} -> {})", w, z)
             }
         }
     }
 }
 
+/// Optional: später AST/Term für echte Elementgleichheit.
+/// Im Moment absichtlich leer, damit du ohne CAS weiterkommst.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum ValueAst {
+    // TODO: später Symbolica-Expression, Term-AST, etc.
+    Placeholder,
+}
 
-/// Das, was entlang eines Wires “transportiert” wird.
-/// Vorläufig nur LaTeX + Typ + optional SetId (für Menge-Knoten).
+/// Das, was entlang eines Wires transportiert wird.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OutputInfo {
     pub latex: String,
     pub ty: PinType,
+
+    /// optional: echte semantische Repräsentation (für extensional equality etc.)
+    pub value: Option<ValueAst>,
+
+    /// wenn Output eine konkrete Menge ist (Registry)
+    pub set: Option<SetHandle>,
+
+    /// Legacy/Übergang: primitive SetId (z.B. ℕ), falls du es noch an UI/Nodes hängen hast
     pub set_id: Option<SetId>,
 }
 
@@ -85,8 +214,15 @@ impl OutputInfo {
         Self {
             latex: latex.into(),
             ty,
+            value: None,
+            set: None,
             set_id: None,
         }
+    }
+
+    pub fn with_set_handle(mut self, h: SetHandle) -> Self {
+        self.set = Some(h);
+        self
     }
 
     pub fn with_set_id(mut self, id: SetId) -> Self {
@@ -94,21 +230,19 @@ impl OutputInfo {
         self
     }
 
-    /// Wird von Nodes genutzt, die aus Input-Mengen SetId extrahieren wollen.
     pub fn try_set_id(&self) -> Option<SetId> {
         self.set_id.clone()
     }
 
-    /// Alias (falls du in manchen Stellen `set_id()` nutzt)
     pub fn set_id(&self) -> Option<SetId> {
         self.try_set_id()
     }
 }
 
-/// Obermengenbeziehung a ⊇ b.
-///
-/// Das ist erstmal nur für die bekannten Zahlmengen-Kette definiert.
-/// Custom-Mengen sind nur dann Obermenge, wenn exakt gleich (oder wenn a = Any).
+/* =========================================================
+   Zahlraum-Superset (ℕ ⊆ ℤ ⊆ ℚ ⊆ ℝ ⊆ ℂ)
+========================================================= */
+
 pub fn is_superset(a: &SetId, b: &SetId) -> bool {
     if a == b {
         return true;
@@ -117,7 +251,6 @@ pub fn is_superset(a: &SetId, b: &SetId) -> bool {
         return true;
     }
 
-    // Kette: ℕ ⊆ ℤ ⊆ ℚ ⊆ ℝ ⊆ ℂ
     fn rank(s: &SetId) -> Option<u8> {
         match s {
             SetId::Nat => Some(0),
@@ -131,92 +264,95 @@ pub fn is_superset(a: &SetId, b: &SetId) -> bool {
 
     match (rank(a), rank(b)) {
         (Some(ra), Some(rb)) => ra >= rb,
-        _ => false, // LogikWL und Custom: ohne weitere Info kein Superset (außer Gleichheit/Any oben)
-    }
-}
-fn opt_superset(a: &Option<SetId>, b: &Option<SetId>) -> bool {
-    match (a, b) {
-        (None, _) => true,                 // Input hat keine Anforderung
-        (Some(_), None) => false,           // Input verlangt was, Output ist unbekannt -> blocken
-        (Some(a), Some(b)) => is_superset(a, b),
-    }
-}
-
-
-/// Enthält eine Menge (SetId) grundsätzlich Objekte eines bestimmten Typs?
-/// Das ist für deine Auto-Zwischenknoten-Regeln (Wert -> Abbild, Element -> Menge) nützlich.
-///
-/// Wichtig: Das ist KEINE echte Mitgliedschaftsprüfung (CAS kommt später),
-/// sondern nur eine grobe Typ-Zulässigkeit.
-/*pub fn contains_type(set: &SetId, ty: &PinType) -> bool {
-    match (set, ty) {
-        (SetId::Any, _) => true,
-
-        // Zahlmengen enthalten Zahlen (und damit auch Elemente)
-        (SetId::Nat | SetId::Ganz | SetId::Rat | SetId::Real | SetId::Komplex, PinType::Zahl) => true,
-        (SetId::Nat | SetId::Ganz | SetId::Rat | SetId::Real | SetId::Komplex, PinType::Element) => true,
-
-        // Logik-Menge enthält Logik (und damit Elemente)
-        (SetId::Logik, PinType::Logik) => true,
-        (SetId::Logik, PinType::Element) => true,
-
-        // Custom: ohne Semantik wissen wir's nicht -> nur Element als “kann man irgendwie interpretieren”
-        (SetId::Custom(_), PinType::Element) => true,
-
         _ => false,
     }
-}*/
+}
+
+/* =========================================================
+   Typ-Kompatibilität inkl. "usable_as"-Regel (Abbild->Ziel)
+========================================================= */
+
+/// Deine Regel (4): Abbild nach Zahl kann als Zahl aufgefasst werden.
+/// Allgemeiner: Abbild kann "als" sein Ziel verwendet werden (wenn vorhanden).
+fn usable_as(ty: &PinType) -> Vec<PinType> {
+    match ty {
+        PinType::Abbild { zielmenge: Some(z), .. } => vec![(*z.clone()), ty.clone()],
+        _ => vec![ty.clone()],
+    }
+}
+
+/// "superset" im Sinne der alten Abbild-Regel:
+/// input verlangt `sup`, output liefert `sub` -> ok, wenn sup ein Obertyp ist.
+/// Praktisch: `sub` muss kompatibel zu `sup` sein.
+fn type_superset(sup: &PinType, sub: &PinType) -> bool {
+    compatible(sub, sup)
+}
+
+fn opt_type_superset(sup: &Option<Box<PinType>>, sub: &Option<Box<PinType>>) -> bool {
+    match (sup, sub) {
+        (None, _) => true,     // Input fordert nix
+        (Some(_), None) => false, // Input fordert was, output unbekannt -> blocken
+        (Some(a), Some(b)) => type_superset(a, b),
+    }
+}
 
 /// Kompatibilität: darf ein Output-Typ an einen Input-Typ?
-///
-/// Regeln nach deiner Spezifikation:
-/// - Input Element: alles erlaubt
-/// - Input Logik: nur Logik
-/// - Input Zahl: nur Zahl
-/// - Input Menge: nur Menge
-/// - Input Abbild(W_in, Z_in): nur Abbild(W_out, Z_out) mit
-///     W_in ⊇ W_out und Z_in ⊇ Z_out
-///
-/// Auto-Coercions (Element->SingletonMenge, Wert->StatischeAbbildung) passieren *außerhalb* hiervon.
 pub fn compatible(output: &PinType, input: &PinType) -> bool {
+    // Alles darf an Element-Input
     if matches!(input, PinType::Element) {
         return true;
     }
 
-    // Output ist Abbild: darf an Wert-Inputs, wenn Zielmenge bekannt und passend
-    if let PinType::Abbild { zielmenge, .. } = output {
-        let ok = match input {
-            PinType::Logik => matches!(zielmenge, Some(z) if *z == SetId::Logik),
-            PinType::Zahl { raum } => matches!(zielmenge, Some(z) if is_superset(z, raum)),
-            PinType::Element => true,
-            _ => false,
-        };
-
-        if ok {
+    // "Abbild kann als Ziel genutzt werden"
+    // (z.B. Abbild -> Logik an Logik-Input, oder Abbild -> Zahl an Zahl-Input)
+    for cand in usable_as(output) {
+        if matches!(cand, PinType::Abbild { .. }) {
+            // kein Rekursionsloop erzwingen, Abbild behandeln wir unten separat
+        } else if compatible_strict(&cand, input) {
             return true;
         }
     }
 
+    compatible_strict(output, input)
+}
+
+fn compatible_strict(output: &PinType, input: &PinType) -> bool {
     match (output, input) {
         (PinType::Logik, PinType::Logik) => true,
-        (PinType::Menge, PinType::Menge) => true,
 
         (PinType::Zahl { raum: ro }, PinType::Zahl { raum: ri }) => is_superset(ri, ro),
 
         (
-            PinType::Abbild { wertevorrat: w_out, zielmenge: z_out },
-            PinType::Abbild { wertevorrat: w_in, zielmenge: z_in },
+            PinType::Menge { elem: eo, .. },
+            PinType::Menge { elem: ei, .. },
         ) => {
-            opt_superset(w_in, w_out) && opt_superset(z_in, z_out)
+            // Menge<Abbild->Zahl> kompatibel zu Menge<Zahl> durch usable_as auf Elementtyp
+            usable_as(eo).iter().any(|cand| compatible(cand, ei))
+        }
+
+        (
+            PinType::Abbild {
+                wertevorrat: w_out,
+                zielmenge: z_out,
+            },
+            PinType::Abbild {
+                wertevorrat: w_in,
+                zielmenge: z_in,
+            },
+        ) => {
+            // Regel: W_in ⊇ W_out und Z_in ⊇ Z_out
+            // (Input ist "breiter" als Output)
+            opt_type_superset(w_in, w_out) && opt_type_superset(z_in, z_out)
         }
 
         _ => false,
     }
 }
 
+/* =========================================================
+   Helper
+========================================================= */
 
-
-/// Kleine Helper, falls du SetId als LaTeX direkt willst (ohne $...$ drumrum).
 pub fn latex_set(set: &SetId) -> String {
     set.latex()
 }

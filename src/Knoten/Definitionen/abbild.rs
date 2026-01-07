@@ -68,7 +68,7 @@ impl KnotenInhalt for DefiniereAbbildNode {
 }
 impl KnotenDaten for DefiniereAbbildNode {
     fn output_info(&self, _o: usize) -> OutputInfo {
-        OutputInfo { latex: r"\LaTeX".to_string(), ty: self.output_type(0), set_id: None }
+        OutputInfo { latex: r"\LaTeX".to_string(), ty: self.output_type(0), value: None, set: None, set_id: None }
     }
 
     fn on_inputs_changed(&mut self, inputs: Vec<Option<OutputInfo>>) {
@@ -87,14 +87,15 @@ impl KnotenStruktur for DefiniereAbbildNode {
 
     fn input_type(&self, i: usize) -> PinType {
         match i {
-            0 | 1 => PinType::Menge,
+            0 | 1 => PinType::Menge { elem: Box::new(PinType::Element), set: None },
             2 => PinType::Element,
             _ => PinType::Element,
         }
     }
 
     fn output_type(&self, _o: usize) -> PinType {
-        PinType::Abbild { wertevorrat: Some(self.w.clone()), zielmenge: Some(self.z.clone()) }
+        return  PinType::Element;
+        // TODO PinType::Abbild { wertevorrat: Some(self.w.clone()), zielmenge: Some(self.z.clone()) }
     }
 }
 impl Knoten for DefiniereAbbildNode {
