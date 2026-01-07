@@ -6,7 +6,7 @@ use std::{
 };
 use tiny_skia::Pixmap;
 use eframe::egui::{ColorImage, Image, TextureHandle, TextureOptions, Ui, Context, Sense, vec2};
-use crate::typen::{OutputInfo};
+use crate::typen::{PinType,OutputInfo};
 use usvg::{Options as UsvgOptions};
 use mathjax::MathJax;
 
@@ -20,6 +20,9 @@ pub trait LaTeXQuellBereitsteller: Send + Sync {
 
     fn in_pins(&self) -> usize;
     fn out_pins(&self) -> usize;
+
+    fn input_type(&self, _i: usize) -> PinType { PinType::Element }
+    fn output_type(&self, _o: usize) -> PinType { PinType::Element }
 }
 
 fn erhalte_hash(str: &String) -> u64 {

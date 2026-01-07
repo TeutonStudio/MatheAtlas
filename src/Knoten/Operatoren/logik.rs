@@ -51,17 +51,18 @@ impl LogikOperatorNode {
         // Für Abbild brauchen wir konkrete Sets. Wenn Inputs Abbild sind:
         // - wir nehmen (konservativ) den "kleineren" Wertevorrat, "kleinere" Zielmenge? (für Logik-Zielmenge egal)
         // Minimal: wenn mindestens ein Input Abbild ist -> Output Abbild, sonst Logik.
+        let mut any_domain: Option<Option<SetId>> = None;
 
-        let mut any_map = None::<(SetId, SetId)>;
+        // let mut any_map = None::<(SetId, SetId)>;
         for info in self.inputs_cache.iter().flatten() {
-            if let PinType::Abbild { wertevorrat, zielmenge } = &info.ty {
-                any_map = Some((wertevorrat.clone(), zielmenge.clone()));
+            if let PinType::Abbild { wertevorrat, .. } = &info.ty {
+                any_domain = Some(wertevorrat.clone());
                 break;
             }
         }
 
-        self.out_ty = if let Some((w, z)) = any_map {
-            PinType::Abbild { wertevorrat: w, zielmenge: z }
+        self.out_ty = if let Some(w) = any_domain {
+            PinType::Abbild { wertevorrat: w, zielmenge: Some(SetId::Logik) }
         } else {
             PinType::Logik
         };

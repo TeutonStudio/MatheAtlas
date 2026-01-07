@@ -6,7 +6,7 @@ use eframe::egui::{Ui,Window,pos2};
 use egui_snarl::{NodeId, InPin, OutPin, Snarl};
 
 use crate::basis_karte::karte_kontext::logik_definition::WahrNode;
-use crate::typen::{OutputInfo, PinType};
+use crate::typen::{OutputInfo, PinType, SetId};
 
 use crate::LaTeX::{
     interpreter::{LaTeXQuelle,LaTeXQuellBereitsteller},
@@ -27,7 +27,7 @@ pub enum MengenOp {
 }
 
 /// Auto-Coercion Node: Element -> {Element}
-pub struct SingletonMengeNode {
+/*pub struct SingletonMengeNode {
     latex: LatexNode,
     inputs_cache: Vec<Option<OutputInfo>>,
 }
@@ -39,7 +39,7 @@ impl SingletonMengeNode {
             inputs_cache: vec![],
         }
     }
-}
+}*/
 
 /*impl Knoten for SingletonMengeNode {
     fn name(&self) -> &str { "Singleton-Menge {x}" }
@@ -74,7 +74,7 @@ impl SingletonMengeNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }*/
 
-struct SingletonProvider;
+/*struct SingletonProvider;
 impl LaTeXQuellBereitsteller for SingletonProvider {
     fn title(&self, _inputs: &[&OutputInfo]) -> Option<String> { Some(r"\textbf{Singleton}".into()) }
     fn body(&self, inputs: &[&OutputInfo]) -> Option<String> {
@@ -86,7 +86,7 @@ impl LaTeXQuellBereitsteller for SingletonProvider {
     fn out_pin_label(&self, _: usize, _: &[&OutputInfo]) -> Option<String> { Some(r"$\{x\}$".into()) }
     fn in_pins(&self) -> usize { 1 }
     fn out_pins(&self) -> usize { 1 }
-}
+}*/
 
 /* -------------------------
    Mengenoperatoren
@@ -142,13 +142,14 @@ impl KnotenStruktur for MengenOperatorNode {
     fn inputs(&self) -> usize { self.op.latex.provider.in_pins() }
     fn outputs(&self) -> usize { self.op.latex.provider.out_pins() }
 
-    fn input_type(&self, _i: usize) -> PinType { PinType::Menge }
-    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
+    fn input_type(&self, _i: usize) -> PinType { return self.op.latex.provider.input_type(_i) }
+    fn output_type(&self, _o: usize) -> PinType { return self.op.latex.provider.output_type(_o) }
 }
 
 impl Knoten for MengenOperatorNode {
     fn as_any(&mut self) -> &mut dyn Any { self }
 }
+
 
 struct MengenProvider { op: MengenOp }
 impl MengenProvider {
@@ -230,4 +231,22 @@ impl LaTeXQuellBereitsteller for MengenProvider {
         }
     } // TODO abhängig von Operator und verbundenen anzahl und kompatibler verbindungsstart
     fn out_pins(&self) -> usize { 1 }
+
+    fn input_type(&self, _i: usize) -> PinType { 
+        match self.op {
+            MengenOp::Einzel => PinType::Menge,
+            MengenOp::Vereinigung => PinType::Menge,
+            MengenOp::Schnitt => PinType::Menge,
+            MengenOp::Differenz => PinType::Menge,
+            MengenOp::Potenz => PinType::Menge,
+            MengenOp::Filter => {
+                match _i {
+                    0 => PinType::Menge,
+                    1 => PinType::Abbild { wertevorrat: None, zielmenge: Some(SetId::Logik) },
+                    _ => PinType::Menge,
+                }
+            },
+        }
+    }
+    fn output_type(&self, _o: usize) -> PinType { PinType::Menge }
 }

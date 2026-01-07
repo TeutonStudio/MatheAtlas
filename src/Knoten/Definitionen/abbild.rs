@@ -94,7 +94,7 @@ impl KnotenStruktur for DefiniereAbbildNode {
     }
 
     fn output_type(&self, _o: usize) -> PinType {
-        PinType::Abbild { wertevorrat: self.w.clone(), zielmenge: self.z.clone() }
+        PinType::Abbild { wertevorrat: Some(self.w.clone()), zielmenge: Some(self.z.clone()) }
     }
 }
 impl Knoten for DefiniereAbbildNode {

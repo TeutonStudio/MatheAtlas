@@ -51,7 +51,7 @@ impl SetId {
 pub enum PinType {
     Element,Menge,Logik,
     Zahl { raum: SetId },
-    Abbild { wertevorrat: SetId, zielmenge: SetId },
+    Abbild { wertevorrat: Option<SetId>, zielmenge: Option<SetId> },
 }
 
 impl fmt::Display for PinType {
@@ -61,8 +61,11 @@ impl fmt::Display for PinType {
             PinType::Menge => write!(f, "Menge"),
             PinType::Logik => write!(f, "Logik"),
             PinType::Zahl { raum } => write!(f, "Zahl({})", raum.latex()),
-            PinType::Abbild { wertevorrat, zielmenge } =>
-                write!(f, "Abbild({} -> {})", wertevorrat.latex(), zielmenge.latex()),
+            PinType::Abbild { wertevorrat, zielmenge } => {
+                let w = wertevorrat.as_ref().map(|x| x.latex()).unwrap_or("?".into());
+                let z = zielmenge.as_ref().map(|x| x.latex()).unwrap_or("?".into());
+                write!(f, "Abbild({} -> {})", w, z)
+            }
         }
     }
 }
@@ -131,6 +134,14 @@ pub fn is_superset(a: &SetId, b: &SetId) -> bool {
         _ => false, // LogikWL und Custom: ohne weitere Info kein Superset (außer Gleichheit/Any oben)
     }
 }
+fn opt_superset(a: &Option<SetId>, b: &Option<SetId>) -> bool {
+    match (a, b) {
+        (None, _) => true,                 // Input hat keine Anforderung
+        (Some(_), None) => false,           // Input verlangt was, Output ist unbekannt -> blocken
+        (Some(a), Some(b)) => is_superset(a, b),
+    }
+}
+
 
 /// Enthält eine Menge (SetId) grundsätzlich Objekte eines bestimmten Typs?
 /// Das ist für deine Auto-Zwischenknoten-Regeln (Wert -> Abbild, Element -> Menge) nützlich.
@@ -168,64 +179,41 @@ pub fn is_superset(a: &SetId, b: &SetId) -> bool {
 ///
 /// Auto-Coercions (Element->SingletonMenge, Wert->StatischeAbbildung) passieren *außerhalb* hiervon.
 pub fn compatible(output: &PinType, input: &PinType) -> bool {
-    // 1) Input Element: alles darf rein
     if matches!(input, PinType::Element) {
         return true;
     }
 
-    // 2) Output ist ein Abbild: darf auch an Wert-Inputs, wenn Zielmenge passt
+    // Output ist Abbild: darf an Wert-Inputs, wenn Zielmenge bekannt und passend
     if let PinType::Abbild { zielmenge, .. } = output {
-        // "Elementtyp der Zielmenge stimmt mit Eingangstyp überein"
-        // (bei Zahl mit Raum: Zielmenge muss Obermenge des erwarteten Raums sein)
-        let abbild_passt_auf_wert_input = match input {
-            PinType::Logik => *zielmenge == SetId::Logik,
-            PinType::Zahl { raum } => is_superset(zielmenge, raum),
-            PinType::Element => true, // redundant wegen early return, aber korrekt
-            // solange du keine Semantik "Menge von Vektoren" usw hast: lieber nein als falsch-ja
+        let ok = match input {
+            PinType::Logik => matches!(zielmenge, Some(z) if *z == SetId::Logik),
+            PinType::Zahl { raum } => matches!(zielmenge, Some(z) if is_superset(z, raum)),
+            PinType::Element => true,
             _ => false,
         };
 
-        if abbild_passt_auf_wert_input {
+        if ok {
             return true;
         }
     }
 
-    // 3) Gleichartige Typen (mit Parametern exakt)
     match (output, input) {
         (PinType::Logik, PinType::Logik) => true,
         (PinType::Menge, PinType::Menge) => true,
 
-        (PinType::Zahl { raum: ro }, PinType::Zahl { raum: ri }) => {
-            // Output-Zahl aus ro darf in ri, wenn ri ⊇ ro (Input akzeptiert Obermenge)
-            is_superset(ri, ro)
-        }
+        (PinType::Zahl { raum: ro }, PinType::Zahl { raum: ri }) => is_superset(ri, ro),
 
-        /*(PinType::Vektor { grundraum: go, dimension: do_ },
-         PinType::Vektor { grundraum: gi, dimension: di_ }) => {
-            do_ == di_ && is_superset(gi, go)
-        }
-
-        (PinType::Matrix { grundraum: go, breite: bo, höhe: ho },
-         PinType::Matrix { grundraum: gi, breite: bi, höhe: hi }) => {
-            bo == bi && ho == hi && is_superset(gi, go)
-        }
-
-        (PinType::Tensor { grundraum: go, stufe: so, dimensionen: dio },
-         PinType::Tensor { grundraum: gi, stufe: si, dimensionen: dii }) => {
-            so == si && dio == dii && is_superset(gi, go)
-        }*/
-
-        // 4) Abbild -> Abbild mit Superset-Regel (Input erwartet "gröber", Output darf spezieller sein)
         (
             PinType::Abbild { wertevorrat: w_out, zielmenge: z_out },
-            PinType::Abbild { wertevorrat: w_in, zielmenge: z_in }
+            PinType::Abbild { wertevorrat: w_in, zielmenge: z_in },
         ) => {
-            is_superset(w_in, w_out) && is_superset(z_in, z_out)
+            opt_superset(w_in, w_out) && opt_superset(z_in, z_out)
         }
 
         _ => false,
     }
 }
+
 
 
 /// Kleine Helper, falls du SetId als LaTeX direkt willst (ohne $...$ drumrum).
